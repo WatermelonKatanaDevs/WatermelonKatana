@@ -61,7 +61,7 @@
     (async () => {
       var tok = await getAuth();
       if (tok.user?.mature) return;
-      mature.outerHTML = data.mature.toString();
+      // mature.outerHTML = data.mature.toString(); // sorry dragon this breaks shit
     })();
 
     async function uploadThumb() {
