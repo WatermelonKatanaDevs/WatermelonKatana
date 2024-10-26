@@ -112,18 +112,18 @@
               if (Object.keys(cdoStorage.tables).length > 0) {
                 await fetch(`/datablock_storage/${cdoId}/populate_tables`, {
                   method: "PUT",
-                  body: {
-                    tables_json: JSON.stringify(cdoStorage.tables)
-                  }
+                  body: JSON.stringify({
+                    tables_json: cdoStorage.tables
+                  })
                 })
               }
             case "gamelab":
               if (Object.keys(cdoStorage.keys).length > 0) {
                 await fetch(`/datablock_storage/${cdoId}/populate_key_values`, {
                   method: "PUT",
-                  body: {
+                  body: JSON.stringify({
                     key_values_json: JSON.stringify(cdoStorage.keys)
-                  }
+                  })
                 })
               }
               break;
