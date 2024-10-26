@@ -122,6 +122,9 @@
               }
             case "gamelab":
               if (Object.keys(cdoStorage.keys).length > 0) {
+                for (var k in cdoStorage.keys) {
+                  cdoStorage.keys[k] = JSON.stringify(cdoStorage.keys[k]);
+                }
                 await fetch(`/datablock_storage/${cdoId}/populate_key_values`, {
                   method: "PUT",
                   headers: {
