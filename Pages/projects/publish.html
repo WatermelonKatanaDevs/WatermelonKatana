@@ -1,108 +1,142 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Publish | WatermelonKatana</title>
-    <link rel="stylesheet" type="text/css" href="/styles/style.css">
-    <script src="/scripts/HtmlSanitizer.js"></script>
-    <script src="/scripts/script.js"></script>
-    <script src="/scripts/markdowntextbox.js"></script>
-  </head>
-  <body>
-    <script src="/scripts/mediaupload.js"></script>
-    <script src="/scripts/navbar.js"></script>
-    
-    <h1>Publish Project</h1>
-    
-    <form >
-      <div class="error" style="background-color: red;"></div><br>
-      <label for="name">Name</label><br>
-      <input type="text" id="name" required/><br>
-      <label for="link">Link</label><br>
-      <input type="text" id="link" required><br>
-      <label for="desc">Description</label><br>
-      <textarea id="desc"></textarea><br>
-      <label for="thumb">Thumbnail</label><br>
-      <button type="button" class="uploadbutton" onclick="uploadThumb()">
-        Set Thumbnail<br>
-        <img id="thumb" style="max-width:100px; max-height:100px;">
-      </button><br>
-      <label for="tags">Tags (separate with comma)</label><br>
-      <input type="text" id="tags"><br>
-      <label for="mature">Mature
-        <input type="checkbox" id="mature">
-        <span class="checkbox"></span>
-      </label><br>
-      <label for="hidden">Hidden
-        <input type="checkbox" id="hidden">
-        <span class="checkbox"></span>
-      </label><br>
-      <input type="submit" value="publish"><br>
-    </form>
-  
-    <script>
-      const form = document.querySelector('form');
-      const name = document.querySelector('#name');
-      const link = document.querySelector('#link');
-      const desc = document.querySelector('#desc');
-      const thumb = document.querySelector('#thumb');
-      const tags = document.querySelector('#tags');
-      const mature = document.querySelector('#mature');
-      const hidden = document.querySelector('#hidden');
-      const display = document.querySelector('.error');
-      markdownTextbox('#desc');
-      
-      (async ()=>{
-        var tok = await getAuth();
-        if (tok.user?.mature) return;
-        mature.outerHTML = data.mature.toString();
-      })();
 
-      async function uploadThumb() {
-        var url = await getFileUpload(thumb.value);
-        if (!url) return;
-        thumb.src = url;
-        thumb.value = url;
-      }
-      
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        display.textContent = '';
-        if (!link.value.match(/^https?:\/\/[^"]+$/)) 
-          return (display.textContent = "Link is not a vaild URL");
-        if (thumb.value && !thumb.value.match(/^https?:\/\/[^"]+$/) && !thumb.value.match(/^\/api\/media\/[^"]+$/)) 
-          return display.textContent = 'Thumbnail is not a vaild URL';
-        var taglist = tags.value.toLowerCase().replace(/[^,\w\d_-]/g,"").split(",");
-        if (taglist.length < 3)
-          return display.textContent = 'Choose at least 3 tags';
-        if (taglist.length > 10)
-          return display.textContent = 'You can only choose a maximum of 10 tags';
-        try {
-          const res = await fetch('/api/project/publish', {
-            method: 'POST',
-            body: JSON.stringify({
-              title: name.value,
-              link: link.value,
-              content: desc.value,
-              thumbnail: thumb.value,
-              tags: taglist,
-              mature: mature.checked,
-              hidden: hidden.checked,
-              privateRecipients: [],
-            }),
-            headers: { 'Content-Type': 'application/json' }
-          });
-          const data = await res.json();
-          if (res.status === 400 || res.status === 401) {
-            return display.textContent = data.message+". "+(data.error ? data.error : '');
-          }
-          location.assign('/project/'+data.id);
-        } catch (err) {
-          console.log(err.message);
-          alert(err.message);
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Publish | WatermelonKatana</title>
+  <link rel="stylesheet" type="text/css" href="/styles/style.css">
+  <script src="/scripts/HtmlSanitizer.js"></script>
+  <script src="/scripts/script.js"></script>
+  <script src="/scripts/markdowntextbox.js"></script>
+</head>
+
+<body>
+  <script src="/scripts/mediaupload.js"></script>
+  <script src="/scripts/navbar.js"></script>
+
+  <h1>Publish Project</h1>
+
+  <form>
+    <div class="error" style="background-color: red;"></div><br>
+    <label for="name">Name</label><br>
+    <input type="text" id="name" required /><br>
+    <label for="link">Link</label><br>
+    <input type="text" id="link" required><br>
+    <label for="desc">Description</label><br>
+    <textarea id="desc"></textarea><br>
+    <label for="thumb">Thumbnail</label><br>
+    <button type="button" class="uploadbutton" onclick="uploadThumb()">
+      Set Thumbnail<br>
+      <img id="thumb" style="max-width:100px; max-height:100px;">
+    </button><br>
+    <label for="storage"> Project Data </label><br>
+    <textarea id="storage"></textarea><br>
+    <label for="tags">Tags (separate with comma)</label><br>
+    <input type="text" id="tags"><br>
+    <label for="mature">Mature
+      <input type="checkbox" id="mature">
+      <span class="checkbox"></span>
+    </label><br>
+    <label for="hidden">Hidden
+      <input type="checkbox" id="hidden">
+      <span class="checkbox"></span>
+    </label><br>
+    <input type="submit" value="publish"><br>
+  </form>
+
+  <script>
+    const form = document.querySelector('form');
+    const name = document.querySelector('#name');
+    const link = document.querySelector('#link');
+    const desc = document.querySelector('#desc');
+    const thumb = document.querySelector('#thumb');
+    const storage = document.querySelector('#storage');
+    const tags = document.querySelector('#tags');
+    const mature = document.querySelector('#mature');
+    const hidden = document.querySelector('#hidden');
+    const display = document.querySelector('.error');
+    markdownTextbox('#desc');
+
+    (async () => {
+      var tok = await getAuth();
+      if (tok.user?.mature) return;
+      mature.outerHTML = data.mature.toString();
+    })();
+
+    async function uploadThumb() {
+      var url = await getFileUpload(thumb.value);
+      if (!url) return;
+      thumb.src = url;
+      thumb.value = url;
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      display.textContent = '';
+      if (!link.value.match(/^https?:\/\/[^"]+$/))
+        return (display.textContent = "Link is not a vaild URL");
+      if (thumb.value && !thumb.value.match(/^https?:\/\/[^"]+$/) && !thumb.value.match(/^\/api\/media\/[^"]+$/))
+        return display.textContent = 'Thumbnail is not a vaild URL';
+      var taglist = tags.value.toLowerCase().replace(/[^,\w\d_-]/g, "").split(",");
+      if (taglist.length < 3)
+        return display.textContent = 'Choose at least 3 tags';
+      if (taglist.length > 10)
+        return display.textContent = 'You can only choose a maximum of 10 tags';
+      try {
+        const res = await fetch('/api/project/publish', {
+          method: 'POST',
+          body: JSON.stringify({
+            title: name.value,
+            link: link.value,
+            content: desc.value,
+            thumbnail: thumb.value,
+            tags: taglist,
+            mature: mature.checked,
+            hidden: hidden.checked,
+            privateRecipients: [],
+          }),
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (res.status === 400 || res.status === 401) {
+          return display.textContent = data.message + ". " + (data.error ? data.error : '');
         }
-      });
-    </script>
-  </body>
+        const cdoType = link.value.match(/^https:\/\/studio.code.org\/projects\/(applab|gamelab)\/([^\/]+)/);
+        const cdoStorage = storage.value;
+        if (cdoStorage.length > 0 && cdoType !== null) {
+          const cdoId = cdoType[2];
+          switch (cdoType[1]) {
+            case "applab":
+              if (Object.keys(cdoStorage.tables).length > 0) {
+                await fetch(`/datablock_storage/${cdoId}/populate_tables`, {
+                  method: "PUT",
+                  body: {
+                    tables_json: JSON.stringify(cdoStorage.tables)
+                  }
+                })
+              }
+            case "gamelab":
+              if (Object.keys(cdoStorage.keys).length > 0) {
+                await fetch(`/datablock_storage/${cdoId}/populate_key_values`, {
+                  method: "PUT",
+                  body: {
+                    key_values_json: JSON.stringify(cdoStorage.keys)
+                  }
+                })
+              }
+              break;
+            default:
+              throw "Unsupported CDO platform or invalid link project type"
+          }
+        }
+        location.assign('/project/' + data.id);
+      } catch (err) {
+        console.log(err.message);
+        alert(err.message);
+      }
+    });
+  </script>
+</body>
+
 </html>
