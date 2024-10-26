@@ -311,7 +311,7 @@ module.exports = {
         c(a, 'post', 'set_key_value', (db, req) =>
             db.setKeyValue(req.body.key, req.body.value)
         )
-        c(a, 'post', 'populate_key_values', (db, req) =>
+        c(a, 'put', 'populate_key_values', (db, req) =>
             db.populateKeyValues(req.body.key_values_json)
         )
         c(a, 'delete', 'delete_key_value', (db, req) =>
