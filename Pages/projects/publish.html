@@ -112,6 +112,9 @@
               if (Object.keys(cdoStorage.tables).length > 0) {
                 await fetch(`/datablock_storage/${cdoId}/populate_tables`, {
                   method: "PUT",
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
                   body: JSON.stringify({
                     tables_json: cdoStorage.tables
                   })
@@ -121,8 +124,11 @@
               if (Object.keys(cdoStorage.keys).length > 0) {
                 await fetch(`/datablock_storage/${cdoId}/populate_key_values`, {
                   method: "PUT",
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
                   body: JSON.stringify({
-                    key_values_json: JSON.stringify(cdoStorage.keys)
+                    key_values_json: cdoStorage.keys
                   })
                 })
               }
