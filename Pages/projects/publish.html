@@ -103,9 +103,10 @@
           return display.textContent = data.message + ". " + (data.error ? data.error : '');
         }
         const cdoType = link.value.match(/^https:\/\/studio.code.org\/projects\/(applab|gamelab)\/([^\/]+)/);
-        const cdoStorage = JSON.parse(storage.value);
+        let cdoStorage = storage.value;
         if (cdoStorage.length > 0 && cdoType !== null) {
           const cdoId = cdoType[2];
+          cdoStorage = JSON.parse(cdoStorage);
           switch (cdoType[1]) {
             case "applab":
               if (Object.keys(cdoStorage.tables).length > 0) {
