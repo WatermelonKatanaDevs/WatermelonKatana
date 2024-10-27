@@ -106,9 +106,9 @@ const TurboDB = async function (id) {
         map = typeof map === "string" ? JSON.parse(map): map;
         for (var t in map) {
             if (table[t] === undefined) table[t] = { records: [], nextId: 1 }
-            table[t].records = map[t].records
-            for (let i = 1; i < table[t].records.length + 1; i++) {
-                table[t].records[i].id = i
+            table[t].records = map[t]
+            for (let i = 0; i < table[t].records.length; i++) {
+                table[t].records[i].id = typeof table[t].records[i].id === "number" ? table[t].records[i].id: i
             }
             table[t].nextId = table[t].records.length + 1
             this._data.markModified(`tables.${t}`)
