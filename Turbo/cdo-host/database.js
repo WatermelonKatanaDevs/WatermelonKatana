@@ -105,12 +105,18 @@ const TurboDB = async function (id) {
         let table = this._data.tables
         map = typeof map === "string" ? JSON.parse(map): map;
         for (var t in map) {
+            let nextId = 1
             if (table[t] === undefined) table[t] = { records: [], nextId: 1 }
             table[t].records = map[t]
             for (let i = 0; i < table[t].records.length; i++) {
-                table[t].records[i].id = typeof table[t].records[i].id === "number" ? table[t].records[i].id: i
+                let id = table[t].records[i].id
+                if(typeof id === "number") {
+                    nextId = Math.max(nextId, id) + 1
+                } else {
+                    table[t].records[i].id = nextId++
+                }
             }
-            table[t].nextId = table[t].records.length + 1
+            table[t].nextId = nextId
             this._data.markModified(`tables.${t}`)
         }
         return true
