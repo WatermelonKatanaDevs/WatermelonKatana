@@ -1,8 +1,9 @@
 <!doctype html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profile | WatermelonKatana</title>
     <link rel="stylesheet" type="text/css" href="/styles/style.css" />
     <link rel="stylesheet" type="text/css" href="/styles/user.css" />
     <script src="/scripts/HtmlSanitizer.js"></script>
@@ -31,10 +32,8 @@
 
       .close-popup {
         position: absolute;
-        left: 40%;
-        top: 5px;
-        margin-left: 50%;
-        margin-top: 1px;
+        right: 10px;
+        top: 10px;
         cursor: pointer;
       }
 
@@ -61,13 +60,34 @@
       #follower-list li {
         margin: 10px 0;
       }
+
+      .profile-container {
+        margin-bottom: 20px;
+      }
+
+      .profile-settings {
+        margin-top: 20px;
+      }
+
+      .profile-settings a {
+        display: block;
+        margin: 5px 0;
+        color: #007bff;
+        text-decoration: none;
+      }
+
+      .profile-settings a:hover {
+        text-decoration: underline;
+      }
     </style>
-  </head>
-  <body>
+</head>
+<body>
     <script src="/scripts/navbar.js"></script>
+
     <div id="display" class="profile-container">
-      <!--content-->
+      <!-- User profile content will be inserted here -->
     </div>
+
     <div class="projects-container">
       <h2>Published Projects</h2>
       <ul id="list" class="project-list"></ul>
@@ -83,15 +103,6 @@
       </div>
     </div>
 
-    <!--
-      This is where badges will be stored LMFAO
-
-      <div id="badges-container" class="badges-container">
-        <h2>User Badges</h2>
-          (code will go here)
-      </div>
-    -->
-
     <script>
       const list = document.querySelector("#list");
       const favlist = document.querySelector("#favlist");
@@ -99,20 +110,19 @@
       location.path = location.pathname.split("/");
       const name = location.path[2];
 
-      let followerData;
-      let followingData;
-
       (async function () {
         try {
+          const tok = await getAuth();
+          if (!tok.auth) throw Error("Not authenticated");
+
+          const username = tok.user.username;
           const res = await fetch(`/api/auth/userdata?username=${name}`);
           const userData = await res.json();
           if (res.status === 400 || res.status === 401) throw Error(userData);
-          followerData = userData.followers;
-          followingData = userData.following;
 
-          var roleBorderCSS;
-          var nameCSS;
-          var nameCSSClass;
+          let roleBorderCSS;
+          let nameCSS;
+          let nameCSSClass;
 
           switch (userData.role) {
             case "Moderator":
@@ -131,23 +141,29 @@
               break;
           }
 
-          const display = document.querySelector("#display");
-          const tok = await getAuth();
           display.innerHTML = `
-                <div class="profile ${userData.role.toLowerCase()}">
-                  <img class="banner" src="${userData.banner}">
-                  <div class="namecontainer"><img class="avatar" style="${roleBorderCSS}" src="${userData.avatar}">
-                  <p class="${nameCSSClass}" style="${nameCSS}">${userData.username}</p>
-                  </div>
-                  <p class="biography">${convertMarkdown(userData.biography)}</p>
-                  <p class="role">${userData.role}</p>
-                  Joined on ${new Date(userData.joinedAt).toUTCString().replace(/\d\d:[^]+$/, "")} |
-                  <span id="followercount" class="link">${followerData.length}</span> Followers | 
-                  <span id="followingcount" class="link">${followingData.length}</span> Following 
-                  ${tok.user && tok.user.id !== userData.id ? `| <label><input type="checkbox" id="follow-btn" onclick="followbtnclick(this.checked);" ${userData.followers.includes(tok.user.id) ? "checked" : ""}><span class="checkbox"></span></label> Follow` : ""}
-                  | <a href="/uploadedmedia?poster=${userData.username}">Uploaded Media</a>
-                  <br><i class="uidtext" title="Click to Copy">ID: ${userData.id}</i>
-                </div>`;
+          <div class="profile ${userData.role.toLowerCase()}">
+            <img class="banner" src="${userData.banner}">
+            <div class="namecontainer">
+              <img class="avatar" style="${roleBorderCSS}" src="${userData.avatar}">
+              <span class="${nameCSSClass}" style="${nameCSS}; margin-top: 35px; width: 100%">${userData.username}</span>
+              ${username === userData.username ? `
+                <div class="profile-settings">
+                  <a href="/">Home</a>
+                  <a href="/logout">Log Out</a>
+                  <a href="/profile/edit">Edit Profile</a>
+                  <a href="/profile/chpass">Change Password</a>
+                  <a href="/profile/verify">Verify Email</a>
+                </div>` : ''}
+            </div>
+            <p class="biography">${convertMarkdown(userData.biography)}</p>
+            <p class="role">${userData.role}</p>
+            Joined on ${new Date(userData.joinedAt).toUTCString().replace(/\d\d:[^]+$/, "")} |
+            <span id="followercount" class="link">${userData.followers.length}</span> Followers | 
+            <span id="followingcount" class="link">${userData.following.length}</span> Following
+            ${username !== userData.username ? `| <label><input type="checkbox" id="follow-btn" onclick="followbtnclick(this.checked);" ${userData.followers.includes(tok.user.id) ? "checked" : ""}><span class="checkbox"></span></label> Follow` : ""}
+            | <a href="/uploadedmedia?poster=${userData.username}">Uploaded Media</a>
+          </div>`;
 
           await Promise.all(
             userData.favorites.map(async (pid) => {
@@ -157,57 +173,49 @@
             }),
           );
 
-          document
-            .getElementById("followercount")
-            .addEventListener("click", function (event) {
-              event.preventDefault();
+          document.getElementById("followercount").addEventListener("click", function (event) {
+            event.preventDefault();
+            const followerPopup = document.getElementById("follower-popup");
+            const followerList = document.getElementById("follower-list");
 
-              const followerPopup = document.getElementById("follower-popup");
-              const followerList = document.getElementById("follower-list");
+            followerPopup.classList.remove("hidden");
 
-              followerPopup.classList.remove("hidden");
+            if (userData.followers) {
+              followerList.innerHTML = "";
+              userData.followers.forEach(async (followerId) => {
+                const follower = await getUser(followerId);
+                followerList.innerHTML += `
+                <li>
+                  <img src="${follower.avatar}" alt="${follower.username}" class="follower-avatar">
+                  <a href="/user/${follower.username}">${follower.username}</a>
+                </li>`;
+              });
+            }
+          });
 
-              if (followerData) {
-                followerList.innerHTML = "";
-                followerData.forEach(async (followerId) => {
-                  const follower = await getUser(followerId);
-                  followerList.innerHTML += `
-                  <li>
-                    <img src="${follower.avatar}" alt="${follower.username}" class="follower-avatar">
-                    <a href="/user/${follower.username}">${follower.username}</a>
-                  </li>`;
-                });
-              }
-            });
+          document.getElementById("followingcount").addEventListener("click", function (event) {
+            event.preventDefault();
+            const followerPopup = document.getElementById("follower-popup");
+            const followerList = document.getElementById("follower-list");
 
-          document
-            .getElementById("followingcount")
-            .addEventListener("click", function (event) {
-              event.preventDefault();
+            followerPopup.classList.remove("hidden");
 
-              const followerPopup = document.getElementById("follower-popup");
-              const followerList = document.getElementById("follower-list");
+            if (userData.following) {
+              followerList.innerHTML = "";
+              userData.following.forEach(async (followingId) => {
+                const following = await getUser(followingId);
+                followerList.innerHTML += `
+                <li>
+                  <img src="${following.avatar}" alt="${following.username}" class="follower-avatar">
+                  <a href="/user/${following.username}">${following.username}</a>
+                </li>`;
+              });
+            }
+          });
 
-              followerPopup.classList.remove("hidden");
-
-              if (followingData) {
-                followerList.innerHTML = "";
-                followingData.forEach(async (followingId) => {
-                  const following = await getUser(followingId);
-                  followerList.innerHTML += `
-                  <li>
-                    <img src="${following.avatar}" alt="${following.username}" class="follower-avatar">
-                    <a href="/user/${following.username}">${following.username}</a>
-                  </li>`;
-                });
-              }
-            });
-
-          document
-            .querySelector(".close-popup")
-            .addEventListener("click", function () {
-              document.getElementById("follower-popup").classList.add("hidden");
-            });
+          document.querySelector(".close-popup").addEventListener("click", function () {
+            document.getElementById("follower-popup").classList.add("hidden");
+          });
 
           window.addEventListener("click", function (event) {
             const followerPopup = document.getElementById("follower-popup");
@@ -243,5 +251,6 @@
         }
       }
     </script>
-  </body>
+</body>
 </html>
+ 
