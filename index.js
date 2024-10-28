@@ -193,7 +193,6 @@ app.get("/user/:name", async (req, res) => {
 });
 
 // User self profile page, users only
-app.get("/profile", userAuth, (req, res) => res.sendFile(cldir + "/users/profile/profile.html"));
 app.get("/profile/edit", userAuth, (req, res) => res.sendFile(cldir + "/users/profile/edit.html"));
 app.get("/profile/chpass", userAuth, (req, res) => res.sendFile(cldir + "/users/profile/chpass.html"));
 app.get("/profile/verify", (req, res) => res.sendFile(cldir + "/users/profile/verification.html"));
