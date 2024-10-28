@@ -61,9 +61,9 @@
     const cdoPattern = /^https:\/\/studio.code.org\/projects\/(applab|gamelab)\/([^\/]+)/;
 
     link.onchange = (v) => {
-      link.style.display = link.value.match(cdoPattern) !== null ? "": "none";
+      storage.style.display = link.value.match(cdoPattern) !== null ? "": "none";
     }
-    
+
     markdownTextbox('#desc');
 
     (async () => {
