@@ -30,8 +30,10 @@
       Set Thumbnail<br>
       <img id="thumb" style="max-width:100px; max-height:100px;">
     </button><br>
-    <label for="storage"> Project Data </label><br>
-    <textarea id="storage"></textarea><br>
+    <div id="storageContainer" style="display: none;">
+      <label for="storage"> Project Data </label><br>
+      <textarea id="storage"></textarea><br>
+    </div>
     <label for="tags">Tags (separate with comma)</label><br>
     <input type="text" id="tags"><br>
     <label for="mature">Mature
@@ -56,6 +58,12 @@
     const mature = document.querySelector('#mature');
     const hidden = document.querySelector('#hidden');
     const display = document.querySelector('.error');
+    const cdoPattern = /^https:\/\/studio.code.org\/projects\/(applab|gamelab)\/([^\/]+)/;
+
+    link.onchange = (v) => {
+      link.style.display = link.value.match(cdoPattern) !== null ? "": "none";
+    }
+    
     markdownTextbox('#desc');
 
     (async () => {
@@ -102,7 +110,7 @@
         if (res.status === 400 || res.status === 401) {
           return display.textContent = data.message + ". " + (data.error ? data.error : '');
         }
-        const cdoType = link.value.match(/^https:\/\/studio.code.org\/projects\/(applab|gamelab)\/([^\/]+)/);
+        const cdoType = link.value.match(cdoPattern);
         let cdoStorage = storage.value;
         if (cdoStorage.length > 0 && cdoType !== null) {
           const cdoId = cdoType[2];
