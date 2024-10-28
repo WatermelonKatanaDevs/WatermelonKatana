@@ -1,5 +1,10 @@
 # WatermelonKatana
 
+![Website](https://img.shields.io/website?url=https%3A%2F%2Fwatermelonkatana.com)
+![GitHub License](https://img.shields.io/github/license/dragonfiregames/watermelonkatana)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/y/dragonfiregames/watermelonkatana)
+![GitHub language count](https://img.shields.io/github/languages/count/dragonfiregames/watermelonkatana)
+
 ## Empowering Creativity Through Code
 
 WatermelonKatana is a dynamic platform where users can post projects, engage with others, and foster connections. With a rich library of user-generated games and a rapidly expanding community, we invite you to be part of our journey as we continue to grow and innovate.
