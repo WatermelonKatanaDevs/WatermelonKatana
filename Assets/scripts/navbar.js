@@ -357,7 +357,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
         ${notifs.join('')||`<p class="none-dropdown">No Notifications</p>`}
       </div>
     </div>
-    <a class="signedin" href="/profile">
+    <a class="signedin" href="/user/${auth.user.username}">
       <img class="signedin-avatar" src="${auth.user.avatar}">
       <p class="signedin-username">${auth.user.username}</p>
     </a>
