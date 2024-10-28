@@ -1,4 +1,4 @@
-# WatermelonKatana
+# 🍉 WatermelonKatana 🗡️
 
 ![Website](https://img.shields.io/website?url=https%3A%2F%2Fwatermelonkatana.com)
 ![GitHub License](https://img.shields.io/github/license/dragonfiregames/watermelonkatana)
