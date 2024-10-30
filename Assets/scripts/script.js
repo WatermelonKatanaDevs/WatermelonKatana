@@ -206,6 +206,7 @@ async function createActionButton(action, properties, permCheck) {
     return error;
   })
 }
+
 // streamline the delete button in the edit & direct delete registry
 async function createDeleteButton(topic, backpath) {
   return await createActionButton("delete", `id="deletebtn" onclick="(async () => {if(!confirm('Warning, this is permanent! Are you sure you want to continue?')) return;\
@@ -216,6 +217,56 @@ async function createDeleteButton(topic, backpath) {
     });\
     location.assign('/${backpath||topic}');\
   })()"`, "edit")
+}
+
+// checks if link is valid for storage population
+let cdoPattern = /^https:\/\/studio.code.org\/projects\/(applab|gamelab)\/([^\/]+)/;
+function isCDOStorage(url) {
+  return typeof url !== "string" ? false: url.match(cdoPattern) !== null;
+}
+
+// global function allowing /update & /publish pages to run this
+async function populateCDOStorage(url, data) {
+  const cdoType = url.match(cdoPattern);
+  let cdoStorage = data;
+  if (cdoStorage.length > 0 && cdoType !== null) {
+    const cdoId = cdoType[2];
+    cdoStorage = JSON.parse(cdoStorage);
+    switch (cdoType[1]) {
+      case "applab":
+        if (Object.keys(cdoStorage.tables).length > 0) {
+          await fetch(`/datablock_storage/${cdoId}/populate_tables`, {
+            method: "PUT",
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              tables_json: cdoStorage.tables
+            })
+          })
+        }
+      case "gamelab":
+        if (Object.keys(cdoStorage.keys).length > 0) {
+          await fetch(`/datablock_storage/${cdoId}/populate_key_values`, {
+            method: "PUT",
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              key_values_json: cdoStorage.keys
+            })
+          })
+        }
+        break;
+      default:
+        throw "Unsupported CDO platform or invalid link project type"
+    }
+  }
+}
+
+// allow users to modify/update project data instead of having to republish
+async function getCDOStorage(url) {
+
 }
 
 function tagTitle(tags) {
