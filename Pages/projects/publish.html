@@ -58,10 +58,9 @@
     const mature = document.querySelector('#mature');
     const hidden = document.querySelector('#hidden');
     const display = document.querySelector('.error');
-    const cdoPattern = /^https:\/\/studio.code.org\/projects\/(applab|gamelab)\/([^\/]+)/;
 
     link.onchange = () => {
-      document.getElementById("storageContainer").style.display = link.value.match(cdoPattern) !== null ? "": "none";
+      document.getElementById("storageContainer").style.display = isCDOStorage(link.value) !== null ? "": "none";
     }
 
     markdownTextbox('#desc');
@@ -110,41 +109,7 @@
         if (res.status === 400 || res.status === 401) {
           return display.textContent = data.message + ". " + (data.error ? data.error : '');
         }
-        const cdoType = link.value.match(cdoPattern);
-        let cdoStorage = storage.value;
-        if (cdoStorage.length > 0 && cdoType !== null) {
-          const cdoId = cdoType[2];
-          cdoStorage = JSON.parse(cdoStorage);
-          switch (cdoType[1]) {
-            case "applab":
-              if (Object.keys(cdoStorage.tables).length > 0) {
-                await fetch(`/datablock_storage/${cdoId}/populate_tables`, {
-                  method: "PUT",
-                  headers: {
-                    'Content-Type': 'application/json'
-                  },
-                  body: JSON.stringify({
-                    tables_json: cdoStorage.tables
-                  })
-                })
-              }
-            case "gamelab":
-              if (Object.keys(cdoStorage.keys).length > 0) {
-                await fetch(`/datablock_storage/${cdoId}/populate_key_values`, {
-                  method: "PUT",
-                  headers: {
-                    'Content-Type': 'application/json'
-                  },
-                  body: JSON.stringify({
-                    key_values_json: cdoStorage.keys
-                  })
-                })
-              }
-              break;
-            default:
-              throw "Unsupported CDO platform or invalid link project type"
-          }
-        }
+        await populateCDOStorage(link.value, storage.value);
         location.assign('/project/' + data.id);
       } catch (err) {
         console.log(err.message);
