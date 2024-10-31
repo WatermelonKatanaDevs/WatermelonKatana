@@ -266,7 +266,34 @@ async function populateCDOStorage(url, data) {
 
 // allow users to modify/update project data instead of having to republish
 async function getCDOStorage(url) {
-
+  const cdoType = url.match(cdoPattern);
+  let cdoStorage = {};
+  if (cdoType !== null) {
+    const cdoId = cdoType[2];
+    const path = `/datablock_storage/${cdoId}/`
+    switch (cdoType[1]) {
+      case "applab":
+        // TODO: implement applab dumper for site
+        let tableNames = (await (await fetch(path + "get_table_names")).json())
+        for(let name of tableNames) {
+          try {
+            cdoStorage.tables[name] = (await (await fetch(path + "read_records?table_name=" + name)).json())
+          } catch(err) {
+            throw `unable to append table "${name}" with code: ${err}`
+          }
+        }
+      case "gamelab":
+        try {
+          cdoStorage.keys = (await (await fetch(path + "get_key_values")).json())
+        } catch (err) {
+          throw `unable to read data ERROR [${err}]`
+        }
+        break;
+      default:
+        throw "Unsupported CDO platform or invalid link project type"
+    }
+    return JSON.stringify(cdoStorage);
+  }
 }
 
 function tagTitle(tags) {
