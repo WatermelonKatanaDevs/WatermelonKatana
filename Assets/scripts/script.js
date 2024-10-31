@@ -273,7 +273,6 @@ async function getCDOStorage(url) {
     const path = `/datablock_storage/${cdoId}/`
     switch (cdoType[1]) {
       case "applab":
-        // TODO: implement applab dumper for site
         let tableNames = (await (await fetch(path + "get_table_names")).json())
         for(let name of tableNames) {
           try {
