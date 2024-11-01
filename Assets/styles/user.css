@@ -24,6 +24,10 @@ body {
 }
 
 #profile-actions {
+  display: flex;
+  font-weight: bold;
+  flex-wrap: wrap;
+  gap: 15px;
   justify-content: left;
 }
 
