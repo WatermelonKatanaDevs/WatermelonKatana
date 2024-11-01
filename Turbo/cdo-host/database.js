@@ -1,4 +1,5 @@
 const Mongoose = require('mongoose')
+const bodyParser = require('body-parser')
 //const fs = require("fs");
 
 const ProjectDataSchema = new Mongoose.Schema(
@@ -317,6 +318,7 @@ module.exports = {
         c(a, 'post', 'set_key_value', (db, req) =>
             db.setKeyValue(req.body.key, req.body.value)
         )
+        a.use("/datablock_storage/:id/populate_key_values", bodyParser.json({limit: "10mb"}))
         c(a, 'put', 'populate_key_values', (db, req) =>
             db.populateKeyValues(req.body.key_values_json)
         )
@@ -334,6 +336,7 @@ module.exports = {
         )
         //c(a,"post","add_shared_table", (db,req) => db.add_shared_table(req.body.table_name));
         //c(a,"post","import_csv", (db,req) => db.import_csv(req.body.table_name, req.body.table_data_csv));
+        a.use("/datablock_storage/:id/populate_tables", bodyParser.json({limit: "10mb"}))
         c(a, 'put', 'populate_tables', (db, req) =>
             db.populateTables(req.body.tables_json)
         )
