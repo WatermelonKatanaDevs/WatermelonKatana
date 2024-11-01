@@ -148,11 +148,11 @@
               <img class="avatar" style="${roleBorderCSS}" src="${userData.avatar}">
               <span class="${nameCSSClass}" style="${nameCSS}; margin-top: 35px; width: 100%">${userData.username}</span>
               ${username === userData.username ? `
-                <div class="profile-actions">
-                  <a href="/logout">Log Out</a>
-                  <a href="/profile/edit">Edit Profile</a>
-                  <a href="/profile/chpass">Change Password</a>
-                  <a href="/profile/verify">Verify Email</a>
+                <div id="profile-actions" class="main-nav">
+                  <a class="button" href="/logout">Log Out</a>
+                  <a class="button" href="/profile/edit">Edit Profile</a>
+                  <a class="button" href="/profile/chpass">Change Password</a>
+                  <a class="button" href="/profile/verify">Verify Email</a>
                 </div>` : ''}
             </div>
             <p class="biography">${convertMarkdown(userData.biography)}</p>
@@ -252,4 +252,3 @@
     </script>
 </body>
 </html>
- 
