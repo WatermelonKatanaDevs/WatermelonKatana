@@ -313,7 +313,7 @@ function createLink(app, method, name, callback) {
 module.exports = {
     Database: function (a) {
         const c = createLink
-        a.use("/datablock_storage", json({limit: "10mb"}))
+        a.use("/datablock_storage", json({limit: "2mb"}))
         c(a, 'get', 'get_key_value', (db, req) => db.getKeyValue(req.query.key))
         c(a, 'get', 'get_key_values', (db) => db.getAllKeyValues())
         c(a, 'post', 'set_key_value', (db, req) =>
