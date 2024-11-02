@@ -6,9 +6,9 @@ const bigCheck = (req, res, next) => {
     req.setEncoding('utf8');
     req.on('data', chunk => {
       req.rawBody += chunk
-      if (req.rawBody.length > 1e7) { // 10 MB
-        res.status(413).send('Payload too large')
-      }
+    //   if (req.rawBody.length > 1e7) { // 10 MB
+    //     res.status(413).send('Payload too large')
+    //   }
     })
     next()
 }
