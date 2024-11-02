@@ -1,5 +1,5 @@
 const Mongoose = require('mongoose')
-const bodyParser = require('body-parser')
+const { json } = require('express')
 const bigPass = ["populate_key_values", "populate_tables"]
 //const fs = require("fs");
 
@@ -290,7 +290,7 @@ setInterval(() => {
     }
 }, 60 * 1000)
 function createLink(app, method, name, callback) {
-    let parser = name.indexOf(bigPass) ? bodyParser.json({limit: "10mb"}): {}
+    let parser = name.indexOf(bigPass) ? json({limit: "10mb"}): {}
     app[method]('/datablock_storage/:id/' + name, parser, async (req, res) => {
         // console.log(method, name, req.params.id, req.query, req.body)
         try {
