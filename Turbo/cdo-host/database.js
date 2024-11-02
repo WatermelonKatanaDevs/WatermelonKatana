@@ -1,6 +1,17 @@
 const Mongoose = require('mongoose')
 const { json } = require('express')
 const bigPass = ["populate_key_values", "populate_tables"]
+const bigCheck = (req, res, next) => {
+    req.rawBody = '';
+    req.setEncoding('utf8');
+    req.on('data', chunk => {
+      req.rawBody += chunk
+      if (req.rawBody.length > 1e7) { // 10 MB
+        res.status(413).send('Payload too large')
+      }
+    })
+    next()
+}
 //const fs = require("fs");
 
 const ProjectDataSchema = new Mongoose.Schema(
@@ -290,8 +301,8 @@ setInterval(() => {
     }
 }, 60 * 1000)
 function createLink(app, method, name, callback) {
-    let parser = name.indexOf(bigPass) ? json({limit: "10mb"}): {}
-    app[method]('/datablock_storage/:id/' + name, async (req, res) => {
+    // let parser = name.indexOf(bigPass) ? json({limit: "10mb"}): {}
+    app[method]('/datablock_storage/:id/' + name, bigCheck, async (req, res) => {
         // console.log(method, name, req.params.id, req.query, req.body)
         try {
             const id = req.params.id
