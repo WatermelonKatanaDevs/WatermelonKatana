@@ -290,7 +290,7 @@ setInterval(() => {
     }
 }, 60 * 1000)
 function createLink(app, method, name, callback) {
-    let parser = name.indexOf(bigPass) > -1 ? json({limit: "10mb"}): {}
+    let parser = bigPass.indexOf(name) > -1 ? json({limit: "10mb"}): {}
     app[method]('/datablock_storage/:id/' + name, parser, async (req, res) => {
         // console.log(method, name, req.params.id, req.query, req.body)
         try {
