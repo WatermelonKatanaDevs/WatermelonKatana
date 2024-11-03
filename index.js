@@ -34,7 +34,7 @@ app.use((req, res, next) => {
   //   next();
   // })
 }); 
-app.use((req, res, next) => {return express.json({limit: res.locals.maxSize})})// Parse JSON request bodies
+app.use((req, res, next) => { express.json({limit: res.locals.maxSize})(req, res, next)})// Parse JSON request bodies
 app.use(cookieParser()); // Parse cookies attached to the Client request
 
 /**
