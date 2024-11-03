@@ -28,7 +28,9 @@ app.use((req, res, next) => {
           return res.status(413).send('Request body too large');
       }
   })
-  req.on("end", next)
+  req.on("end", () => {
+    next();
+  })
 }); // Parse JSON request bodies
 app.use(cookieParser()); // Parse cookies attached to the Client request
 
