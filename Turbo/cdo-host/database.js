@@ -1,6 +1,4 @@
 const Mongoose = require('mongoose')
-const { json } = require('express')
-const bigPass = ["populate_key_values", "populate_tables"]
 //const fs = require("fs");
 
 const ProjectDataSchema = new Mongoose.Schema(
@@ -290,11 +288,7 @@ setInterval(() => {
     }
 }, 60 * 1000)
 function createLink(app, method, name, callback) {
-    let args = ['/datablock_storage/:id/' + name]
-    if(bigPass.indexOf(name) > -1) {
-        args.push(json({limit: "10mb"}))
-    }
-    app[method](...args, async (req, res) => {
+    app[method]('/datablock_storage/:id/' + name, async (req, res) => {
         // console.log(method, name, req.params.id, req.query, req.body)
         try {
             const id = req.params.id
