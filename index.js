@@ -18,23 +18,11 @@ connectDB();
 /**
  * Middleware setup
  */
+const bigPaths = new RegExp(`${["populate_key_values", "populate_tables"].join("|")}`);
 app.use((req, res, next) => {
-  const bigPaths = new RegExp(`^/datablock_storage/[^/]+/(${["populate_key_values", "populate_tables"].join("|")})`);
-  res.locals.maxSize = req.path.match(bigPaths) !== null ? "10mb": "100kb"
-  next();
-  // const maxSize = req.path.match(bigPaths) !== null ? 10 * 1048576: 100 * 1024; // big 10mb default 100kb
-  // let bodySize = 0;
-  // req.on("data", chunk => {
-  //     bodySize += chunk.length;
-  //     if(bodySize > maxSize) {
-  //         return res.status(413).send('Request body too large');
-  //     }
-  // })
-  // req.on("end", () => {
-  //   next();
-  // })
-}); 
-app.use((req, res, next) => { express.json({limit: res.locals.maxSize})(req, res, next)})// Parse JSON request bodies
+  const maxSize = req.path.endsWith(bigPaths) !== null ? "10mb": "100kb"
+  express.json({limit: maxSize})(req, res, next)
+}); // Parse JSON request bodies
 app.use(cookieParser()); // Parse cookies attached to the Client request
 
 /**
