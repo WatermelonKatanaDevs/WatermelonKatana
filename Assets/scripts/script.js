@@ -267,7 +267,7 @@ async function populateCDOStorage(url, data) {
 // allow users to modify/update project data instead of having to republish
 async function getCDOStorage(url) {
   const cdoType = url.match(cdoPattern);
-  let cdoStorage = {};
+  let cdoStorage = {keys: {}, tables: {}};
   if (cdoType !== null) {
     const cdoId = cdoType[2];
     const path = `/datablock_storage/${cdoId}/`
