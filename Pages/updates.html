@@ -7,33 +7,17 @@
   <link rel="stylesheet" type="text/css" href="/styles/style.css">
   <script src="/scripts/script.js"></script>
 </head>
-
 <body>
   <script src="/scripts/navbar.js"></script>
-  <h1> WatermelonKatana updates </h1>
-  <p>
-    This page will contain all updates for WatermelonKatana, including new features, bug fixes, and other changes.
-    Development news will also be posted here.
-  </p>
-  <div style="text-align: center; max-width: 50%">
-  <h2>State of Development - 09/06/2024</h2>
-  <p>
-    Hi gang, the WatermelonKatana development team has been a tad bit inactive lately, but we're still working on the site. Just slowly but surely.
-    WatermelonKatana is a huge dream of ours, and we're not giving up on it.
 
-    Some of the things we're working hard on right now are:
-    <ul>
-      <li>Updating the sites overall look, with new UI elements</li>
-      <li>Working on getting a gamejam posting system finished.</li>
-      <li>An updated moderation / administration panel (Yes, this means we will be looking for moderators soon!)</li>
-      <li>And a few other things we can't talk about yet.</li>
-    </ul>
-    We apologize for the lack of updates, but we're working hard to make this website the best it can be.
+  <div id="content">Loading...</div>
 
-    Keep on posting your games, and we'll keep on working.
-  </p>
-  <h3>Thanks, <br><strong>- Colack and the WatermelonKatana development team.</strong></h3>
-  </div>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="/scripts/md-render.js"></script>
+  <script>
+    window.onload = function() {
+      fetchMarkdown('LINK GOES HERE');
+    }
+  </script>
 </body>
-
 </html>
