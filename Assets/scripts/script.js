@@ -226,12 +226,13 @@ function isCDOStorage(url) {
 }
 
 // global function allowing /update & /publish pages to run this
-async function populateCDOStorage(url, data) {
+async function populateCDOStorage(url, data, rewrite) {
   const cdoType = url.match(cdoPattern);
   let cdoStorage = data;
   if (cdoStorage.length > 0 && cdoType !== null) {
     const cdoId = cdoType[2];
     cdoStorage = JSON.parse(cdoStorage);
+    if ( rewrite ) { await fetch(`/datablock_storage/${cdoId}/clear_all_data`) }
     switch (cdoType[1]) {
       case "applab":
         if (Object.keys(cdoStorage.tables).length > 0) {
