@@ -144,7 +144,7 @@
             return (display.textContent =
               data.message + ". " + (data.error ? data.error : ""));
           }
-          await populateCDOStorage(link.value, storage.value);
+          await populateCDOStorage(link.value, storage.value, true);
           location.assign("/project/" + data.id);
         } catch (err) {
           console.error(err.message);
