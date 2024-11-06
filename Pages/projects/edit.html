@@ -29,6 +29,10 @@
         Edit Thumbnail<br>
         <img id="thumb" style="max-width:100px; max-height:100px;">
       </button><br>
+      <div id="storageContainer" style="display: none;">
+        <label for="storage"> Project Data </label><br>
+        <textarea id="storage"></textarea><br>
+      </div>
       <label for="tags">Tags</label><br>
       <input type="text" id="tags"><br>
       <label for="mature">Mature
@@ -49,10 +53,20 @@
       const link = document.querySelector("#link");
       const desc = document.querySelector("#desc");
       const thumb = document.querySelector("#thumb");
+      const storage = document.querySelector('#storage');
       const tags = document.querySelector("#tags");
       const mature = document.querySelector('#mature');
       const hidden = document.querySelector('#hidden');
       const display = document.querySelector(".error");
+
+      // data only gets fetched once it will not try to grab other projects data if updated
+      if(isCDOStorage(link.value)) {
+        storage.textContent = "fetching data.... please wait"
+        document.getElementById("storageContainer").style.display = "";
+        getCDOStorage(link.value).then(json => {
+          storage.textContent = json;
+        });
+      }
 
       location.path = location.pathname.split("/");
       const pid = location.path[2];
@@ -130,6 +144,7 @@
             return (display.textContent =
               data.message + ". " + (data.error ? data.error : ""));
           }
+          await populateCDOStorage(link.value, storage.value);
           location.assign("/project/" + data.id);
         } catch (err) {
           console.error(err.message);

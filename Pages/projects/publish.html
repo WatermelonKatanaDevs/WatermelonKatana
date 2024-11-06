@@ -60,7 +60,7 @@
     const display = document.querySelector('.error');
 
     link.onchange = () => {
-      document.getElementById("storageContainer").style.display = isCDOStorage(link.value) !== null ? "": "none";
+      document.getElementById("storageContainer").style.display = isCDOStorage(link.value) ? "": "none";
     }
 
     markdownTextbox('#desc');
