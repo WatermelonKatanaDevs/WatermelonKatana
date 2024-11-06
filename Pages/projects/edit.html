@@ -60,12 +60,15 @@
       const display = document.querySelector(".error");
 
       // data only gets fetched once it will not try to grab other projects data if updated
-      if(isCDOStorage(link.value)) {
-        storage.textContent = "fetching data.... please wait"
-        document.getElementById("storageContainer").style.display = "";
-        getCDOStorage(link.value).then(json => {
-          storage.textContent = json;
-        });
+      link.onchange = () => {
+        if(isCDOStorage(link.value)) {
+          storage.textContent = "fetching data.... please wait"
+          document.getElementById("storageContainer").style.display = "";
+          getCDOStorage(link.value).then(json => {
+            storage.textContent = json;
+          });
+          link.onchange = null;
+        }
       }
 
       location.path = location.pathname.split("/");
