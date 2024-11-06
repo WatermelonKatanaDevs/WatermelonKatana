@@ -232,7 +232,7 @@ async function populateCDOStorage(url, data, rewrite) {
   if (cdoStorage.length > 0 && cdoType !== null) {
     const cdoId = cdoType[2];
     cdoStorage = JSON.parse(cdoStorage);
-    if ( rewrite ) { await fetch(`/datablock_storage/${cdoId}/clear_all_data`) }
+    if ( rewrite ) { await fetch(`/datablock_storage/${cdoId}/clear_all_data`, {method: "DELETE"}) }
     switch (cdoType[1]) {
       case "applab":
         if (Object.keys(cdoStorage.tables).length > 0) {
