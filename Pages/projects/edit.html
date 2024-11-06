@@ -59,18 +59,6 @@
       const hidden = document.querySelector('#hidden');
       const display = document.querySelector(".error");
 
-      // data only gets fetched once it will not try to grab other projects data if updated
-      link.onchange = () => {
-        if(isCDOStorage(link.value)) {
-          storage.textContent = "fetching data.... please wait"
-          document.getElementById("storageContainer").style.display = "";
-          getCDOStorage(link.value).then(json => {
-            storage.textContent = json;
-          });
-          link.onchange = null;
-        }
-      }
-
       location.path = location.pathname.split("/");
       const pid = location.path[2];
 
@@ -99,6 +87,15 @@
         desc.value = data.content;
         thumb.src = data.thumbnail || "";
         thumb.value = data.thumbnail || "";
+        // data only gets fetched once it will not try to grab other projects data if updated
+        if(isCDOStorage(link.value)) {
+          storage.textContent = "fetching data.... please wait"
+          document.getElementById("storageContainer").style.display = "";
+          getCDOStorage(link.value).then(json => {
+            storage.textContent = json;
+          });
+          link.onchange = null;
+        }
         tags.value = data.tags.join(", ");
         mature.checked = data.mature;
         hidden.checked = data.hidden;
