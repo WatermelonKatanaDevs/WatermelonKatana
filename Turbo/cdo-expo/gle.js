@@ -29,6 +29,17 @@ async function getJSON(id) {
 function getCode(json) {
   let animationList = json.animations
   let libraries = ``
+  let registry = json.source.match(/(?<!function()[^}]+)var \b(_fillSet|_doFill|_doStroke|_strokeSet|focused|_targetFrameRate|windowWidth|windowHeight|_curElement|canvas|width|height|_textLeading|_textSize|_textStyle|_textAscent|_textDescent|imageData|pixels|pAccelerationX|pAccelerationY|pAccelerationZ|pRotationX|pRotationY|pRotationZ|rotationX|rotationY|rotationZ|deviceOrientation|turnAxis|isKeyPressed|keyIsPressed|keyCode|key|_lastKeyCodeTyped|mouseX|mouseY|winMouseX|winMouseY|_hasMouseInteracted|pmouseX|pmouseY|pwinMouseX|pwinMouseY|mouseButton|isMousePressed|mouseIsPressed|touches|touchX|touchY|winTouchX|winTouchY|_hasTouchInteracted|ptouchX|ptouchY|pwinTouchX|pwinTouchY|touchIsDown|_textFont|tex|isTexture)\b/g);
+  if (registry !== null) {
+    let registryCache = [];
+    for(let item of registry) {
+      item = item.slice(4);
+      if(registryCache.indexOf(item) < 0) {
+        json.source = `p5Inst["${item}_modify"] = "_EXCEPTION_: _OVERWRITTEN_";\n` + json.source;
+        registryCache.push(item);
+      }
+    }
+  }
   json.libraries = json.libraries || []
   json.libraries.forEach((library) => {
     let lib = library.name
@@ -314,20 +325,7 @@ window.preload = function () {
         let __oldPreload = window.preload;
         let __oldSetup = window.setup;
         let __script = document.createElement("script");
-        __script.text = ${JSON.stringify("p5Inst._startTime = Date.now();\np5Inst.frameCount = 0;\n" + libraries + `(function(){
-          let source = JSON.parse(${JSON.stringify(json.source)});
-          let registry = source.match(/(?<!function()[^}]+)(?<=var\s*)\b(_fillSet|_doFill|_doStroke|_strokeSet|focused|_targetFrameRate|windowWidth|windowHeight|_curElement|canvas|width|height|_textLeading|_textSize|_textStyle|_textAscent|_textDescent|imageData|pixels|pAccelerationX|pAccelerationY|pAccelerationZ|pRotationX|pRotationY|pRotationZ|rotationX|rotationY|rotationZ|deviceOrientation|turnAxis|isKeyPressed|keyIsPressed|keyCode|key|_lastKeyCodeTyped|mouseX|mouseY|winMouseX|winMouseY|_hasMouseInteracted|pmouseX|pmouseY|pwinMouseX|pwinMouseY|mouseButton|isMousePressed|mouseIsPressed|touches|touchX|touchY|winTouchX|winTouchY|_hasTouchInteracted|ptouchX|ptouchY|pwinTouchX|pwinTouchY|touchIsDown|_textFont|tex|isTexture)\b/g);
-          if (registry !== null) {
-            let registryCache = [];
-            for(let item of registry) {
-              if(registryCache.indexOf(item) < 0) {
-                source = "p5Inst[" + item + "_modify] =" + "_EXCEPTION_: _OVERWRITTEN_;\n" + source;
-                registryCache.push(item);
-              }
-            }
-          }
-          return source
-        })()`)};
+        __script.text = ${JSON.stringify("p5Inst._startTime = Date.now();\np5Inst.frameCount = 0;\n" + libraries + json.source)};
         document.body.appendChild(__script);
         try { window.draw = draw; } catch (e) {}
         switch (stage) {
