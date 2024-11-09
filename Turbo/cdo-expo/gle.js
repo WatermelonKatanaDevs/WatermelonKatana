@@ -320,7 +320,7 @@ window.preload = function () {
           let registryCache = [];
           for(let item of registry) {
             if(registryCache.indexOf(item) < 0) {
-              source = "p5Inst['${item}_modify'] = '_EXCEPTION_: _OVERWRITTEN_';\n" + source;
+              source = "p5Inst[" + item + "_modify"] = "_EXCEPTION_: _OVERWRITTEN_;\n" + source;
               registryCache.push(item);
             }
           }
