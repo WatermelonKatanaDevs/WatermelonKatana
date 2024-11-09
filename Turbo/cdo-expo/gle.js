@@ -4,53 +4,62 @@ const startPath = 'https://studio.code.org'
 let animations = `${startPath}/v3/animations/`
 
 async function exportProject(id) {
-    animations = `${startPath}/v3/animations/`
-    assets = `${startPath}/v3/assets/`
-    return new Promise(async (resolve, reject) => {
-        animations += id + '/'
-        let source = await getJSON(id)
-        resolve(await getHTML(id, getCode(source)))
-    })
+  animations = `${startPath}/v3/animations/`
+  assets = `${startPath}/v3/assets/`
+  return new Promise(async (resolve, reject) => {
+    animations += id + '/'
+    let source = await getJSON(id)
+    resolve(await getHTML(id, getCode(source)))
+  })
 }
 
 async function getJSON(id) {
-    return new Promise((resolve, reject) => {
-        request
-            .send(`${startPath}/v3/sources/${id}/main.json`, 'json')
-            .then((data) => {
-                resolve(data)
-            })
-            .catch((err) => {
-                reject(err)
-            })
-    })
+  return new Promise((resolve, reject) => {
+    request
+      .send(`${startPath}/v3/sources/${id}/main.json`, 'json')
+      .then((data) => {
+        resolve(data)
+      })
+      .catch((err) => {
+        reject(err)
+      })
+  })
 }
 
 function getCode(json) {
-    let animationList = json.animations
-    let libraries = ``
-    json.libraries = json.libraries || []
-    json.libraries.forEach((library) => {
-        let lib = library.name
-        let src = library.source
-        let funcs = library.functions.join('|')
-        let pattern = new RegExp(
-            `(?<!\\(\\s*|(?<!\\/\\/.*|\\/\\*[^\\*\\/]*|["'][^'"]*)function\\s+[\\S]+\\s*\\(\\)\\s*{[^}]+)function\\s+(${funcs})\\s*(?=\\()`,
-            'g'
-        )
-        src = src.replace(pattern, `var $1 = this.$1 = function`)
-        libraries += `var ${lib} = window[${JSON.stringify(lib)}] || {};
+  let animationList = json.animations
+  let libraries = ``
+  let registry = json.source.match(/(?<!function()[^}]+)(?<=var\s*)\b(_fillSet|_doFill|_doStroke|_strokeSet|focused|_targetFrameRate|windowWidth|windowHeight|_curElement|canvas|width|height|_textLeading|_textSize|_textStyle|_textAscent|_textDescent|imageData|pixels|pAccelerationX|pAccelerationY|pAccelerationZ|pRotationX|pRotationY|pRotationZ|rotationX|rotationY|rotationZ|deviceOrientation|turnAxis|isKeyPressed|keyIsPressed|keyCode|key|_lastKeyCodeTyped|mouseX|mouseY|winMouseX|winMouseY|_hasMouseInteracted|pmouseX|pmouseY|pwinMouseX|pwinMouseY|mouseButton|isMousePressed|mouseIsPressed|touches|touchX|touchY|winTouchX|winTouchY|_hasTouchInteracted|ptouchX|ptouchY|pwinTouchX|pwinTouchY|touchIsDown|_textFont|tex|isTexture)\b/g)
+  if (registry !== null) {
+    let registryCache = {}
+    registry.filter(item => {
+      if(!registryCache.hasOwnProperty(item)) {
+        json.source = `p5Inst["${item}_modify"] = _EXCEPTION_: _OVERWRITTEN_;\n` + json.source;
+        registryCache[item] = true;
+      }
+    })
+  }
+  json.libraries = json.libraries || []
+  json.libraries.forEach((library) => {
+    let lib = library.name
+    let src = library.source
+    let funcs = library.functions.join('|')
+    let pattern = new RegExp(
+      `(?<!\\(\\s*|(?<!\\/\\/.*|\\/\\*[^\\*\\/]*|["'][^'"]*)function\\s+[\\S]+\\s*\\(\\)\\s*{[^}]+)function\\s+(${funcs})\\s*(?=\\()`,
+      'g'
+    )
+    src = src.replace(pattern, `var $1 = this.$1 = function`)
+    libraries += `var ${lib} = window[${JSON.stringify(lib)}] || {};
 (function ${lib}() {\n${src}\nreturn(this)\n}).bind(${lib})();\n`
-    })
-    animationList.orderedKeys.forEach((key) => {
-        let animation = animationList.propsByKey[key]
-        animation.rootRelativePath = `${
-            animation.sourceUrl
-                ? `/media?u=${startPath}/${animation.sourceUrl}`
-                : `/media?u=${animations + key}.png`
-        }`
-    })
-    return `var p5Inst = new p5(null, 'sketch');
+  })
+  animationList.orderedKeys.forEach((key) => {
+    let animation = animationList.propsByKey[key]
+    animation.rootRelativePath = `${animation.sourceUrl
+        ? `/media?u=${startPath}/${animation.sourceUrl}`
+        : `/media?u=${animations + key}.png`
+      }`
+  })
+  return `var p5Inst = new p5(null, 'sketch');
 
 window.preload = function () {
   initMobileControls(p5Inst);
@@ -348,12 +357,12 @@ window.setup = function () {
 //* Old Code
 
 async function getHTML(id, code) {
-    return Promise.resolve(
-        await request
-            .send(`${startPath}/v3/channels/${id}`, 'json')
-            .then(async (data) => {
-                const dependency = '/turbowarp/gamelab'
-                return `<html>
+  return Promise.resolve(
+    await request
+      .send(`${startPath}/v3/channels/${id}`, 'json')
+      .then(async (data) => {
+        const dependency = '/turbowarp/gamelab'
+        return `<html>
   <head>
     <title> ${data.name} </title>
       <meta charset="utf-8" />
@@ -429,10 +438,10 @@ async function getHTML(id, code) {
   </div>
 </body>
 </html>`
-            })
-    )
+      })
+  )
 }
 
 module.exports = {
-    exportProject,
+  exportProject,
 }
