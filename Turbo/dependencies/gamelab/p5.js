@@ -13567,8 +13567,8 @@
                         }.bind(this)
 
                         this._setProperty = function (prop, value) {
-                            if (this._isGlobal && this[prop] !== "_EXCEPTION_: _OVERWRITTEN_") {
-                                this[prop] = value
+                            this[prop] = value
+                            if (this._isGlobal && this[prop + "_modify"] !== "_EXCEPTION_: _OVERWRITTEN_") {
                                 window[prop] = value
                             }
                         }.bind(this)
