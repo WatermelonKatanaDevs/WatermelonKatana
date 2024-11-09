@@ -31,13 +31,13 @@ function getCode(json) {
   let libraries = ``
   let registry = json.source.match(/(?<!function()[^}]+)(?<=var\s*)\b(_fillSet|_doFill|_doStroke|_strokeSet|focused|_targetFrameRate|windowWidth|windowHeight|_curElement|canvas|width|height|_textLeading|_textSize|_textStyle|_textAscent|_textDescent|imageData|pixels|pAccelerationX|pAccelerationY|pAccelerationZ|pRotationX|pRotationY|pRotationZ|rotationX|rotationY|rotationZ|deviceOrientation|turnAxis|isKeyPressed|keyIsPressed|keyCode|key|_lastKeyCodeTyped|mouseX|mouseY|winMouseX|winMouseY|_hasMouseInteracted|pmouseX|pmouseY|pwinMouseX|pwinMouseY|mouseButton|isMousePressed|mouseIsPressed|touches|touchX|touchY|winTouchX|winTouchY|_hasTouchInteracted|ptouchX|ptouchY|pwinTouchX|pwinTouchY|touchIsDown|_textFont|tex|isTexture)\b/g)
   if (registry !== null) {
-    let registryCache = {}
-    registry.filter(item => {
-      if(!registryCache.hasOwnProperty(item)) {
+    let registryCache = []
+    for(let item of registry) {
+      if(registryCache.indexOf(item) < 0) {
         json.source = `p5Inst["${item}_modify"] = "_EXCEPTION_: _OVERWRITTEN_";\n` + json.source;
-        registryCache[item] = true;
+        registryCache.push(item)
       }
-    })
+    }
   }
   json.libraries = json.libraries || []
   json.libraries.forEach((library) => {
