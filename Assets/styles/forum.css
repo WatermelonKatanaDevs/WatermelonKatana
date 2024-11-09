@@ -14,20 +14,20 @@
 .comment-top a {
   display: inline-flex;
   text-decoration: none;
-  color: #ccc; /* Lighter text for dark mode */
+  color: #ccc;
 }
 
 .comment-content {
-  margin: 0px;
+  margin: 0;
   padding: 5px;
   display: block;
 }
 
 .comment {
-  color: #ccc; /* Lighter text color for readability */
-  background-color: #333; /* Dark background for comments */
+  color: #ccc;
+  background-color: #333;
   display: block;
-  border: 1px solid #444; /* Adjusted border color */
+  border: 1px solid #444;
   border-radius: 10px;
   margin: 0 0 5px 0;
   width: 100%;
@@ -35,39 +35,38 @@
 }
 
 #reply-btn {
-  color: #aaa; /* Lighter grey for visibility */
-  border-color: #666; /* Darker border for consistency */
+  color: #aaa;
+  border-color: #666;
   background-image: none;
 }
 #reply-btn:hover {
-  color: #ccc; /* Light hover effect */
-  border-color: #888; /* Slightly lighter border on hover */
-  background-color: #444; /* Light hover effect */
+  color: #ccc;
+  border-color: #888;
+  background-color: #444;
   cursor: pointer;
 }
 
 #reply {
-  background: #333; /* Dark background for the reply box */
+  background: #333;
   position: fixed;
   z-index: 100;
   display: none;
   bottom: 5px;
-  border: 1px solid #444; /* Dark border for contrast */
+  border: 1px solid #444;
   border-radius: 10px;
 }
 
 #reply-textbox {
-  margin: 0px;
+  margin: 0;
   padding: 5px;
   display: block;
   width: calc(100% - 10px);
   outline: none;
   resize: none;
-  background: #222; /* Even darker background for the text area */
-  color: #ccc; /* Light text color */
+  background: #222;
+  color: #ccc;
 }
 
-/* @colack, i added this but you can put it where you want idrc */
 .comment-data {
   position: relative;
   top: -15px;
@@ -90,31 +89,31 @@
 }
 
 .comment-menu-img:hover {
-  background-color: #444; /* Dark hover effect */
+  background-color: #444;
 }
 
 .comment-menu:hover .comment-menu-img {
-  background-color: #444; /* Consistent hover effect */
+  background-color: #444;
 }
 
 .comment-menu-options {
   position: absolute;
   display: none;
   z-index: 100;
-  background-color: #333; /* Dark background for menu options */
+  background-color: #333;
 }
 
 .comment-menu-options input {
   display: block;
-  color: #ccc; /* Light text color */
+  color: #ccc;
   border-radius: 0;
   width: 100%;
-  background-color: #333; /* Consistent background */
+  background-color: #333;
   background-image: none;
 }
 
 .comment-menu-options input:hover {
-  background-color: #444; /* Consistent background */
+  background-color: #444;
 }
 
 .comment-menu:hover .comment-menu-options {
@@ -136,7 +135,7 @@
 
 .post-name {
   text-align: center;
-  color: #ccc; /* Light color for post names */
+  color: #ccc;
 }
 
 .upvote-container, .report-btn {
@@ -152,13 +151,13 @@
 
 .upvote-icon {
   transform: rotate(-180deg);
-  margin: 0px 0px 0px 3px;
+  margin: 0 0 0 3px;
 }
 
 .report-btn {
   background-image: none;
   background-color: transparent;
-  padding: 0px 5px 0px 5px;
+  padding: 0 5px 0 5px;
 }
 .report-btn:hover {
   background-color: transparent;

@@ -1,7 +1,7 @@
 body {
 	font-family: Tahoma, sans-serif;
-	background-color: #121212; /* Dark background */
-	color: #e0e0e0; /* Light text color for general readability */
+	background-color: #121212;
+	color: #e0e0e0;
 	margin: 0;
 	padding: 0;
 	display: flex;
@@ -11,13 +11,12 @@ body {
 
 .container {
 	width: 90%;
-	margin: auto;
-	overflow: hidden;
+  overflow: hidden;
 	padding: 20px;
-	margin-top: 2.5em;
-	background: #202020; /* Darker panel background */
+  margin: 2.5em auto auto;
+  background: #202020;
 	border-radius: 10px;
-	box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* Enhanced shadow */
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
 .main-header {
@@ -27,7 +26,7 @@ body {
 
 .main-header h1 {
 	font-size: 36px;
-	color: #e0e0e0; /* Adjusted text color */
+	color: #e0e0e0;
 }
 
 .main-nav {
@@ -39,9 +38,7 @@ body {
 }
 
 .main-nav a {
-	color: #e0e0e0; /* Light text color for readability */
-	/*
-	background-color: #444; /* Dark background for links */
+	color: #e0e0e0;
 	background-color: rgba(0, 0, 0, 0.5);
 	background-image: url("/images/button.png");
 	background-blend-mode: darken;
@@ -51,8 +48,6 @@ body {
 }
 
 .main-nav a:hover {
-	/*
-	background-color: #555; /* Slightly lighter hover effect */
 	background-color: rgba(0, 0, 0, 0.3)
 }
 
@@ -63,7 +58,7 @@ body {
 
 .intro p {
 	font-size: 18px;
-	color: #e0e0e0; /* Adjusted text color */
+	color: #e0e0e0;
 }
 
 .discord-link {
@@ -88,7 +83,7 @@ body {
 
 .featured-projects h2 {
 	font-size: 24px;
-	color: #e0e0e0; /* Adjusted text color */
+	color: #e0e0e0;
 	text-align: center;
 	margin-bottom: 20px;
 }
@@ -97,7 +92,7 @@ body {
 	text-align: center;
 	margin-top: 20px;
 	padding: 10px 0;
-	background-color: #444; /* Dark background for footer */
-	color: #fff; /* Text color */
+	background-color: #444;
+	color: #fff;
 	border-radius: 0 0 10px 10px;
 }
