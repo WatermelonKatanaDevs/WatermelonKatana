@@ -325,7 +325,7 @@ window.preload = function () {
             }
           }
         }
-        __script.text = ${JSON.stringify("p5Inst._startTime = Date.now();\np5Inst.frameCount = 0;\n" + libraries)} + source;
+        __script.text = ${JSON.stringify("p5Inst._startTime = Date.now();\np5Inst.frameCount = 0;\n" + libraries)} + JSON.stringify(source);
         document.body.appendChild(__script);
         try { window.draw = draw; } catch (e) {}
         switch (stage) {
