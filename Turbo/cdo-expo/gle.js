@@ -314,7 +314,7 @@ window.preload = function () {
         let __oldPreload = window.preload;
         let __oldSetup = window.setup;
         let __script = document.createElement("script");
-        let source = ${String(json.source)};
+        let source = JSON.parse(${JSON.stringify(json.source)});
         let registry = source.match(/(?<!function()[^}]+)(?<=var\s*)\b(_fillSet|_doFill|_doStroke|_strokeSet|focused|_targetFrameRate|windowWidth|windowHeight|_curElement|canvas|width|height|_textLeading|_textSize|_textStyle|_textAscent|_textDescent|imageData|pixels|pAccelerationX|pAccelerationY|pAccelerationZ|pRotationX|pRotationY|pRotationZ|rotationX|rotationY|rotationZ|deviceOrientation|turnAxis|isKeyPressed|keyIsPressed|keyCode|key|_lastKeyCodeTyped|mouseX|mouseY|winMouseX|winMouseY|_hasMouseInteracted|pmouseX|pmouseY|pwinMouseX|pwinMouseY|mouseButton|isMousePressed|mouseIsPressed|touches|touchX|touchY|winTouchX|winTouchY|_hasTouchInteracted|ptouchX|ptouchY|pwinTouchX|pwinTouchY|touchIsDown|_textFont|tex|isTexture)\b/g);
         if (registry !== null) {
           let registryCache = [];
