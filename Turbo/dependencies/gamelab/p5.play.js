@@ -300,7 +300,7 @@ http://molleindustria.org/
         }
         var context = this._isGlobal ? window : this
         var executeDefault
-        this._setProperty('isMousePressed', true, false)
+        this._setProperty('isMousePressed', true)
         this._setProperty('mouseIsPressed', true)
         this._setMouseButton(e)
         this._updateNextMouseCoords(e)

@@ -13566,11 +13566,11 @@
                             }
                         }.bind(this)
 
-                        this._setProperty = function (prop, value, override=true) {
-                            if (this._isGlobal && (this[prop] === window[prop] || override)) {
+                        this._setProperty = function (prop, value) {
+                            if (this._isGlobal && this[prop] !== "_EXCEPTION_: _OVERWRITTEN_") {
+                                this[prop] = value
                                 window[prop] = value
                             }
-                            this[prop] = value
                         }.bind(this)
 
                         /**
@@ -21440,7 +21440,7 @@
                         if (!key) {
                             key = e.which
                         }
-                        this._setProperty('key', key, false)
+                        this._setProperty('key', key)
                         var keyPressed = this.keyPressed || window.keyPressed
                         if (typeof keyPressed === 'function' && !e.charCode) {
                             var executeDefault = keyPressed(e)
@@ -21484,14 +21484,14 @@
                         var keyReleased = this.keyReleased || window.keyReleased
                         this._setProperty('isKeyPressed', false)
                         this._setProperty('keyIsPressed', false)
-                        this._setProperty('_lastKeyCodeTyped', null, false);
+                        this._setProperty('_lastKeyCodeTyped', null);
                         downKeys[e.which] = false
                         //delete this._downKeys[e.which];
                         var key = String.fromCharCode(e.which)
                         if (!key) {
                             key = e.which
                         }
-                        this._setProperty('key', key, false)
+                        this._setProperty('key', key)
                         this._setProperty('keyCode', e.which)
                         if (typeof keyReleased === 'function') {
                             var executeDefault = keyReleased(e)
@@ -21545,8 +21545,8 @@
                             return
                         }
                         this._setProperty('keyCode', e.which)
-                        this._setProperty('_lastKeyCodeTyped', null, false); // track last keyCode
-                        this._setProperty('key', String.fromCharCode(e.which), false)
+                        this._setProperty('_lastKeyCodeTyped', null); // track last keyCode
+                        this._setProperty('key', String.fromCharCode(e.which))
                         var keyTyped = this.keyTyped || window.keyTyped
                         if (typeof keyTyped === 'function') {
                             var executeDefault = keyTyped(e)
@@ -22194,7 +22194,7 @@
                     p5.prototype._onmousedown = function (e) {
                         var context = this._isGlobal ? window : this
                         var executeDefault
-                        this._setProperty('isMousePressed', true, false)
+                        this._setProperty('isMousePressed', true)
                         this._setProperty('mouseIsPressed', true)
                         this._setMouseButton(e)
                         this._updateNextMouseCoords(e)
@@ -22262,7 +22262,7 @@
                     p5.prototype._onmouseup = function (e) {
                         var context = this._isGlobal ? window : this
                         var executeDefault
-                        this._setProperty('isMousePressed', false, false)
+                        this._setProperty('isMousePressed', false)
                         this._setProperty('mouseIsPressed', false)
                         if (typeof context.mouseReleased === 'function') {
                             executeDefault = context.mouseReleased(e)
