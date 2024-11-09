@@ -34,7 +34,7 @@ function getCode(json) {
     let registryCache = {}
     registry.filter(item => {
       if(!registryCache.hasOwnProperty(item)) {
-        json.source = `p5Inst["${item}_modify"] = _EXCEPTION_: _OVERWRITTEN_;\n` + json.source;
+        json.source = `p5Inst["${item}_modify"] = "_EXCEPTION_: _OVERWRITTEN_";\n` + json.source;
         registryCache[item] = true;
       }
     })
