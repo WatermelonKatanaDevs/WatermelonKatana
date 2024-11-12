@@ -110,61 +110,71 @@
       location.path = location.pathname.split("/");
       const name = location.path[2];
 
+      async function renderProfile(userData, isAuthenticated, isOwnProfile) {
+        let roleBorderCSS;
+        let nameCSS;
+        let nameCSSClass;
+
+        switch (userData.role) {
+          case "Moderator":
+            roleBorderCSS = "border-color: #55ff55;";
+            nameCSSClass = "username";
+            nameCSS = "color: #55ff55;";
+            break;
+          case "Admin":
+            roleBorderCSS = "border-color: #ff5555;";
+            nameCSSClass = "logo-text";
+            nameCSS = "font-size: 24px; font-weight: bold;";
+            break;
+          default:
+            roleBorderCSS = "border-color: grey;";
+            nameCSSClass = "username";
+            break;
+        }
+
+        display.innerHTML = `
+    <div class="profile ${userData.role.toLowerCase()}">
+      <img class="banner" src="${userData.banner}">
+      <div class="namecontainer">
+        <img class="avatar" style="${roleBorderCSS}" src="${userData.avatar}">
+        <span class="${nameCSSClass}" style="${nameCSS}; margin-top: 35px; width: 100%">${userData.username}</span>
+        ${isAuthenticated && isOwnProfile ? `
+          <div id="profile-actions">
+            <a class="button" href="/logout">Log Out</a>
+            <a class="button" href="/profile/edit">Edit Profile</a>
+            <a class="button" href="/profile/chpass">Change Password</a>
+            <a class="button" href="/profile/verify">Verify Email</a>
+          </div>` : ''
+        }
+      </div>
+      <p class="biography">${convertMarkdown(userData.biography)}</p>
+      <p class="role">${userData.role}</p>
+      Joined on ${new Date(userData.joinedAt).toUTCString().replace(/\d\d:[^]+$/, "")} |
+      <span id="followercount" class="link">${userData.followers.length}</span> Followers |
+      <span id="followingcount" class="link">${userData.following.length}</span>
+      ${isAuthenticated && !isOwnProfile ? `| <label><input type="checkbox" id="follow-btn" onclick="followbtnclick(this.checked);" ${userData.followers.includes(name) ? "checked" : ""}><span class="checkbox"></span></label> Follow` : ""}
+      | <a href="/uploadedmedia?poster=${userData.username}">Uploaded Media</a>
+    </div>`;
+      }
+
       (async function () {
         try {
-          const tok = await getAuth();
-          if (!tok.auth) throw Error("Not authenticated");
+          let isAuthenticated = false;
+          let username = null;
 
-          const username = tok.user.username;
-          const res = await fetch(`/api/auth/userdata?username=${name}`);
-          const userData = await res.json();
-          if (res.status === 400 || res.status === 401) throw Error(userData);
-
-          let roleBorderCSS;
-          let nameCSS;
-          let nameCSSClass;
-
-          switch (userData.role) {
-            case "Moderator":
-              roleBorderCSS = "border-color: #55ff55;";
-              nameCSSClass = "username";
-              nameCSS = "color: #55ff55;";
-              break;
-            case "Admin":
-              roleBorderCSS = "border-color: #ff5555;";
-              nameCSSClass = "logo-text";
-              nameCSS = "font-size: 24px; font-weight: bold;";
-              break;
-            default:
-              roleBorderCSS = "border-color: grey;";
-              nameCSSClass = "username";
-              break;
+          try {
+            const tok = await getAuth();
+            isAuthenticated = tok.auth;
+            username = tok.user.username;
+          } catch (e) {
+            console.warn("User not authenticated");
           }
 
-          display.innerHTML = `
-          <div class="profile ${userData.role.toLowerCase()}">
-            <img class="banner" src="${userData.banner}">
-            <div class="namecontainer">
-              <img class="avatar" style="${roleBorderCSS}" src="${userData.avatar}">
-              ${username === userData.username ? `
-                <div id="profile-actions">
-                  <span class="${nameCSSClass}" style="${nameCSS}; margin-top: 35px; width: 100%">${userData.username}</span>
-                  <a class="button" href="/logout">Log Out</a>
-                  <a class="button" href="/profile/edit">Edit Profile</a>
-                  <a class="button" href="/profile/chpass">Change Password</a>
-                  <a class="button" href="/profile/verify">Verify Email</a>
-                </div>` : 
-                `<span class="${nameCSSClass}" style="${nameCSS}; margin-top: 35px; width: 100%">${userData.username}</span>`
-              }
-            </div>
-            <p class="biography">${convertMarkdown(userData.biography)}</p>
-            <p class="role">${userData.role}</p>
-            Joined on ${new Date(userData.joinedAt).toUTCString().replace(/\d\d:[^]+$/, "")} |
-            <span id="followercount" class="link">${userData.followers.length}</span> Followers | 
-            <span id="followingcount" class="link">${userData.following.length}</span> Following
-            ${username !== userData.username ? `| <label><input type="checkbox" id="follow-btn" onclick="followbtnclick(this.checked);" ${userData.followers.includes(tok.user.id) ? "checked" : ""}><span class="checkbox"></span></label> Follow` : ""}
-            | <a href="/uploadedmedia?poster=${userData.username}">Uploaded Media</a>
-          </div>`;
+          const res = await fetch(`/api/auth/userdata?username=${name}`);
+          const userData = await res.json();
+
+          const isOwnProfile = isAuthenticated && username === userData.username;
+          await renderProfile(userData, isAuthenticated, isOwnProfile);
 
           await Promise.all(
             userData.favorites.map(async (pid) => {
@@ -178,79 +188,34 @@
             event.preventDefault();
             const followerPopup = document.getElementById("follower-popup");
             const followerList = document.getElementById("follower-list");
-
             followerPopup.classList.remove("hidden");
-
             if (userData.followers) {
               followerList.innerHTML = "";
               userData.followers.forEach(async (followerId) => {
                 const follower = await getUser(followerId);
-                followerList.innerHTML += `
-                <li>
-                  <img src="${follower.avatar}" alt="${follower.username}" class="follower-avatar">
-                  <a href="/user/${follower.username}">${follower.username}</a>
-                </li>`;
+                followerList.innerHTML += `<li>
+              <img src="${follower.avatar}" alt="${follower.username}" class="follower-avatar">
+              <a href="/user/${follower.username}">${follower.username}</a>
+            </li>`;
               });
             }
           });
 
-          document.getElementById("followingcount").addEventListener("click", function (event) {
-            event.preventDefault();
-            const followerPopup = document.getElementById("follower-popup");
-            const followerList = document.getElementById("follower-list");
-
-            followerPopup.classList.remove("hidden");
-
-            if (userData.following) {
-              followerList.innerHTML = "";
-              userData.following.forEach(async (followingId) => {
-                const following = await getUser(followingId);
-                followerList.innerHTML += `
-                <li>
-                  <img src="${following.avatar}" alt="${following.username}" class="follower-avatar">
-                  <a href="/user/${following.username}">${following.username}</a>
-                </li>`;
-              });
-            }
-          });
-
-          document.querySelector(".close-popup").addEventListener("click", function () {
+          document.querySelector(".close-popup").addEventListener("click", () => {
             document.getElementById("follower-popup").classList.add("hidden");
           });
 
-          window.addEventListener("click", function (event) {
+          window.addEventListener("click", (event) => {
             const followerPopup = document.getElementById("follower-popup");
             if (event.target === followerPopup) {
               followerPopup.classList.add("hidden");
             }
           });
         } catch (e) {
-          alert(e);
+          alert("Error loading profile");
           console.error(e);
         }
       })();
-
-      (async () => {
-        try {
-          const res = await fetch("/api/project/list?poster=" + name);
-          const data = await res.json();
-          data.projects.map(projHTML(list));
-        } catch (e) {
-          alert(e);
-          console.error(e);
-        }
-      })();
-
-      async function followbtnclick(feature) {
-        var count = document.querySelector("#followercount");
-        if (feature) {
-          count.innerHTML = Number(count.innerHTML) + 1;
-          await fetch("/api/auth/follow?username=" + name);
-        } else {
-          count.innerHTML = Number(count.innerHTML) - 1;
-          await fetch("/api/auth/unfollow?username=" + name);
-        }
-      }
     </script>
 </body>
 </html>

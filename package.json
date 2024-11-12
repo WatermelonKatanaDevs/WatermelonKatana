@@ -8,8 +8,8 @@
         "dev": "nodemon index.js",
         "cleanup": "npx prettier . --write"
     },
-    "author": "",
-    "license": "ISC",
+    "author": "The WatermelonKatana Developers",
+    "license": "MIT",
     "dependencies": {
         "bcryptjs": "^2.4.3",
         "canvas": "^2.11.2",
