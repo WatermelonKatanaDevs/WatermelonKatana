@@ -216,6 +216,18 @@
           console.error(e);
         }
       })();
+      // why the hell isn't this within the userData? published: {} or something of the like should be implemented for "/api/auth/userdata?username=:name"
+      // so i'm not stuck using this bullshit, probably why colack disregaurded it as unimportant when fixing stupid! stupid! stupid!
+      (async () => {
+        try {
+          const res = await fetch("/api/project/list?poster=" + name);
+          const data = await res.json();
+          data.projects.map(projHTML(list));
+        } catch (e) {
+          alert(e);
+          console.error(e);
+        }
+      })();
     </script>
 </body>
 </html>
