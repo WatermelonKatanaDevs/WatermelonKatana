@@ -1,46 +1,34 @@
-const fs = require("fs");
-const request = require('./requests');
-const startPath = "https://studio.code.org";
-let projectPath = "./";
+// const fs = require("fs");
+const request = require('./requests')
+const startPath = 'https://studio.code.org'
+let animations = `${startPath}/v3/animations/`
 
-async function exportProject(dirname, id) {
+async function exportProject(id) {
+  animations = `${startPath}/v3/animations/`
+  assets = `${startPath}/v3/assets/`
   return new Promise(async (resolve, reject) => {
-    projectPath = dirname || projectPath;
-    fs.cpSync(`./gamelab`, projectPath, {recursive: true})
-    let source = await getJSON(id);
-    await getHTML(id);
-    await getCode(source);
-    resolve(true);
+    animations += id + '/'
+    let source = await getJSON(id)
+    resolve(await getHTML(id, getCode(source)))
   })
 }
 
 async function getJSON(id) {
   return new Promise((resolve, reject) => {
-    request.send(`${startPath}/v3/sources/${id}/main.json`, "json")
-      .then(data => {
-        resolve(data);
+    request
+      .send(`${startPath}/v3/sources/${id}/main.json`, 'json')
+      .then((data) => {
+        resolve(data)
       })
-      .catch(err => {
-        reject(err);
+      .catch((err) => {
+        reject(err)
       })
   })
 }
 
-async function getCode(json) {
-  let source = fs.readFileSync(`${projectPath}/code.js`, "utf-8");
-  let animationList = JSON.parse(source.match(/(?<=var animationListJSON =\s+).+(?=;)/)[0]);
-  let libraries = ``;
-  json.libraries = json.libraries || [];
-  json.libraries.forEach((library) => {
-    let lib = library.name;
-    let src = library.source;
-    let funcs = library.functions.join("|");
-    let pattern = new RegExp(`(?<!\\(\\s*|(?<!\\/\\/.*|\\/\\*[^\\*\\/]*|["'][^'"]*)function\\s+[\\S]+\\s*\\(\\)\\s*{[^}]+)function\\s+(${funcs})\\s*(?=\\()`, "g");
-    src = src.replace(pattern, `var $1 = this.$1 = function`);
-    libraries += `var ${lib} = window[${JSON.stringify(lib)}] || {};
-    (function ${lib}() {\n${src}\nreturn(this)\n}).bind(${lib})();\n`;
-  });
-  json.source = source.match(/(?<=\/\/ -----\s\s).+(?=\s+\/\/ -----)/s)[0];
+function getCode(json) {
+  let animationList = json.animations
+  let libraries = ``
   let registry = json.source.match(/(?<!function\s*\S*\s*\(.*\)\s*{[^}]*)^var \b(_fillSet|_doFill|_doStroke|_strokeSet|focused|_targetFrameRate|windowWidth|windowHeight|_curElement|canvas|width|height|_textLeading|_textSize|_textStyle|_textAscent|_textDescent|imageData|pixels|pAccelerationX|pAccelerationY|pAccelerationZ|pRotationX|pRotationY|pRotationZ|rotationX|rotationY|rotationZ|deviceOrientation|turnAxis|isKeyPressed|keyIsPressed|keyCode|key|_lastKeyCodeTyped|mouseX|mouseY|winMouseX|winMouseY|_hasMouseInteracted|pmouseX|pmouseY|pwinMouseX|pwinMouseY|mouseButton|isMousePressed|mouseIsPressed|touches|touchX|touchY|winTouchX|winTouchY|_hasTouchInteracted|ptouchX|ptouchY|pwinTouchX|pwinTouchY|touchIsDown|_textFont|tex|isTexture)\b/gm);
   if (registry !== null) {
     let registryCache = [];
@@ -52,8 +40,27 @@ async function getCode(json) {
       }
     }
   }
-  // .replace(/(?<=['"])(https:\/\/.+)(?=['"])/g, "/xhr?u=$1");
-  await addFile("/code.js", Buffer.from(`var p5Inst = new p5(null, 'sketch');
+  json.libraries = json.libraries || []
+  json.libraries.forEach((library) => {
+    let lib = library.name
+    let src = library.source
+    let funcs = library.functions.join('|')
+    let pattern = new RegExp(
+      `(?<!\\(\\s*|(?<!\\/\\/.*|\\/\\*[^\\*\\/]*|["'][^'"]*)function\\s+[\\S]+\\s*\\(\\)\\s*{[^}]+)function\\s+(${funcs})\\s*(?=\\()`,
+      'g'
+    )
+    src = src.replace(pattern, `var $1 = this.$1 = function`)
+    libraries += `var ${lib} = window[${JSON.stringify(lib)}] || {};
+(function ${lib}() {\n${src}\nreturn(this)\n}).bind(${lib})();\n`
+  })
+  animationList.orderedKeys.forEach((key) => {
+    let animation = animationList.propsByKey[key]
+    animation.rootRelativePath = `${animation.sourceUrl
+        ? `/media?u=${startPath}/${animation.sourceUrl}`
+        : `/media?u=${animations + key}.png`
+      }`
+  })
+  return `var p5Inst = new p5(null, 'sketch');
 
 window.preload = function () {
   initMobileControls(p5Inst);
@@ -86,7 +93,7 @@ window.preload = function () {
         return;
       }
     }
-  Object.defineProperties(Object.prototype, {
+    Object.defineProperties(Object.prototype, {
   apply: {
     value: function (fn, args) {
       if (typeof this === "object" && "length" in this) {
@@ -328,15 +335,16 @@ window.preload = function () {
           case 'setup':
             if (__oldSetup !== window.setup) { 
               if(__oldPreload !== window.prelaod) { preload(); }
-              setup(); 
+              setup();
             }
             break;
-        }
+          }
     })
     .catch(err => {
         throw new Error(err);
     })
 })();
+  }
   window.wrappedExportedCode = wrappedExportedCode;
   wrappedExportedCode('preload');
 };
@@ -344,54 +352,59 @@ window.preload = function () {
 window.setup = function () {
   window.wrappedExportedCode('setup');
 };
-  `))
+  `
 }
 
-async function getHTML(id) {
-  await request.send(`${startPath}/v3/channels/${id}`, "json")
-    .then(async data => {
-      await addFile("/index.html", Buffer.from(`<html>
+//* Old Code
+
+async function getHTML(id, code) {
+  return Promise.resolve(
+    await request
+      .send(`${startPath}/v3/channels/${id}`, 'json')
+      .then(async (data) => {
+        const dependency = '/turbowarp/gamelab'
+        return `<html>
   <head>
     <title> ${data.name} </title>
       <meta charset="utf-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1">
-      <link href="gamelab.css" rel="stylesheet" type="text/css">
-      <script src="p5.js"></script>
-      <script src="p5.play.js"></script>
+      <link href="${dependency}/gamelab.css" rel="stylesheet" type="text/css">
+      <script src="${dependency}/p5.js"></script>
+      <script src="${dependency}/p5.play.js"></script>
       <script>
-        let __IFRAME__ = document.createElement("iframe");
-        __IFRAME__.srcdoc = \`<script> window._FCONFIG_ = { channel: "${id}", useDatablockStorage: true };
+        let __IFRRAME__ = document.createElement("iframe");
+        __IFRRAME__.srcdoc = \`<script> window._FCONFIG_ = { channel: "${id}", useDatablockStorage: true };
         function setExportConfig(config) { _FCONFIG_ = Object.assign(_FCONFIG_, config) }
       <\\/script>
       <script src="https://studio.code.org/projects/gamelab/${id}/export_config?script_call=setExportConfig"><\\/script>
       <script src="https://code.jquery.com/jquery-1.12.1.min.js"><\\/script>
-      <script src="gamelab-api.js"><\\/script>\`;
-        document.head.appendChild(__IFRAME__);
-        __IFRAME__.contentWindow.p5 = window.p5;
-        __IFRAME__.addEventListener("load", () => {
+      <script src="${dependency}/gamelab-api.js"><\\/script>\`;
+        document.head.appendChild(__IFRRAME__);
+        __IFRRAME__.contentWindow.p5 = window.p5;
+        __IFRRAME__.addEventListener("load", () => {
         const globalExports = ["_FCONFIG_", "getUserId", "setKeyValue", "getKeyValue", "getTime", "promptNum", "playSound", "playSpeech", "randomNumber", "stopSound", "initMobileControls", "showMobileControls", "timedLoop", "stopTimedLoop", "appendItem", "insertItem", "removeItem"];
         for (let global of globalExports) {
-          window[global] = __IFRAME__.contentWindow[global];
-        }
-        _FCONFIG_.url = (function(){var url="https://studio.code.org/projects/gamelab/${id}";var params=location.search;var re=/[?&]([^&=]+)(?:[&=])([^&=]+)/gim;var m;while((m=re.exec(params))!=null){if(m.index===re.lastIndex){re.lastIndex+=1}url+=m[0]}return url})();
+          window[global] = __IFRRAME__.contentWindow[global];
+        };
+        _FCONFIG_.url = (function(){var url="https://studio.code.org/projects/gamelab/${id}";var params=location.search;if(params.startsWith("?u=")){params=params.slice(3)}var re=/[?&]([^&=]+)(?:[&=])([^&=]+)/gim;var m;while((m=re.exec(params))!=null){if(m.index===re.lastIndex){re.lastIndex+=1}url+=m[0]}return url})();
         _FCONFIG_.pathname = "projects/gamelab/${id}";
-        __IFRAME__.contentDocument.getElementById = function (id) {
+        __IFRRAME__.contentDocument.getElementById = function (id) {
           return document.getElementById(id);
         }
-        __IFRAME__.contentDocument.addEventListener = function (element, event, callback) {
+        __IFRRAME__.contentDocument.addEventListener = function (element, event, callback) {
           return document.addEventListener(element, event, callback);
         }
-        __IFRAME__.contentDocument.body.addEventListener = function (element, event, callback) {
+        __IFRRAME__.contentDocument.body.addEventListener = function (element, event, callback) {
           return document.body.addEventListener(element, event, callback);
         }
-        __IFRAME__.contentDocument.removeEventListener = function (element, event) {
+        __IFRRAME__.contentDocument.removeEventListener = function (element, event) {
           return document.removeEventListener(element, event);
         }
-        __IFRAME__.contentDocument.body.removeEventListener = function (element, event) {
+        __IFRRAME__.contentDocument.body.removeEventListener = function (element, event) {
           return document.body.removeEventListener(element, event);
         }
         let script = document.createElement("script");
-        script.src = "code.js";
+        script.text = ${JSON.stringify(code)};
         document.head.appendChild(script);
         // scaler
         const element = document.getElementById("sketch")
@@ -425,24 +438,11 @@ async function getHTML(id) {
   <div id="studio-dpad-container" style="position:absolute; width:400px; bottom:5px; height:157px; overflow-y:hidden;z-index: -1;">
   </div>
 </body>
-</html>`))
-    })
-}
-
-async function addFile(name, data) {
-  return new Promise((resolve, reject) => {
-    let file = fs.createWriteStream(projectPath + name);
-    file.write(data);
-    file.on("finish", () => {
-      resolve(true)
-    })
-    file.on("error", () => {
-      reject("file could not be completed")
-    })
-    file.end();
-  })
+</html>`
+      })
+  )
 }
 
 module.exports = {
-  exportProject
+  exportProject,
 }
