@@ -360,8 +360,8 @@ async function getHTML(id) {
       <script src="p5.play.js"></script>
       <script>
         let __IFRAME__ = document.createElement("iframe");
-        __IFRAME__.srcdoc = \`<script> window.fconfig = { channel: "${id}", useDatablockStorage: true };
-        function setExportConfig(config) { fconfig = Object.assign(fconfig, config) }
+        __IFRAME__.srcdoc = \`<script> window._FCONFIG_ = { channel: "${id}", useDatablockStorage: true };
+        function setExportConfig(config) { _FCONFIG_ = Object.assign(_FCONFIG_, config) }
       <\\/script>
       <script src="https://studio.code.org/projects/gamelab/${id}/export_config?script_call=setExportConfig"><\\/script>
       <script src="https://code.jquery.com/jquery-1.12.1.min.js"><\\/script>
@@ -369,12 +369,12 @@ async function getHTML(id) {
         document.head.appendChild(__IFRAME__);
         __IFRAME__.contentWindow.p5 = window.p5;
         __IFRAME__.addEventListener("load", () => {
-        const globalExports = ["fconfig", "getUserId", "setKeyValue", "getKeyValue", "getTime", "promptNum", "playSound", "playSpeech", "randomNumber", "stopSound", "initMobileControls", "showMobileControls", "timedLoop", "stopTimedLoop", "appendItem", "insertItem", "removeItem"];
+        const globalExports = ["_FCONFIG_", "getUserId", "setKeyValue", "getKeyValue", "getTime", "promptNum", "playSound", "playSpeech", "randomNumber", "stopSound", "initMobileControls", "showMobileControls", "timedLoop", "stopTimedLoop", "appendItem", "insertItem", "removeItem"];
         for (let global of globalExports) {
           window[global] = __IFRAME__.contentWindow[global];
         }
-        fconfig.url = (function(){var url="https://studio.code.org/projects/gamelab/${id}";var params=location.search;var re=/[?&]([^&=]+)(?:[&=])([^&=]+)/gim;var m;while((m=re.exec(params))!=null){if(m.index===re.lastIndex){re.lastIndex+=1}url+=m[0]}return url})();
-        fconfig.pathname = "projects/gamelab/${id}";
+        _FCONFIG_.url = (function(){var url="https://studio.code.org/projects/gamelab/${id}";var params=location.search;var re=/[?&]([^&=]+)(?:[&=])([^&=]+)/gim;var m;while((m=re.exec(params))!=null){if(m.index===re.lastIndex){re.lastIndex+=1}url+=m[0]}return url})();
+        _FCONFIG_.pathname = "projects/gamelab/${id}";
         __IFRAME__.contentDocument.getElementById = function (id) {
           return document.getElementById(id);
         }
