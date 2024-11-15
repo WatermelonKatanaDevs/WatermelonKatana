@@ -15129,7 +15129,7 @@
                      *
                      */
                     p5.prototype.getURL = function () {
-                        return fconfig.url
+                        return _FCONFIG_.url
                     }
                     /**
                      * Gets the current URL path as an array.
@@ -15150,7 +15150,7 @@
                      *
                      */
                     p5.prototype.getURLPath = function () {
-                        return fconfig.pathname.split('/').filter(function (v) {
+                        return _FCONFIG_.pathname.split('/').filter(function (v) {
                             return v !== ''
                         })
                     }
@@ -15179,7 +15179,7 @@
                         var re = /[?&]([^&=]+)(?:[&=])([^&=]+)/gim
                         var m
                         var v = {}
-                        while ((m = re.exec(fconfig.url)) != null) {
+                        while ((m = re.exec(_FCONFIG_.url)) != null) {
                             if (m.index === re.lastIndex) {
                                 re.lastIndex++
                             }
@@ -23951,7 +23951,7 @@
                                             /(https?:\/\/|www\.|ftp:\/\/|sftp:\/\/|ftps:\/\/|mailto:|git:\/\/)/i
                                         )
                                       ? '/media?u=' + encodeURIComponent(path)
-                                      : `/media?u=https://studio.code.org/v3/assets/${fconfig.channel}/${path}`
+                                      : `/media?u=https://studio.code.org/v3/assets/${_FCONFIG_.channel}/${path}`
                         }
 
                         //start loading the image
@@ -25868,7 +25868,7 @@
                                         /(https?:\/\/|www\.|ftp:\/\/|sftp:\/\/|ftps:\/\/|mailto:|git:\/\/)/i
                                     )
                                   ? '/media?u=' + encodeURIComponent(path)
-                                  : `/media?u=https://studio.code.org/v3/assets/${fconfig.channel}/${path}`
+                                  : `/media?u=https://studio.code.org/v3/assets/${_FCONFIG_.channel}/${path}`
 
                         opentype.load(path, function (err, font) {
                             if (err) {

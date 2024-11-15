@@ -4726,7 +4726,7 @@
                             '/level_starter_assets/'.concat(n, '/'))
                         )
                     }
-                    var n = fconfig.channel
+                    var n = _FCONFIG_.channel
                     if (-1 !== t.indexOf('/') || !n) {
                         return t
                     }
@@ -30572,24 +30572,24 @@
                 o = r(1732),
                 a = r(1915),
                 u = (n = r(2370)) && n.__esModule ? n : { default: n }
-            window.channelId = fconfig.channel
+            window.channelId = _FCONFIG_.channel
             var _storage = r(1457)
-            if (!!fconfig.useDatablockStorage) {
+            if (!!_FCONFIG_.useDatablockStorage) {
                 window.__storage__ = (0, _storage.initStorage)(
                     _storage.DATABLOCK_STORAGE,
-                    { channelId: fconfig.channel }
+                    { channelId: _FCONFIG_.channel }
                 )
             } else {
                 window.__storage__ = (0, _storage.initStorage)(
                     _storage.FIREBASE_STORAGE,
                     {
-                        channelId: fconfig.channel,
-                        firebaseName: fconfig.firebaseName,
-                        firebaseAuthToken: fconfig.firebaseAuthToken,
+                        channelId: _FCONFIG_.channel,
+                        firebaseName: _FCONFIG_.firebaseName,
+                        firebaseAuthToken: _FCONFIG_.firebaseAuthToken,
                         firebaseSharedAuthToken:
-                            fconfig.firebaseSharedAuthToken,
+                            _FCONFIG_.firebaseSharedAuthToken,
                         firebaseChannelIdSuffix:
-                            fconfig.firebaseChannelIdSuffix || '',
+                            _FCONFIG_.firebaseChannelIdSuffix || '',
                         showRateLimitAlert: function () {
                             console.warn('please wait....')
                         },
