@@ -334,7 +334,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       const res = await fetch("/api/admin/reports/list");
       const data = await res.json();
       const reportCount = data.report.length;
-      var reports = await Promise.all(data.report.map(reportHTML));
+      var reports = await Promise.all(data.report.sort((a,b)=>b.postedAt-a.postedAt).map(reportHTML));
       nhtml += `
       <div id="report-icon" class="dropdown-icon" data-count="${reportCount}" onclick="openreportbtnclick()">
         <svg viewBox="0 0 448 512" id="flagsvg" class="iconsvg">
@@ -347,7 +347,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       `;
     }
     const notificationCount = auth.user.notifications.length;
-    var notifs = await Promise.all(auth.user.notifications.sort((a,b)=>a.postedAt-b.postedAt).map(notificationHTML));
+    var notifs = await Promise.all(auth.user.notifications.sort((a,b)=>b.postedAt-a.postedAt).map(notificationHTML));
     nhtml += `
     <div id="notification-icon" class="dropdown-icon" data-count="${notificationCount}" onclick="notificationbtnclick()">
       <svg viewBox="0 0 448 512" id="bellsvg" class="iconsvg">
