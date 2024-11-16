@@ -137,14 +137,14 @@
       <img class="banner" src="${userData.banner}">
       <div class="namecontainer">
         <img class="avatar" style="${roleBorderCSS}" src="${userData.avatar}">
-        <span class="${nameCSSClass}" style="${nameCSS}; margin-top: 35px; width: 100%">${userData.username}</span>
         ${isAuthenticated && isOwnProfile ? `
           <div id="profile-actions">
+            <span class="${nameCSSClass}" style="${nameCSS}; margin-top: 35px; width: 100%">${userData.username}</span>
             <a class="button" href="/logout">Log Out</a>
             <a class="button" href="/profile/edit">Edit Profile</a>
             <a class="button" href="/profile/chpass">Change Password</a>
             <a class="button" href="/profile/verify">Verify Email</a>
-          </div>` : ''
+          </div>` : '<span class="${nameCSSClass}" style="${nameCSS}; margin-top: 35px; width: 100%">${userData.username}</span>'
         }
       </div>
       <p class="biography">${convertMarkdown(userData.biography)}</p>
