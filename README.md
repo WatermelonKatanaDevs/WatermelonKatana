@@ -35,12 +35,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 Thanks to all the contributors who have helped make WatermelonKatana a reality! 🎉
 
-![Contributors](https://contrib.rocks/image?repo=dragonfiregames/watermelonkatana)
+![Contributors](https://contrib.rocks/image?repo=watermelonkatanadevs/watermelonkatana)
 
 ### Star Gazers
 
-![Stargazers repo roster for @dragonfiregames/watermelonkatana](https://reporoster.com/stars/dark/dragonfiregames/watermelonkatana)
+![Stargazers repo roster for @watermelonkatanadevs/watermelonkatana](https://reporoster.com/stars/dark/watermelonkatanadevs/watermelonkatana)
 
 ### Star History
 
-![Star History Chart](https://api.star-history.com/svg?repos=dragonfiregames/watermelonkatana&type=Date&theme=dark)
+![Star History Chart](https://api.star-history.com/svg?repos=watermelonkatanadevs/watermelonkatana&type=Date&theme=dark)
