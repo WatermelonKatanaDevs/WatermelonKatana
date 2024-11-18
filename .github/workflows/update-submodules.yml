@@ -13,7 +13,13 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: recursive
-          
+
+      # Set Git committer identity
+      - name: Set Git committer identity
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
       # Pull the latest changes for each submodule using merge strategy and allow unrelated histories
       - name: Pull latest changes for submodules (merge, allow unrelated histories)
         run: |
