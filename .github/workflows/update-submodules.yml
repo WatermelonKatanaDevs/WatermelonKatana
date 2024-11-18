@@ -20,10 +20,10 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      # Pull the latest changes for each submodule using merge strategy and allow unrelated histories
-      - name: Pull latest changes for submodules (merge, allow unrelated histories)
+      # Pull the latest changes for each submodule using merge strategy and resolve conflicts automatically
+      - name: Pull latest changes for submodules (auto resolve conflicts)
         run: |
-          git submodule foreach 'git fetch && git pull origin $(git rev-parse --abbrev-ref HEAD) --no-rebase --allow-unrelated-histories'
+          git submodule foreach 'git fetch && git merge -X theirs || true'
 
       # Commit and push changes if any submodules were updated
       - name: Commit and push changes
