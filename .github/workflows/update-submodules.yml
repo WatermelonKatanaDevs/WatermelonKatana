@@ -8,37 +8,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repository including submodules
       - name: Checkout repository with submodules
         uses: actions/checkout@v3
         with:
           submodules: recursive
 
-      # Set Git committer identity
       - name: Set Git committer identity
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "Your Name"
+          git config --global user.email "your-email@example.com"  # Use your GitHub email here
 
-      # Pull the latest changes for each submodule using merge strategy and resolve conflicts automatically
       - name: Pull latest changes for submodules (auto resolve conflicts)
         run: |
           git submodule foreach 'git fetch && git merge -X theirs || true'
-
-      # Commit and push changes
+        
       - name: Commit and push changes
         env:
-          TOKEN: ${{ secrets.wk_token }}  # Use the PAT secret for authentication
+          TOKEN: ${{ secrets.wk_token }}  
         run: |
           if [ -n "$(git status --porcelain)" ]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
             git add .
-            git commit -m "Update submodules with merged changes"
-
-            # Set up authentication using the token
-            git config --global url."https://$TOKEN@github.com/".insteadOf "https://github.com/"
+            git commit -m "Beep-Boop: Update submodules with merged changes"
             
+            # Set up authentication using your Personal Access Token (PAT)
+            git remote set-url origin https://$TOKEN@github.com/WatermelonKatanaDevs/WatermelonKatana.git
+
+            # Push changes as your account (using your PAT for authentication)
             git push origin HEAD
           else
             echo "No changes in submodules to commit."
