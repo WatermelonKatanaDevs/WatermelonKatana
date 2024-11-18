@@ -1,0 +1,29 @@
+name: Update Submodules
+
+on:
+  workflow_dispatch:
+
+jobs:
+  update-submodules:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository with submodules
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Pull latest changes for submodules
+        run: |
+          git submodule foreach 'git fetch && git pull origin $(git rev-parse --abbrev-ref HEAD)'
+
+      - name: Commit and push changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add .
+            git commit -m "Update submodules to latest commits"
+            git push origin HEAD
+          else
+            echo "No changes in submodules to commit."
+          fi
