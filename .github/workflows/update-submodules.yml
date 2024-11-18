@@ -15,20 +15,20 @@ jobs:
 
       - name: Set Git committer identity
         run: |
-          git config --global user.name "Your Name"
-          git config --global user.email "your-email@example.com"  # Use your GitHub email here
+          git config --global user.name "colack"
+          git config --global user.email "colack@watermelonkatana.com" 
 
       - name: Pull latest changes for submodules (auto resolve conflicts)
         run: |
           git submodule foreach 'git fetch && git merge -X theirs || true'
-        
+
       - name: Commit and push changes
         env:
-          TOKEN: ${{ secrets.wk_token }}  
+          TOKEN: ${{ secrets.wk_token }}
         run: |
           if [ -n "$(git status --porcelain)" ]; then
             git add .
-            git commit -m "Beep-Boop: Update submodules with merged changes"
+            git commit -m "Update submodules with merged changes"
             
             # Set up authentication using your Personal Access Token (PAT)
             git remote set-url origin https://$TOKEN@github.com/WatermelonKatanaDevs/WatermelonKatana.git
