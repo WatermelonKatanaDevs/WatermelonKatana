@@ -8,16 +8,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout the repository including submodules
       - name: Checkout repository with submodules
         uses: actions/checkout@v3
         with:
           submodules: recursive
           
-      - name: Pull latest changes for submodules (merge)
+      # Pull the latest changes for each submodule using merge strategy and allow unrelated histories
+      - name: Pull latest changes for submodules (merge, allow unrelated histories)
         run: |
-          git submodule foreach 'git fetch && git pull origin $(git rev-parse --abbrev-ref HEAD) --no-rebase'
+          git submodule foreach 'git fetch && git pull origin $(git rev-parse --abbrev-ref HEAD) --no-rebase --allow-unrelated-histories'
 
-
+      # Commit and push changes if any submodules were updated
       - name: Commit and push changes
         run: |
           if [ -n "$(git status --porcelain)" ]; then
@@ -28,4 +30,3 @@ jobs:
             git push origin HEAD
           else
             echo "No changes in submodules to commit."
-          fi
