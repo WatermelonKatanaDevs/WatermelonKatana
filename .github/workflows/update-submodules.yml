@@ -25,15 +25,17 @@ jobs:
         run: |
           git submodule foreach 'git fetch && git merge -X theirs || true'
 
-      # Commit and push changes if there are any updates
+      # Commit and push changes
       - name: Commit and push changes
+        env:
+          TOKEN: ${{ secrets.wk_token }}  # Use the PAT secret for authentication
         run: |
           if [ -n "$(git status --porcelain)" ]; then
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git add .
             git commit -m "Update submodules with merged changes"
-            git push origin HEAD
+            git push https://$TOKEN@github.com/WatermelonKatanaDevs/WatermelonKatana.git HEAD
           else
             echo "No changes in submodules to commit."
           fi
