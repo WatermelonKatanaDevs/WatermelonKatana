@@ -1,3 +1,6 @@
 [submodule "Turbo"]
 	path = Turbo
 	url = https://github.com/WatermelonKatanaDevs/TurboWarp.git
+[submodule "Scripts"]
+	path = Scripts
+	url = https://github.com/WatermelonKatanaDevs/Shell-Scripts.git
