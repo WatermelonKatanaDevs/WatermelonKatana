@@ -39,7 +39,7 @@
 
       // Function to build URL with query parameters
       function buildUrl(params) {
-        const url = new URL(window.__cpLocation);
+        const url = new URL(window.location);
         url.search = new URLSearchParams(params).toString();
         return url;
       }
@@ -82,7 +82,7 @@
       async function searchProjects() {
         try {
           const tok = await getAuth();
-          const sparams = new URLSearchParams(window.__cpLocation.search);
+          const sparams = new URLSearchParams(window.location.search);
           sparams.set("showMature", tok.user?.mature);
           const endpoint = sparams.get("query") ? 'search' : 'list';
           const res = await fetch('/api/project/' + endpoint + '?' + sparams);
