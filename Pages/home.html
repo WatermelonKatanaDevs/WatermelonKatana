@@ -1,116 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home | WatermelonKatana</title>
-    <link rel="icon" type="image/png" href="/favicon/favicon-96x96.png" sizes="96x96" />
-    <link rel="icon" type="image/svg+xml" href="/favicon/favicon.svg" />
-    <link rel="shortcut icon" href="/favicon.ico" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
-    <meta name="apple-mobile-web-app-title" content="WatermelonKatana" />
-    <link rel="manifest" href="/site.webmanifest">
-    <meta property="og:title" content="WatermelonKatana"/>
-    <meta property="og:type" content="profile"/>
-    <meta property="og:image" content="/favicon/android-chrome-192x192.png"/>
-    <meta property="og:description" content="Post your projects, Interact with other peoples' projects, Chat with your friends & More! We have a large gallery of games and a growing user base, help us out by either posting your browser game here or playing other peoples' games!"/>
-    <link rel="stylesheet" type="text/css" href="/styles/style.css">
-    <link rel="stylesheet" type="text/css" href="/styles/home.css">
-    <script src="/scripts/HtmlSanitizer.js"></script>
-    <script src="/scripts/script.js"></script>
-  </head>
-  <body>
-    <div class="container">
-      <header class="main-header">
-        <h1>Welcome to <strong class="logo-text">WatermelonKatana</strong></h1>
-        <h2 id="username" style="color: #777777"></h2>
-        <nav id="header" class="main-nav">
-          <a href="/register">Register</a>
-          <a href="/login">Login</a>
-          <a href="/chat">Chat</a>
-          <a href="/search">Project Gallery</a>
-          <a href="/forum">Forum</a>
-          <a href="/updates">Announcements</a>
-        </nav>
-      </header>
-      <section class="intro">
-        <p>Post your projects, interact with other people's projects, chat with your friends, and more! We have a large gallery of games and a growing user base. Help us out by either posting your browser game here or playing other people's games!</p>
-        <a class="discord-link" href="https://discord.gg/S8XTzKEz5f">Join our Discord!</a>
-      </section>
-      <section class="featured-projects">
-        <h2>Featured Projects</h2>
-        <div id="featuredList" class="project-list"></div>
-      </section>
-      <section class="featured-projects">
-        <h2>Latest Projects</h2>
-        <div id="latestList" class="project-list"></div>
-      </section>
-      <section class="featured-projects">
-        <h2>Hot Forum Topics</h2>
-        <div id="postlist" class="post-list"></div>
-      </section>
-      <footer id="footer" class="main-footer">
-        <p>&copy; 2024 WatermelonKatana. All rights reserved.</p>
-      </footer>
-    </div>
-    
-    <script>
-      const featuredList = document.querySelector('#featuredList');
-      const latestList = document.querySelector('#latestList');
-      const postlist = document.querySelector('#postlist');
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home | WatermelonKatana</title>
+  <link rel="icon" href="/favicon/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" href="/favicon/favicon.svg" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-title" content="WatermelonKatana" />
+  <link rel="manifest" href="/site.webmanifest">
+  <meta property="og:title" content="WatermelonKatana" />
+  <meta property="og:type" content="profile" />
+  <meta property="og:image" content="/favicon/android-chrome-192x192.png" />
+  <meta property="og:description" content="Explore, share, and enjoy a large gallery of browser games and community projects!" />
+  <link rel="stylesheet" href="/styles/main.css">
+  <script src="/scripts/HtmlSanitizer.js"></script>
+  <script src="/scripts/script.js"></script>
+</head>
+<body>
+<div class="container">
+  <header class="main-header">
+    <h1>Welcome to <span class="logo-text">WatermelonKatana</span></h1>
+    <h2 id="username"></h2>
+    <nav class="main-nav" id="header">
+      <a href="/register">Register</a>
+      <a href="/login">Login</a>
+      <a href="/chat">Chat</a>
+      <a href="/search">Project Gallery</a>
+      <a href="/forum">Forum</a>
+      <a href="/updates">Announcements</a>
+    </nav>
+  </header>
+  <main>
+    <section class="intro">
+      <p>Explore, share, and enjoy a large gallery of browser games and community projects. Help us grow by sharing your games or trying others’ creations!</p>
+      <a class="discord-link" href="https://discord.gg/S8XTzKEz5f">Join our Discord!</a>
+    </section>
+    <section class="featured-projects">
+      <h2>Featured Projects</h2>
+      <div id="featuredList" class="project-list"></div>
+    </section>
+    <section class="featured-projects">
+      <h2>Latest Projects</h2>
+      <div id="latestList" class="project-list"></div>
+    </section>
+    <section class="featured-projects">
+      <h2>Hot Forum Topics</h2>
+      <div id="postlist" class="post-list"></div>
+    </section>
+  </main>
+  <footer>
+    <p>&copy; 2024 WatermelonKatana. All rights reserved.</p>
+  </footer>
+</div>
 
-      (async () => {
-        const tok = await getAuth();
-        var sparams = new URLSearchParams();
-        sparams.set("showMature", tok.user?.mature);
-        sparams.set("featured", 1);
-        const res = await fetch('/api/project/list?'+sparams);
-        const data = await res.json();
-        data.projects.sort((a,b)=>(b.score-a.score)||(b.views-a.views));
-        data.projects.map(projHTML(featuredList,tok));
-      })();
+<script>
+  const updateSection = async (url, params, container, mapper) => {
+    const tok = await getAuth();
+    params.set("showMature", tok.user?.mature || false);
+    const res = await fetch(`${url}?${params}`);
+    const data = await res.json();
+    data.projects?.slice(0, 5).forEach(proj => mapper(container, tok, proj));
+    data.posts?.slice(0, 5).forEach(post => mapper(container, tok, post));
+  };
 
-      (async () => {
-        const tok = await getAuth();
-        var sparams = new URLSearchParams();
-        sparams.set("showMature", tok.user?.mature);
-        const res = await fetch('/api/project/list?'+sparams);
-        const data = await res.json();
-        data.projects.sort((a,b)=>(b.postedAt-a.postedAt));
-        data.projects.slice(0, 5).map(projHTML(latestList,tok));
-      })();
+  const setupUser = async () => {
+    const data = await getAuth();
+    const user = document.getElementById('username');
+    const header = document.getElementById('header');
+    if (data.auth) {
+      user.innerHTML = `<p>Signed in as <strong class="logo-text">${data.user.username}</strong></p>`;
+      header.innerHTML = `
+            <a href="/publish">Publish</a>
+            <a href="/chat">Chat</a>
+            <a href="/search">Project Gallery</a>
+            <a href="/forum">Forum</a>
+            <a href="/updates">Announcements</a>
+            <a href="/userlist">User List</a>
+            ${data.user.role === 'Admin' ? '<a href="/admin">Admin Panel</a>' : ''}
+          `;
+    }
+  };
 
-      (async () => {
-        const tok = await getAuth();
-        var sparams = new URLSearchParams();
-        sparams.set("showMature", tok.user?.mature);
-        const res = await fetch('/api/forum/list?'+sparams);
-        const data = await res.json();
-        data.posts.sort((a,b)=>(Number(b.featured)-Number(a.featured))||(b.activeAt-a.activeAt));
-        data.posts = data.posts.slice(0,5);
-        data.posts.map(forumHTML(postlist,tok));
-      })();
-      
-      const header = document.querySelector('#header');
-      const footer = document.querySelector('#footer');
-      const user = document.getElementById('username');
-      (async () => {
-        const data = await getAuth();
-        if (!data.auth) return;
-        //<p>Signed in as ${data.user.username}</p><br/>
-        user.innerHTML = `<p>Signed in as <strong class="logo-text">${data.user.username}</strong></p>`;
-        header.innerHTML = `
-          <a href="/publish">Publish</a>
-          <a href="/chat">Chat</a>
-          <a href="/search">Project Gallery</a>
-          <a href="/forum">Forum</a>
-          <a href="/updates">Announcements</a>
-          <a href="/userlist">User List</a>
-        `;
-        if (data.user.role === "Admin") {
-          header.innerHTML += `<a href="/admin">Admin List</a>`;
-        }
-      })();
-    </script>
-  </body>
+  document.addEventListener('DOMContentLoaded', () => {
+    setupUser();
+    updateSection('/api/project/list', new URLSearchParams({ featured: 1 }), document.querySelector('#featuredList'), projHTML);
+    updateSection('/api/project/list', new URLSearchParams(), document.querySelector('#latestList'), projHTML);
+    updateSection('/api/forum/list', new URLSearchParams(), document.querySelector('#postlist'), forumHTML);
+  });
+</script>
+</body>
 </html>
