@@ -18,8 +18,11 @@ jobs:
 
       - name: Update submodules
         run: |
-          git submodule foreach 'git pull --ff-only origin $(git rev-parse --abbrev-ref HEAD) || git pull --no-rebase origin $(git rev-parse --abbrev-ref HEAD) || true'
-      
+          git submodule foreach '
+            git pull --ff-only origin $(git rev-parse --abbrev-ref HEAD) ||
+            git pull --no-rebase --allow-unrelated-histories origin $(git rev-parse --abbrev-ref HEAD) ||
+            true'
+
       - name: Commit and push updated submodules
         run: |
           git config user.name "github-actions[bot]"
