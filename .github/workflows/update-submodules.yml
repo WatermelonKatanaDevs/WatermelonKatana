@@ -25,11 +25,18 @@ jobs:
         run: |
           git submodule foreach '
             git pull --ff-only origin $(git rev-parse --abbrev-ref HEAD) ||
-            git pull --no-rebase --allow-unrelated-histories origin $(git rev-parse --abbrev-ref HEAD) ||
-            true'
+            (git merge --no-ff origin/$(git rev-parse --abbrev-ref HEAD) || true)'
+
+      - name: Resolve merge conflicts (if any)
+        run: |
+          git submodule foreach '
+            if git status | grep "Unmerged paths"; then
+              echo "Conflict detected, resolving with theirs strategy";
+              git merge -X theirs --no-edit;
+            fi'
 
       - name: Commit and push updated submodules
         run: |
           git add .
-          git commit -m "Update submodules to latest commit" || echo "No changes to commit"
+          git commit -m "Resolve merge conflicts (theirs strategy) and update submodules" || echo "No changes to commit"
           git push
