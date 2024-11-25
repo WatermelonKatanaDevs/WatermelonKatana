@@ -378,7 +378,7 @@ async function notificationHTML(notif,index) {
   var user = await getUser(notif.posterId);
   return `<a class="user-panel" href="/notification/${index}">
     <div class="comment-top">
-    <img class="comment-avatar" src="${user.avatar || "/images/placeholders/PLACEHOLDER_project.png"}">
+    <img class="comment-avatar" src="${user.avatar || "/images/blank_project.png"}">
     <div class="comment-username">${notif.title}</div>
     </div>
     ${notif.content}
@@ -390,7 +390,7 @@ async function reportHTML(report) {
   var user = await getUser(report.posterId);
   return `<a class="user-panel" href="/report/${report.id}">
     <div class="comment-top">
-    <img class="comment-avatar" src="${user.avatar || "/images/placeholders/PLACEHOLDER_project.png"}">
+    <img class="comment-avatar" src="${user.avatar || "/images/blank_project.png"}">
     <div class="comment-username">New Report</div>
     </div>
     ${user.username} reported ${report.link} because ${report.content}

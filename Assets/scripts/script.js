@@ -102,7 +102,7 @@ function previewContent(str,len) {
 function projHTML(list,tok) {
   return function (proj) {
     let div = `<a class="project-panel" href="/project/${proj.id}" ${proj.viewers.includes(tok?.user?.id)?`style="color: #b0b0b0;"`:""}>
-      <div class="thumbnail-border"><img class="project-thumbnail" src="${proj.thumbnail || "/images/placeholders/PLACEHOLDER_project.png"}" alt=""></div>
+      <div class="thumbnail-border"><img class="project-thumbnail" src="${proj.thumbnail || "/images/blank_project.png"}" alt=""></div>
       <div class="project-link">${previewContent(proj.title, 100)}</div>
       <div>By: <object><a href="/user/${proj.poster}"><i>${proj.poster}</i></a></object></div>
       <div>Score: ${proj.score} Views: ${proj.views}</div>
@@ -110,7 +110,7 @@ function projHTML(list,tok) {
     </a>`;
     list.innerHTML += div;
     let lastThumbnail = list.children[list.children.length - 1].querySelector(".project-thumbnail");
-    if (!lastThumbnail.getAttribute("src")) lastThumbnail.src = "/images/placeholders/PLACEHOLDER_project.png";
+    if (!lastThumbnail.getAttribute("src")) lastThumbnail.src = "/images/blank_project.png";
   };
 }
 
@@ -133,7 +133,7 @@ function userHTML(list) {
   return function (user) {
     let div = `<a class="user-panel" href="/user/${user.username}">
       <div class="comment-top">
-      <img class="comment-avatar" src="${user.avatar || "/images/placeholders/PLACEHOLDER_project.png"}">
+      <img class="comment-avatar" src="${user.avatar || "/images/blank_project.png"}">
       <div class="comment-username">${user.username}</div>
       </div>
       ${previewContent(user.biography,100)}
@@ -149,14 +149,14 @@ function projHTML(list,tok) {
   return function (proj) {
     let classes = (proj.featured?" featured":"")+(proj.posterId==tok?.user?.id?" published":"")+(tok?.user?.favorites.includes(proj.id)?" favorited":"");
     let div = `<a class="project-panel" title="${tagTitle(proj.tags)}" href="/project/${proj.id}" style="${proj.viewers.includes(tok?.user?.id)?`"color: #b0b0b0;"`:""}">
-      <div class="thumbnail-border ${classes}"><img class="project-thumbnail" src="${proj.thumbnail || "/images/placeholders/PLACEHOLDER_project.png"}" alt=""></div>
+      <div class="thumbnail-border ${classes}"><img class="project-thumbnail" src="${proj.thumbnail || "/images/blank_project.png"}" alt=""></div>
       <div class="project-link">${previewContent(proj.title, 100)}</div>
       <div>By: <object><a href="/user/${proj.poster}"><i>${proj.poster}</i></a></object></div>
       <div>Score: ${proj.score} Views: ${proj.views}</div>
     </a>`;
     list.innerHTML += div;
     let lastThumbnail = list.children[list.children.length - 1].querySelector(".project-thumbnail");
-    if (!lastThumbnail.getAttribute("src")) lastThumbnail.src = "/images/placeholders/PLACEHOLDER_project.png";
+    if (!lastThumbnail.getAttribute("src")) lastThumbnail.src = "/images/blank_project.png";
   };
 }
 
@@ -179,7 +179,7 @@ function userHTML(list) {
   return function (user) {
     let div = `<a class="user-panel" href="/user/${user.username}">
       <div class="comment-top">
-      <img class="comment-avatar" src="${user.avatar || "/images/placeholders/PLACEHOLDER_project.png"}">
+      <img class="comment-avatar" src="${user.avatar || "/images/blank_project.png"}">
       <div class="comment-username">${user.username}</div>
       </div>
       ${previewContent(user.biography,100)}
