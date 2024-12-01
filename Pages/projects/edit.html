@@ -102,7 +102,7 @@
         markdownTextbox('#desc');
         var tok = await getAuth();
         if (tok.user?.mature) return;
-        mature.outerHTML = data.mature.toString();
+        // mature.outerHTML = data.mature.toString(); // dragon somehow you broke it twice lmfao
       })();
       
       async function uploadThumb() {
