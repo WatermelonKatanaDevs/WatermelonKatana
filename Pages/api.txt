@@ -1,0 +1,8 @@
+path method auth [data]
+
+Admin API:
+/admin/transfer GET Admin ?uid=<id>&project=<id> ?uid=<id>&post=<id>
+/admin/resetpassword GET Admin ?uid=<id>&password=<string>
+/admin/reports/create POST User { content: <string>, link: <string> }
+/admin/reports/list Admin
+
