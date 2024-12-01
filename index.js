@@ -245,7 +245,7 @@ app.get('/sitemap.xml', async (req, res) => {
 //app.get("/turbowarp", (req, res) => res.sendFile(cldir + "/turbowarp/index.html"));
 
 // API Pages
-app.get("/api", (req, res) => res.sendFile(cldir + "/api.txt")));
+app.get("/api", (req, res) => res.sendFile(cldir + "/api.txt"));
 app.use("/api", (req, res) => res.status(404).json({ error:"Error: API Not Found", message:"404 Error. This API does not exist, check /api for a list of supported APIs" }));
 
 /**
