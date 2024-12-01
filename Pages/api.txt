@@ -1,8 +1,32 @@
-path method auth [data]
+path method auth data
+?(optionalQueryString)=<type>&requiredQueryString=<type> ?alternateQueryString=<type>
+{ requestBodyObjectProperty: <type> }
+
+app.use("/api/auth", require("./API/Auth/route")); // Authentication routes
+app.use("/api/project", require("./API/Project/route")); // Project routes
+app.use("/api/forum", require("./API/Forum/route")); // Project routes
+app.use("/api/media", require("./API/Media/route")); // Media routes
 
 Admin API:
-/admin/transfer GET Admin ?uid=<id>&project=<id> ?uid=<id>&post=<id>
-/admin/resetpassword GET Admin ?uid=<id>&password=<string>
+/admin/transfer GET Admin ?uid=<uid>&project=<pid> ?uid=<id>&post=<pid>
+/admin/resetpassword GET Admin ?uid=<uid>&password=<string>
 /admin/reports/create POST User { content: <string>, link: <string> }
-/admin/reports/list Admin
+/admin/reports/list GET Admin
 
+User API:
+/auth/register POST None { username: <string>, password: <string> }
+/auth/login POST None { username: <string>, password: <string> }
+/auth/changePassword POST User (changePassword);
+/auth/update PUT User { username: <string>, avatar: <url>, banner: <url>, biography: <string>, mature: <bool> }
+/auth/updateRole PUT Admin { role: <role>, id: <uid> }
+/auth/deleteUser DELETE Admin { id: <uid> }
+/auth/deleteSelf DELETE User { confirmationPswd: <string> } 
+/auth/listUsers GET None ?(role)=<role>&(customQuery)=<mongodb query object>
+/auth/check GET Check (check);
+/auth/userdata GET None (userdata);
+/auth/follow GET User (follow);
+/auth/unfollow GET User (unfollow);
+/auth/verify/send POST User { email: <string> }
+/auth/verify/email GET None ?id=<token>
+/auth/resetPassword/send POST None { email: <string> }
+/auth/resetPassword/reset POST None { id: <token>, password: <string> }
