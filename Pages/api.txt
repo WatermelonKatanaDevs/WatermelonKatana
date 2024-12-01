@@ -1,32 +1,71 @@
+404 Error: This API Does Not Exist
+
+Check your path:
+
 path method auth data
-?(optionalQueryString)=<type>&requiredQueryString=<type> ?alternateQueryString=<type>
-{ requestBodyObjectProperty: <type> }
+data = ?queryStringProperty=<type>&(optional)=<type> ?alternateSyntax=<type>
+data = { requestBodyProperty: <type>, (optional): <type> } { alternateSyntax: <type> }
 
-app.use("/api/auth", require("./API/Auth/route")); // Authentication routes
-app.use("/api/project", require("./API/Project/route")); // Project routes
-app.use("/api/forum", require("./API/Forum/route")); // Project routes
-app.use("/api/media", require("./API/Media/route")); // Media routes
+Admin API
+/api/admin/transfer GET Admin ?uid=<user id>&project=<project id> ?uid=<id>&post=<post id>
+/api/admin/resetpassword GET Admin ?uid=<user id>&password=<string>
+/api/admin/reports/create POST User { content: <string>, link: <string> }
+/api/admin/reports/list GET Admin
 
-Admin API:
-/admin/transfer GET Admin ?uid=<uid>&project=<pid> ?uid=<id>&post=<pid>
-/admin/resetpassword GET Admin ?uid=<uid>&password=<string>
-/admin/reports/create POST User { content: <string>, link: <string> }
-/admin/reports/list GET Admin
+Auth API
+/api/auth/register POST None { username: <string>, password: <string> }
+/api/auth/login POST None { username: <string>, password: <string> }
+/api/auth/changePassword POST User { currentPassword: <string>, newPassword: <string> }
+/api/auth/update PUT User { username: <string>, avatar: <url>, banner: <url>, biography: <string>, mature: <bool> }
+/api/auth/updateRole PUT Admin { role: <role>, id: <user id> }
+/api/auth/deleteUser DELETE Admin { id: <user id> }
+/api/auth/deleteSelf DELETE User { confirmationPswd: <string> } 
+/api/auth/listUsers GET None ?(role)=<role>&(customQuery)=<mongodb query object>
+/api/auth/check GET Check
+/api/auth/userdata GET None ?id=<user id> ?username=<string>
+/api/auth/follow GET User ?id=<user id> ?username=<string>
+/api/auth/unfollow GET User ?id=<user id> ?username=<string>
+/api/auth/verify/send POST User { email: <string> }
+/api/auth/verify/email GET None ?id=<token>
+/api/auth/resetPassword/send POST None { email: <string> }
+/api/auth/resetPassword/reset POST None { id: <token>, password: <string> }
+/notification/<index:int> GET User
 
-User API:
-/auth/register POST None { username: <string>, password: <string> }
-/auth/login POST None { username: <string>, password: <string> }
-/auth/changePassword POST User (changePassword);
-/auth/update PUT User { username: <string>, avatar: <url>, banner: <url>, biography: <string>, mature: <bool> }
-/auth/updateRole PUT Admin { role: <role>, id: <uid> }
-/auth/deleteUser DELETE Admin { id: <uid> }
-/auth/deleteSelf DELETE User { confirmationPswd: <string> } 
-/auth/listUsers GET None ?(role)=<role>&(customQuery)=<mongodb query object>
-/auth/check GET Check (check);
-/auth/userdata GET None (userdata);
-/auth/follow GET User (follow);
-/auth/unfollow GET User (unfollow);
-/auth/verify/send POST User { email: <string> }
-/auth/verify/email GET None ?id=<token>
-/auth/resetPassword/send POST None { email: <string> }
-/auth/resetPassword/reset POST None { id: <token>, password: <string> }
+Project API
+/api/project/publish POST User { title: <string>, link: <url>, content: <string>, thumbnail: <url>, tags: [ <string> ], mature: <bool>, hidden: <bool>, privateRecipients: [ <user id> ], platform: <string> }
+/api/project/list GET ?(poster)=<string>&(platform)=<string>&(postedBefore)=<int>&(postedAfter)=<int>&(includeTags)=[<string>]&(excludeTags)=[<string>]&(featured)=<bool>&(showMature)=<bool>&(showHidden)=<bool>&(recipient)=<string>&(customQuery)=<mongodb query object>
+/api/project/search GET ?query=<string>&(showMature)=<bool>&(showHidden)=<bool>
+/api/project/data/<id:project id> GET this.data.bind(this));
+/api/project/update/<id:project id> PUT User { title: <string>, link: <url>, content: <string>, thumbnail: <url>, tags: [ <string> ], mature: <bool>, hidden: <bool>, privateRecipients: [ <user id> ], platform: <string> }
+/api/project/delete/<id:project id> DELETE User
+/api/project/delete/<id:project id> GET User
+/api/project/favorite/<id:project id> GET User
+/api/project/unfavorite/<id:project id> GET User
+/api/project/feature/<id:project id> GET Admin
+/api/project/unfeature/<id:project id> GET Admin
+/api/project/comment/<id:project id> POST User { content: <string> }
+/api/project/comment/<id:project id>/edit PUT User  { content: <string>, index: <int> }
+/api/project/comment/<id:project id>/delete DELETE User { index: <int> }
+/api/project/comment/<id:project id>/upvote GET User ?index=<int>
+/api/project/comment/<id:project id>/downvote GET User ?index=<int>
+
+Forum API
+/api/forum/publish POST User { title: <string>, content: <string>, tags: [ <string> ], mature: <bool>, hidden: <bool>, privateRecipients: [ <user id> ] }
+/api/forum/list GET None ?(poster)=<string>&(platform)=<string>&(postedBefore)=<int>&(postedAfter)=<int>&(includeTags)=[<string>]&(excludeTags)=[<string>]&(featured)=<bool>&(showMature)=<bool>&(showHidden)=<bool>&(recipient)=<string>&(customQuery)=<mongodb query object>
+/api/forum/search GET ?query=<string>&(showMature)=<bool>&(showHidden)=<bool>
+/api/forum/data/<id:post id> GET None
+/api/forum/update/<id:post id> PUT User { title: <string>, content: <string>, tags: [ <string> ], mature: <bool>, hidden: <bool>, privateRecipients: [ <user id> ] }
+/api/forum/delete/<id:post id> DELETE User
+/api/forum/delete/<id:post id> GET User
+/api/forum/feature/<id:post id> GET Admin
+/api/forum/unfeature/<id:post id> GET Admin
+/api/forum/comment/<id:post id> POST User { content: <string> }
+/api/forum/comment/<id:post id>/edit PUT User  { content: <string>, index: <int> }
+/api/forum/comment/<id:post id>/delete DELETE User { index: <int> }
+/api/forum/comment/<id:post id>/upvote GET User ?index=<int>
+/api/forum/comment/<id:post id>/downvote GET User ?index=<int>
+
+Media API
+/api/media/upload POST User
+/api/media/get/<id:media id>/<string> GET None
+/api/media/list GET None ?(poster)=<user id>&(customQuery)=<mongodb query object>
