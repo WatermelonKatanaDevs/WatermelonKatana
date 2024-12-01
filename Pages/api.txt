@@ -1,7 +1,3 @@
-404 Error: This API Does Not Exist
-
-Check your path:
-
 path method auth data
 data = ?queryStringProperty=<type>&(optional)=<type> ?alternateSyntax=<type>
 data = { requestBodyProperty: <type>, (optional): <type> } { alternateSyntax: <type> }
