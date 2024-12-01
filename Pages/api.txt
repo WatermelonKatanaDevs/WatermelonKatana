@@ -1,0 +1,67 @@
+path method auth data
+data = ?queryStringProperty=<type>&(optional)=<type> ?alternateSyntax=<type>
+data = { requestBodyProperty: <type>, (optional): <type> } { alternateSyntax: <type> }
+
+Admin API
+/api/admin/transfer GET Admin ?uid=<user id>&project=<project id> ?uid=<id>&post=<post id>
+/api/admin/resetpassword GET Admin ?uid=<user id>&password=<string>
+/api/admin/reports/create POST User { content: <string>, link: <string> }
+/api/admin/reports/list GET Admin
+
+Auth API
+/api/auth/register POST None { username: <string>, password: <string> }
+/api/auth/login POST None { username: <string>, password: <string> }
+/api/auth/changePassword POST User { currentPassword: <string>, newPassword: <string> }
+/api/auth/update PUT User { username: <string>, avatar: <url>, banner: <url>, biography: <string>, mature: <bool> }
+/api/auth/updateRole PUT Admin { role: <role>, id: <user id> }
+/api/auth/deleteUser DELETE Admin { id: <user id> }
+/api/auth/deleteSelf DELETE User { confirmationPswd: <string> } 
+/api/auth/listUsers GET None ?(role)=<role>&(customQuery)=<mongodb query object>
+/api/auth/check GET Check
+/api/auth/userdata GET None ?id=<user id> ?username=<string>
+/api/auth/follow GET User ?id=<user id> ?username=<string>
+/api/auth/unfollow GET User ?id=<user id> ?username=<string>
+/api/auth/verify/send POST User { email: <string> }
+/api/auth/verify/email GET None ?id=<token>
+/api/auth/resetPassword/send POST None { email: <string> }
+/api/auth/resetPassword/reset POST None { id: <token>, password: <string> }
+/notification/<index:int> GET User
+
+Project API
+/api/project/publish POST User { title: <string>, link: <url>, content: <string>, thumbnail: <url>, tags: [ <string> ], mature: <bool>, hidden: <bool>, privateRecipients: [ <user id> ], platform: <string> }
+/api/project/list GET ?(poster)=<string>&(platform)=<string>&(postedBefore)=<int>&(postedAfter)=<int>&(includeTags)=[<string>]&(excludeTags)=[<string>]&(featured)=<bool>&(showMature)=<bool>&(showHidden)=<bool>&(recipient)=<string>&(customQuery)=<mongodb query object>
+/api/project/search GET ?query=<string>&(showMature)=<bool>&(showHidden)=<bool>
+/api/project/data/<id:project id> GET this.data.bind(this));
+/api/project/update/<id:project id> PUT User { title: <string>, link: <url>, content: <string>, thumbnail: <url>, tags: [ <string> ], mature: <bool>, hidden: <bool>, privateRecipients: [ <user id> ], platform: <string> }
+/api/project/delete/<id:project id> DELETE User
+/api/project/delete/<id:project id> GET User
+/api/project/favorite/<id:project id> GET User
+/api/project/unfavorite/<id:project id> GET User
+/api/project/feature/<id:project id> GET Admin
+/api/project/unfeature/<id:project id> GET Admin
+/api/project/comment/<id:project id> POST User { content: <string> }
+/api/project/comment/<id:project id>/edit PUT User  { content: <string>, index: <int> }
+/api/project/comment/<id:project id>/delete DELETE User { index: <int> }
+/api/project/comment/<id:project id>/upvote GET User ?index=<int>
+/api/project/comment/<id:project id>/downvote GET User ?index=<int>
+
+Forum API
+/api/forum/publish POST User { title: <string>, content: <string>, tags: [ <string> ], mature: <bool>, hidden: <bool>, privateRecipients: [ <user id> ] }
+/api/forum/list GET None ?(poster)=<string>&(platform)=<string>&(postedBefore)=<int>&(postedAfter)=<int>&(includeTags)=[<string>]&(excludeTags)=[<string>]&(featured)=<bool>&(showMature)=<bool>&(showHidden)=<bool>&(recipient)=<string>&(customQuery)=<mongodb query object>
+/api/forum/search GET ?query=<string>&(showMature)=<bool>&(showHidden)=<bool>
+/api/forum/data/<id:post id> GET None
+/api/forum/update/<id:post id> PUT User { title: <string>, content: <string>, tags: [ <string> ], mature: <bool>, hidden: <bool>, privateRecipients: [ <user id> ] }
+/api/forum/delete/<id:post id> DELETE User
+/api/forum/delete/<id:post id> GET User
+/api/forum/feature/<id:post id> GET Admin
+/api/forum/unfeature/<id:post id> GET Admin
+/api/forum/comment/<id:post id> POST User { content: <string> }
+/api/forum/comment/<id:post id>/edit PUT User  { content: <string>, index: <int> }
+/api/forum/comment/<id:post id>/delete DELETE User { index: <int> }
+/api/forum/comment/<id:post id>/upvote GET User ?index=<int>
+/api/forum/comment/<id:post id>/downvote GET User ?index=<int>
+
+Media API
+/api/media/upload POST User
+/api/media/get/<id:media id>/<string> GET None
+/api/media/list GET None ?(poster)=<user id>&(customQuery)=<mongodb query object>
