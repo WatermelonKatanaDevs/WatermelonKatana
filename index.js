@@ -244,6 +244,10 @@ app.get('/sitemap.xml', async (req, res) => {
 // TurboWarp page
 //app.get("/turbowarp", (req, res) => res.sendFile(cldir + "/turbowarp/index.html"));
 
+// API Pages
+app.get("/api", (req, res) => res.sendFile(cldir + "/api.txt")));
+app.use("/api", (req, res) => res.status(404).json({ error:"Error: API Not Found", message:"404 Error. This API does not exist, check /api for a list of supported APIs" }));
+
 /**
  * Start the server and listen on the specified port
  */
@@ -252,8 +256,6 @@ const server = app.listen(PORT, () => {
 });
 
 // 404 response page
-app.get("/api", (req, res) => res.sendFile(cldir + "/api.txt")));
-app.get("/api/*", (req, res) => res.status(404).json({ error:"Error: API Not Found", message:"404 Error. This API does not exist, check /api for a list of supported APIs" }));
 app.use((req, res) => res.status(404).sendFile(cldir + "/404.html"));
 
 // Set server timeout to 30 seconds
