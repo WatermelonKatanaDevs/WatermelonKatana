@@ -25,7 +25,7 @@
         "jsonwebtoken": "^8.5.1",
         "mongoose": "^6.13.0",
         "nodemailer": "^6.9.14",
-        "nodemon": "^2.0.15",
+        "nodemon": "^3.1.7",
         "picocolors": "^1.1.1",
         "profane-words": "^1.5.11"
     },
