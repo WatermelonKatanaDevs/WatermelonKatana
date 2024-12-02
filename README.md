@@ -1,9 +1,6 @@
-# 🍉 WatermelonKatana 🗡️
-
-![Website](https://img.shields.io/website?url=https%3A%2F%2Fwatermelonkatana.com)
-![GitHub License](https://img.shields.io/github/license/dragonfiregames/watermelonkatana)
-![GitHub commit activity](https://img.shields.io/github/commit-activity/y/dragonfiregames/watermelonkatana)
-![GitHub language count](https://img.shields.io/github/languages/count/dragonfiregames/watermelonkatana)
+<p align="center">
+    <img src="https://raw.githubusercontent.com/WatermelonKatanaDevs/WatermelonKatana/refs/heads/main/Assets/images/global_logo.png" alt="WatermelonKatana Logo">
+</p>
 
 ## Empowering Creativity Through Code
 
@@ -24,15 +21,3 @@ Explore our platform and discover the possibilities. Create, share, and connect 
 We believe in the power of collaboration! Contributions are welcome from everyone, whether it's fixing bugs, adding features, or enhancing documentation. By working together, we can create a vibrant and inclusive community that empowers creativity through code.
 
 To get started, please review our [Contributing Guidelines](CONTRIBUTING.md). Together, we can make a difference!
-
-## 📜 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🌟 Supporters
-
-### Contributors
-
-Thanks to all the contributors who have helped make WatermelonKatana a reality! 🎉
-
-![Contributors](https://contrib.rocks/image?repo=watermelonkatanadevs/watermelonkatana)
