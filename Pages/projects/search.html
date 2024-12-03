@@ -42,7 +42,7 @@
       const next = document.querySelector("#next-page");
       const projectsPerPage = 30;
       let currentPage = location.search.match(/page=([\d]+)/);
-      if (typeof currentPage === null) { currentPage = 1; } 
+      if (currentPage === null) { currentPage = 1; } 
       else { currentPage = parseInt(currentPage[1]); }
       // Function to build URL with query parameters
       function buildUrl(params) {
@@ -119,11 +119,11 @@
       function updatePageIndexer(projects) {
         if (currentPage > 1) {
             previous.style.display = "";
-            previous.href = `${location.href + location.search.includes("?") ? "&": "?"}page=${currentPage - 1}`;
+            previous.href = `${location.href + location.search.includes("?&") ? "&": "?"}page=${currentPage - 1}`;
           }
           if (currentPage * projectsPerPage < projects.length - 1) {
             next.style.display = "";
-            next.href = `${location.href + location.search.includes("?") ? "&": "?"}page=${currentPage + 1}`;
+            next.href = `${location.href + location.search.includes("?&") ? "&": "?"}page=${currentPage + 1}`;
           }
       }
 
