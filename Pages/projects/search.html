@@ -41,6 +41,7 @@
       const previous = document.querySelector("#prev-page");
       const next = document.querySelector("#next-page");
       const projectsPerPage = 30;
+      const tok = await getAuth();
       let totalProjects = [];
       let currentPage = location.search.match(/page=([\d]+)/);
       if (currentPage === null) { currentPage = 1; } 
@@ -55,7 +56,6 @@
       // Populate the list with projects
       async function populateProjects() {
         try {
-          const tok = await getAuth();
           const sparams = new URLSearchParams();
           sparams.set("showMature", tok.user?.mature);
           const res = await fetch('/api/project/list?' + sparams);
@@ -94,7 +94,6 @@
 
       async function searchProjects(isUserSearch) {
         try {
-          const tok = await getAuth();
           const sparams = new URLSearchParams(window.location.search);
           sparams.set("showMature", tok.user?.mature);
           const endpoint = sparams.get("query") ? 'search' : 'list';
@@ -123,8 +122,9 @@
         let params = new URLSearchParams(location.href);
         if (currentPage > 1) {
           previous.style.display = "";
-          previous.onclick = function(e) {
+          previous.onclick = async function(e) {
             e.preventDefault();
+            list.innerHTML = '';
             currentPage -= 1;
             let projects = totalProjects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
             projects.forEach(proj => projHTML(list, tok)(proj));
@@ -135,8 +135,9 @@
         }
         if (currentPage * projectsPerPage < projects.length - 1) {
           next.style.display = "";
-          next.onclick = function(e) {
+          next.onclick = async function(e) {
             e.preventDefault();
+            list.innerHTML = '';
             currentPage += 1;
             let projects = totalProjects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
             projects.forEach(proj => projHTML(list, tok)(proj));
