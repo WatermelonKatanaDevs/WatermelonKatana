@@ -41,6 +41,7 @@
       const previous = document.querySelector("#prev-page");
       const next = document.querySelector("#next-page");
       const projectsPerPage = 30;
+      let totalProjects = [];
       let currentPage = location.search.match(/page=([\d]+)/);
       if (currentPage === null) { currentPage = 1; } 
       else { currentPage = parseInt(currentPage[1]); }
@@ -59,6 +60,7 @@
           sparams.set("showMature", tok.user?.mature);
           const res = await fetch('/api/project/list?' + sparams);
           const data = await res.json();
+          totalProjects = data.projects;
           updatePageIndexer(data.projects);
           data.projects = data.projects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
           data.projects.sort((a, b) => b.score - a.score);
@@ -82,7 +84,8 @@
           }
           history.pushState({}, "", buildUrl(params));
           currentPage = 1;
-          updatePageIndexer(await searchProjects());
+          await searchProjects();
+          updatePageIndexer(totalProjects);
         } catch (err) {
           alert('An error occurred: ' + err.message);
           console.error(err.message);
@@ -107,10 +110,9 @@
             }
           }
           list.innerHTML = '';
-          let totalProjects = data.projects;
+          totalProjects = data.projects;
           data.projects = data.projects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
           data.projects.forEach(proj => projHTML(list, tok)(proj));
-          return Promise.resolve(totalProjects);
         } catch (err) {
           alert('An error occurred while searching: ' + err.message);
           console.error(err.message);
@@ -121,13 +123,25 @@
         let params = new URLSearchParams(location.href);
         if (currentPage > 1) {
           previous.style.display = "";
-          previous.href = `${location.href + params.size > 1 ? "&": "?"}page=${currentPage - 1}`;
+          previous.onclick = function(e) {
+            e.preventDefault();
+            currentPage -= 1;
+            let projects = totalProjects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
+            projects.forEach(proj => projHTML(list, tok)(proj));
+          }
+          //previous.href = `${location.href + params.size > 1 ? "&": "?"}page=${currentPage - 1}`;
         } else {
           previous.style.display = "none";
         }
         if (currentPage * projectsPerPage < projects.length - 1) {
           next.style.display = "";
-          next.href = `${location.href + params.size > 1 ? "&": "?"}page=${currentPage + 1}`;
+          next.onclick = function(e) {
+            e.preventDefault();
+            currentPage += 1;
+            let projects = totalProjects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
+            projects.forEach(proj => projHTML(list, tok)(proj));
+          }
+          //next.href = `${location.href + params.size > 1 ? "&": "?"}page=${currentPage + 1}`;
         } else {
           next.style.display = "none";
         }
