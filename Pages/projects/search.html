@@ -107,9 +107,10 @@
             }
           }
           list.innerHTML = '';
+          let totalProjects = data.projects;
           data.projects = data.projects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
           data.projects.forEach(proj => projHTML(list, tok)(proj));
-          return Promise.resolve(data.projects);
+          return Promise.resolve(totalProjects);
         } catch (err) {
           alert('An error occurred while searching: ' + err.message);
           console.error(err.message);
@@ -119,13 +120,17 @@
       function updatePageIndexer(projects) {
         let params = new URLSearchParams(location.href);
         if (currentPage > 1) {
-            previous.style.display = "";
-            previous.href = `${location.href + params.size > 1 ? "&": "?"}page=${currentPage - 1}`;
-          }
-          if (currentPage * projectsPerPage < projects.length - 1) {
-            next.style.display = "";
-            next.href = `${location.href + params.size > 1 ? "&": "?"}page=${currentPage + 1}`;
-          }
+          previous.style.display = "";
+          previous.href = `${location.href + params.size > 1 ? "&": "?"}page=${currentPage - 1}`;
+        } else {
+          previous.style.display = "none";
+        }
+        if (currentPage * projectsPerPage < projects.length - 1) {
+          next.style.display = "";
+          next.href = `${location.href + params.size > 1 ? "&": "?"}page=${currentPage + 1}`;
+        } else {
+          next.style.display = "none";
+        }
       }
 
       // Initial search when the page loads
