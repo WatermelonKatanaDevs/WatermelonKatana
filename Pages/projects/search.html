@@ -117,13 +117,14 @@
       }
 
       function updatePageIndexer(projects) {
+        let params = new URLSearchParams(location.href);
         if (currentPage > 1) {
             previous.style.display = "";
-            previous.href = `${location.href + location.search.includes("?&") ? "&": "?"}page=${currentPage - 1}`;
+            previous.href = `${location.href + params.size > 1 ? "&": "?"}page=${currentPage - 1}`;
           }
           if (currentPage * projectsPerPage < projects.length - 1) {
             next.style.display = "";
-            next.href = `${location.href + location.search.includes("?&") ? "&": "?"}page=${currentPage + 1}`;
+            next.href = `${location.href + params.size > 1 ? "&": "?"}page=${currentPage + 1}`;
           }
       }
 
