@@ -25,8 +25,10 @@
         <input type="submit" value="Search" style="font-size: inherit">
         <a class="button" href="/publish">Publish</a>
       </form>
-    </div>
-    
+      <div>
+        <a id="prev-page" style="display: none"> Previous </a>
+        <a id="next-page" style="display: none"> Next </a>
+    </div>    
     <div id="list" class="project-list"></div>
     <div id="footer">
     </div>
@@ -36,7 +38,12 @@
       const list = document.querySelector('#list');
       const sortOptions = document.querySelector('#sortOptions');
       const searchBar = document.querySelector('#searchBar');
-
+      const previous = document.querySelector("#prev-page");
+      const next = document.querySelector("#next-page");
+      const projectsPerPage = 30;
+      let currentPage = location.search.match(/page=([\d]+)/);
+      if (typeof currentPage === null) { currentPage = 1; } 
+      else { currentPage = parseInt(currentPage[1]); }
       // Function to build URL with query parameters
       function buildUrl(params) {
         const url = new URL(window.location);
@@ -44,7 +51,7 @@
         return url;
       }
 
-      // Populate the list with projects
+      // Populate the list with projects (do we still need this?)
       async function populateProjects() {
         try {
           const tok = await getAuth();
@@ -52,6 +59,8 @@
           sparams.set("showMature", tok.user?.mature);
           const res = await fetch('/api/project/list?' + sparams);
           const data = await res.json();
+          updatePageIndexer(data.projects);
+          data.projects = data.projects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
           data.projects.sort((a, b) => b.score - a.score);
           data.projects.forEach(proj => projHTML(list, tok)(proj));
         } catch (err) {
@@ -59,7 +68,7 @@
         }
       }
 
-      populateProjects();
+      //populateProjects(); // culprit for project duplication
 
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -79,7 +88,7 @@
         }
       });
 
-      async function searchProjects() {
+      async function searchProjects(isUserSearch) {
         try {
           const tok = await getAuth();
           const sparams = new URLSearchParams(window.location.search);
@@ -97,11 +106,25 @@
             }
           }
           list.innerHTML = '';
+          currentPage = isUserSearch ? 1: currentPage;
+          updatePageIndexer(data.projects);
+          data.projects = data.projects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
           data.projects.forEach(proj => projHTML(list, tok)(proj));
         } catch (err) {
           alert('An error occurred while searching: ' + err.message);
           console.error(err.message);
         }
+      }
+
+      function updatePageIndexer(projects) {
+        if (currentPage > 1) {
+            previous.style.display = "";
+            previous.href = `${location.href + location.search.includes("?") ? "&": "?"}page=${currentPage - 1}`;
+          }
+          if (currentPage * projectsPerPage < projects.length - 1) {
+            next.style.display = "";
+            next.href = `${location.href + location.search.includes("?") ? "&": "?"}page=${currentPage + 1}`;
+          }
       }
 
       // Initial search when the page loads
