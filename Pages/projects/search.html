@@ -51,7 +51,7 @@
         return url;
       }
 
-      // Populate the list with projects (do we still need this?)
+      // Populate the list with projects
       async function populateProjects() {
         try {
           const tok = await getAuth();
@@ -68,7 +68,7 @@
         }
       }
 
-      //populateProjects(); // culprit for project duplication
+      populateProjects(); // culprit for project duplication
 
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
