@@ -81,7 +81,8 @@
             params.sort = sortOptions.value;
           }
           history.pushState({}, "", buildUrl(params));
-          await searchProjects();
+          currentPage = 1;
+          updatePageIndexer(await searchProjects());
         } catch (err) {
           alert('An error occurred: ' + err.message);
           console.error(err.message);
@@ -106,10 +107,9 @@
             }
           }
           list.innerHTML = '';
-          currentPage = isUserSearch ? 1: currentPage;
-          updatePageIndexer(data.projects);
           data.projects = data.projects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
           data.projects.forEach(proj => projHTML(list, tok)(proj));
+          return Promise.resolve(data.projects);
         } catch (err) {
           alert('An error occurred while searching: ' + err.message);
           console.error(err.message);
