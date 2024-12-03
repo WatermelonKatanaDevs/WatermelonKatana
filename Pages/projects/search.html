@@ -25,9 +25,9 @@
         <input type="submit" value="Search" style="font-size: inherit">
         <a class="button" href="/publish">Publish</a>
       </form>
-      <div>
+      <div style="padding-bottom: 4%;">
         <a id="prev-page" style="display: none"> Previous </a>
-        <a id="next-page"> Next </a>
+        <a id="next-page" style="display: none"> Next </a>
     </div>    
     <div id="list" class="project-list"></div>
     <div id="footer">
@@ -121,14 +121,17 @@
       }
 
       function updatePageIndexer(projects) {
-        if (totalProjects.length-1 < projectsPerPage) { next.style.display = "none"; }
+        if ((totalProjects.length - 1) < projectsPerPage) { next.style.display = "none"; }
+        else { next.style.display = ""; }
+        if ((currentPage - 1) < 1) { previous.style.display = "none"; }
+        else { previous.style.display = ""; }
         let params = new URLSearchParams(location.href);
         previous.onclick = async function(e) {
           e.preventDefault();
           list.innerHTML = '';
           currentPage -= 1;
           if ((currentPage - 1) < 1) { previous.style.display = "none"; }
-          if (currentPage * projectsPerPage < totalProjects.length-1) { next.style.display = ""; }
+          if (currentPage * projectsPerPage < totalProjects.length - 1) { next.style.display = ""; }
           let projects = totalProjects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
           projects.forEach(proj => projHTML(list, tok)(proj));
         }
@@ -138,7 +141,7 @@
           list.innerHTML = '';
           currentPage += 1;
           if (currentPage > 1) { previous.style.display = ""; }
-          if ((currentPage + 1) * projectsPerPage > totalProjects.length-1) { next.style.display = "none"; }
+          if ((currentPage + 1) * projectsPerPage > totalProjects.length - 1) { next.style.display = "none"; }
           let projects = totalProjects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
           projects.forEach(proj => projHTML(list, tok)(proj));
         }
