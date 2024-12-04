@@ -125,32 +125,34 @@
 
       // Project cache indexing veiwer
       function updatePageIndexer(projects) {
-        const totalProjects = projects;
-        if ((totalProjects.length - 1) < projectsPerPage) { next.style.visibility = "hidden"; }
+        if ((projects.length - 1) < projectsPerPage) { next.style.visibility = "hidden"; }
         else { next.style.visibility = ""; }
-        pageCounter.textContent = `${currentPage} / ${Math.ceil((totalProjects.length-1) / projectsPerPage)}`;
+        pageCounter.textContent = `${currentPage} / ${Math.ceil((projects.length-1) / projectsPerPage)}`;
         if ((currentPage - 1) < 1) { previous.style.visibility = "hidden"; }
         else { previous.style.visibility = ""; }
         let params = new URLSearchParams(location.href);
-        previous.onclick = function(e) {
+        previous.onclick = prevPage;
+        next.onclick = nextPage;
+        
+        function prevPage(e) {
           e.preventDefault();
           list.innerHTML = '';
           currentPage -= 1;
-          pageCounter.textContent = `${currentPage} / ${Math.ceil((totalProjects.length-1) / projectsPerPage)}`;
+          pageCounter.textContent = `${currentPage} / ${Math.ceil((projects.length-1) / projectsPerPage)}`;
           if ((currentPage - 1) < 1) { previous.style.visibility = "hidden"; }
-          if (currentPage * projectsPerPage < totalProjects.length - 1) { next.style.visibility = ""; }
-          let totalProjects = totalProjects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
+          if (currentPage * projectsPerPage < projects.length - 1) { next.style.visibility = ""; }
+          let totalProjects = projects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
           totalProjects.forEach(proj => projHTML(list, tok)(proj));
         }
-        
-        next.onclick = function(e) {
+
+        function nextPage(e) {
           e.preventDefault();
           list.innerHTML = '';
           currentPage += 1;
-          pageCounter.textContent = `${currentPage} / ${Math.ceil((totalProjects.length-1) / projectsPerPage)}`;
+          pageCounter.textContent = `${currentPage} / ${Math.ceil((projects.length-1) / projectsPerPage)}`;
           if (currentPage > 1) { previous.style.visibility = ""; }
-          if ((currentPage + 1) * projectsPerPage > totalProjects.length - 1) { next.style.visibility = "hidden"; }
-          let totalProjects = totalProjects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
+          if ((currentPage + 1) * projectsPerPage > projects.length - 1) { next.style.visibility = "hidden"; }
+          let totalProjects = projects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
           totalProjects.forEach(proj => projHTML(list, tok)(proj));
         }
       }
