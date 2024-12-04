@@ -131,10 +131,7 @@
         if ((currentPage - 1) < 1) { previous.style.visibility = "hidden"; }
         else { previous.style.visibility = ""; }
         let params = new URLSearchParams(location.href);
-        previous.onclick = prevPage;
-        next.onclick = nextPage;
-        
-        function prevPage(e) {
+        previous.onclick = function(e) {
           e.preventDefault();
           list.innerHTML = '';
           currentPage -= 1;
@@ -144,8 +141,7 @@
           let totalProjects = projects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
           totalProjects.forEach(proj => projHTML(list, tok)(proj));
         }
-
-        function nextPage(e) {
+        next.onclick = function(e) {
           e.preventDefault();
           list.innerHTML = '';
           currentPage += 1;
