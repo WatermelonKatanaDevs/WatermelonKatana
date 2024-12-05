@@ -55,24 +55,23 @@
         return url;
       }
 
-      // Populate the list with projects
-      async function populateProjects() {
-        try {
-          tok = await getAuth();
-          const sparams = new URLSearchParams();
-          sparams.set("showMature", tok.user?.mature);
-          const res = await fetch('/api/project/list?' + sparams);
-          const data = await res.json();
-          updatePageIndexer(data.projects);
-          data.projects = data.projects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
-          data.projects.sort((a, b) => b.score - a.score);
-          data.projects.forEach(proj => projHTML(list, tok)(proj));
-        } catch (err) {
-          console.error('Error populating projects:', err);
-        }
-      }
-
-      populateProjects();
+      // Populate the list with projects (do we still need this?)
+      //async function populateProjects() {
+      //  try {
+      //    tok = await getAuth();
+      //    const sparams = new URLSearchParams();
+      //    sparams.set("showMature", tok.user?.mature);
+      //    const res = await fetch('/api/project/list?' + sparams);
+      //    const data = await res.json();
+      //    updatePageIndexer(data.projects);
+      //    data.projects = data.projects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
+      //    data.projects.sort((a, b) => b.score - a.score);
+      //    data.projects.forEach(proj => projHTML(list, tok)(proj));
+      //  } catch (err) {
+      //    console.error('Error populating projects:', err);
+      //  }
+      //}
+      //populateProjects();
 
       // Search listener
       form.addEventListener('submit', async (e) => {
