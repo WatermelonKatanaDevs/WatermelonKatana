@@ -86,7 +86,7 @@
           }
           history.pushState({}, "", buildUrl(params));
           currentPage = 1;
-          updatePageIndexer(await searchProjects());
+          await searchProjects();
         } catch (err) {
           alert('An error occurred: ' + err.message);
           console.error(err.message);
@@ -112,10 +112,9 @@
             }
           }
           list.innerHTML = '';
-          let totalProjects = data.projects;
+          updatePageIndexer(data.projects);
           data.projects = data.projects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
           data.projects.forEach(proj => projHTML(list, tok)(proj));
-          return Promise.resolve(totalProjects);
         } catch (err) {
           alert('An error occurred while searching: ' + err.message);
           console.error(err.message);
