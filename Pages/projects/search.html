@@ -148,7 +148,7 @@
           if ((currentPage - 1) < 1) { previous.style.visibility = "hidden"; }
           else { previous.style.visibility = ""; }
           let params = new URLSearchParams(location.search);
-          if(params.page) {
+          if(params.get(page) !== null) {
             params.page = currentPage;
           } else {
             params.append("page", currentPage);
