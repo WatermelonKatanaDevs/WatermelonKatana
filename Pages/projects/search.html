@@ -142,7 +142,7 @@
         }
 
         function mainIndex() {
-          if ((projects.length-1) / projectsPerPage < 1) { next.style.visibility = "hidden"; }
+          if ((currentPage + 1) > Math.ceil((projects.length-1) / projectsPerPage)) { next.style.visibility = "hidden"; }
           else { next.style.visibility = ""; }
           pageCounter.textContent = `${currentPage} / ${Math.ceil((projects.length-1) / projectsPerPage)}`;
           if ((currentPage - 1) < 1) { previous.style.visibility = "hidden"; }
