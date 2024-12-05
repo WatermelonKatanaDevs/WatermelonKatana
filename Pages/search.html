@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search | WatermelonKatana</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <meta property="og:title" content="Search - WatermelonKatana"/>
+    <meta property="og:type" content="profile"/>
+    <link rel="stylesheet" type="text/css" href="/styles/style.css">
+    <script src="/scripts/HtmlSanitizer.js"></script>
+    <script src="/scripts/script.js"></script>
+  </head>
+  <body>
+    <script src="/scripts/navbar.js"></script>
+    <div id="controls">
+      <form style="font-size: 25px">
+        <select id="sortOptions" style="font-size: inherit">
+          <option value="score">Score</option>
+          <option value="views">Views</option>
+          <option value="latest">Latest</option>
+          <option value="oldest">Oldest</option>
+        </select>
+        <input type="text" id="searchBar" placeholder="Search here" style="font-size: inherit">
+        <input type="submit" value="Search" style="font-size: inherit">
+        <a class="button" href="/publish">Publish</a>
+      </form>
+    </div>
+    <div style="padding-bottom: 3vh; font-size: 1.3em; display: flex; gap: 5vw;">
+      <a id="prev-page" style="cursor: pointer; visibility: hidden"> Previous </a>
+      <span id="page-count"> loading... </span>
+      <a id="next-page" style="cursor: pointer; visibility: hidden"> Next </a>
+    </div>
+    <div id="list" class="project-list"></div>
+    <div id="footer">
+    </div>
+    
+    <script>
+      const form = document.querySelector('form');
+      const list = document.querySelector('#list');
+      const sortOptions = document.querySelector('#sortOptions');
+      const searchBar = document.querySelector('#searchBar');
+      const previous = document.querySelector("#prev-page");
+      const pageCounter = document.querySelector("#page-count");
+      const next = document.querySelector("#next-page");
+      const projectsPerPage = 30;
+      let tok = {auth: false};
+      let currentPage = location.search.match(/page=([\d]+)/);
+      if (currentPage === null) { currentPage = 1; } 
+      else { currentPage = parseInt(currentPage[1]); }
+      // Function to build URL with query parameters
+      function buildUrl(params) {
+        const url = new URL(window.location);
+        url.search = new URLSearchParams(params).toString();
+        return url;
+      }
+
+      // Populate the list with projects (do we still need this?)
+      //async function populateProjects() {
+      //  try {
+      //    tok = await getAuth();
+      //    const sparams = new URLSearchParams();
+      //    sparams.set("showMature", tok.user?.mature);
+      //    const res = await fetch('/api/project/list?' + sparams);
+      //    const data = await res.json();
+      //    updatePageIndexer(data.projects);
+      //    data.projects = data.projects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
+      //    data.projects.sort((a, b) => b.score - a.score);
+      //    data.projects.forEach(proj => projHTML(list, tok)(proj));
+      //  } catch (err) {
+      //    console.error('Error populating projects:', err);
+      //  }
+      //}
+      //populateProjects();
+
+      // Search listener
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        try {
+          const query = searchBar.value;
+          const params = {};
+          if (query) {
+            params.query = query;
+          } else {
+            params.sort = sortOptions.value;
+          }
+          history.pushState({}, "", buildUrl(params));
+          currentPage = 1;
+          await searchProjects();
+        } catch (err) {
+          alert('An error occurred: ' + err.message);
+          console.error(err.message);
+        }
+      });
+
+      // Project searching algorithim
+      async function searchProjects(isUserSearch) {
+        try {
+          tok = await getAuth();
+          const sparams = new URLSearchParams(window.location.search);
+          sparams.set("showMature", tok.user?.mature);
+          const endpoint = sparams.get("query") ? 'search' : 'list';
+          const res = await fetch('/api/project/' + endpoint + '?' + sparams);
+          const data = await res.json();
+          if (!sparams.get("query")) {
+            const sort = sparams.get("sort") || "score";
+            switch (sort) {
+              case "score": data.projects.sort((a, b) => b.score - a.score || b.views - a.views); break;
+              case "views": data.projects.sort((a, b) => b.views - a.views || b.score - a.score); break;
+              case "latest": data.projects.sort((a, b) => new Date(b.postedAt) - new Date(a.postedAt)); break;
+              case "oldest": data.projects.sort((a, b) => new Date(a.postedAt) - new Date(b.postedAt)); break;
+            }
+          }
+          list.innerHTML = '';
+          updatePageIndexer(data.projects);
+          data.projects = data.projects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
+          data.projects.forEach(proj => projHTML(list, tok)(proj));
+        } catch (err) {
+          alert('An error occurred while searching: ' + err.message);
+          console.error(err.message);
+        }
+      }
+
+      // Project cache indexing veiwer
+      function updatePageIndexer(projects) {
+        if ((projects.length - 1) < projectsPerPage) { next.style.visibility = "hidden"; }
+        else { next.style.visibility = ""; }
+        pageCounter.textContent = `${currentPage} / ${Math.ceil((projects.length-1) / projectsPerPage)}`;
+        if ((currentPage - 1) < 1) { previous.style.visibility = "hidden"; }
+        else { previous.style.visibility = ""; }
+        let params = new URLSearchParams(location.href);
+        previous.onclick = function(e) {
+          e.preventDefault();
+          list.innerHTML = '';
+          currentPage -= 1;
+          pageCounter.textContent = `${currentPage} / ${Math.ceil((projects.length-1) / projectsPerPage)}`;
+          if ((currentPage - 1) < 1) { previous.style.visibility = "hidden"; }
+          if (currentPage * projectsPerPage < projects.length - 1) { next.style.visibility = ""; }
+          let totalProjects = projects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
+          totalProjects.forEach(proj => projHTML(list, tok)(proj));
+        }
+        next.onclick = function(e) {
+          e.preventDefault();
+          list.innerHTML = '';
+          currentPage += 1;
+          pageCounter.textContent = `${currentPage} / ${Math.ceil((projects.length-1) / projectsPerPage)}`;
+          if (currentPage > 1) { previous.style.visibility = ""; }
+          if ((currentPage + 1) * projectsPerPage > projects.length - 1) { next.style.visibility = "hidden"; }
+          let totalProjects = projects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
+          totalProjects.forEach(proj => projHTML(list, tok)(proj));
+        }
+      }
+
+      // Initial search when the page loads
+      searchProjects();
+    </script>
+  </body>
+</html>
