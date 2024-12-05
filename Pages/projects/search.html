@@ -123,31 +123,34 @@
 
       // Project cache indexing veiwer
       function updatePageIndexer(projects) {
-        if ((projects.length - 1) < projectsPerPage) { next.style.visibility = "hidden"; }
-        else { next.style.visibility = ""; }
-        pageCounter.textContent = `${currentPage} / ${Math.ceil((projects.length-1) / projectsPerPage)}`;
-        if ((currentPage - 1) < 1) { previous.style.visibility = "hidden"; }
-        else { previous.style.visibility = ""; }
-        let params = new URLSearchParams(location.href);
+        mainIndex();
+
         previous.onclick = function(e) {
           e.preventDefault();
           list.innerHTML = '';
           currentPage -= 1;
-          pageCounter.textContent = `${currentPage} / ${Math.ceil((projects.length-1) / projectsPerPage)}`;
-          if ((currentPage - 1) < 1) { previous.style.visibility = "hidden"; }
-          if (currentPage * projectsPerPage < projects.length - 1) { next.style.visibility = ""; }
-          let totalProjects = projects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
-          totalProjects.forEach(proj => projHTML(list, tok)(proj));
+          let projectPage = mainIndex();
+          projectPage.forEach(proj => projHTML(list, tok)(proj));
         }
+
         next.onclick = function(e) {
           e.preventDefault();
           list.innerHTML = '';
           currentPage += 1;
+          let projectPage = mainIndex();
+          projectPage.forEach(proj => projHTML(list, tok)(proj));
+        }
+
+        function mainIndex() {
+          if ((projects.length - 1) < projectsPerPage) { next.style.visibility = "hidden"; }
+          else { next.style.visibility = ""; }
           pageCounter.textContent = `${currentPage} / ${Math.ceil((projects.length-1) / projectsPerPage)}`;
-          if (currentPage > 1) { previous.style.visibility = ""; }
-          if ((currentPage + 1) * projectsPerPage > projects.length - 1) { next.style.visibility = "hidden"; }
-          let totalProjects = projects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
-          totalProjects.forEach(proj => projHTML(list, tok)(proj));
+          if ((currentPage - 1) < 1) { previous.style.visibility = "hidden"; }
+          else { previous.style.visibility = ""; }
+          let params = new URLSearchParams(location.href);
+          params.page = currentPage;
+          history.pushState({}, "", buildUrl(params));
+          return projects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
         }
       }
 
