@@ -148,7 +148,11 @@
           if ((currentPage - 1) < 1) { previous.style.visibility = "hidden"; }
           else { previous.style.visibility = ""; }
           let params = new URLSearchParams(location.search);
-          params.append("page", currentPage);
+          if(params.page) {
+            params.page = currentPage;
+          } else {
+            params.append("page", currentPage);
+          }
           history.pushState({}, "", buildUrl(params));
           return projects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
         }
