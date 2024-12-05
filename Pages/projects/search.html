@@ -142,12 +142,12 @@
         }
 
         function mainIndex() {
-          if ((projects.length - 1) < projectsPerPage) { next.style.visibility = "hidden"; }
+          if ((projects.length-1) / projectsPerPage < 1) { next.style.visibility = "hidden"; }
           else { next.style.visibility = ""; }
           pageCounter.textContent = `${currentPage} / ${Math.ceil((projects.length-1) / projectsPerPage)}`;
           if ((currentPage - 1) < 1) { previous.style.visibility = "hidden"; }
           else { previous.style.visibility = ""; }
-          let params = new URLSearchParams(location.href);
+          let params = new URLSearchParams(location.search);
           params.page = currentPage;
           history.pushState({}, "", buildUrl(params));
           return projects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
