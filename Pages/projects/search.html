@@ -94,7 +94,7 @@
       });
 
       // Project searching algorithim
-      async function searchProjects(isUserSearch) {
+      async function searchProjects() {
         try {
           tok = await getAuth();
           const sparams = new URLSearchParams(window.location.search);
