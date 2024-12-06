@@ -16,6 +16,7 @@
     <meta property="og:description" content="Post your projects, Interact with other peoples' projects, Chat with your friends & More! We have a large gallery of games and a growing user base, help us out by either posting your browser game here or playing other peoples' games!"/>
     <link rel="stylesheet" type="text/css" href="/styles/style.css">
     <link rel="stylesheet" type="text/css" href="/styles/home.css">
+    <link rel="stylesheet" type="text/css" href="/styles/v3.css">
     <script src="/scripts/HtmlSanitizer.js"></script>
     <script src="/scripts/script.js"></script>
   </head>
@@ -49,11 +50,9 @@
         <h2>Hot Forum Topics</h2>
         <div id="postlist" class="post-list"></div>
       </section>
-      <footer id="footer" class="main-footer">
-        <p>&copy; 2024 WatermelonKatana. All rights reserved.</p>
-      </footer>
     </div>
     
+    <script src="/scripts/footer.js"></script>
     <script>
       const featuredList = document.querySelector('#featuredList');
       const latestList = document.querySelector('#latestList');
@@ -92,7 +91,6 @@
       })();
       
       const header = document.querySelector('#header');
-      const footer = document.querySelector('#footer');
       const user = document.getElementById('username');
       (async () => {
         const data = await getAuth();

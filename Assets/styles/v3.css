@@ -1,0 +1,301 @@
+/*
+    Frontend Styles
+    Version: Beta 3.0
+    Author: Colack & Frontend Contributors
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Fugaz+One&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
+
+:root {
+    --background-grey: #222222;
+    --background-light-grey: #2d2d2d;
+    --element-green: #c1ff72;
+    --element-red: #f8413c;
+    --sidebar-width: 250px;
+    --transition-duration: 0.3s;
+    --box-padding: 20px;
+    --border-color: #575757;
+    --border-width: 2px;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Barlow Semi Condensed', sans-serif;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: var(--background-grey);
+}
+
+.main_content {
+    flex-grow: 1;
+    padding: 20px;
+    transition: margin-left var(--transition-duration) ease;
+}
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: -250px;
+    width: var(--sidebar-width);
+    height: 100vh;
+    background-color: var(--background-grey);
+    color: white;
+    padding: 20px;
+    box-sizing: border-box;
+    transition: left var(--transition-duration) ease;
+    z-index: 100;
+}
+
+.sidebar.open {
+    left: 0;
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.sidebar .katana_logo {
+    width: 100%;
+    max-width: 180px;
+    height: auto;
+}
+
+.sidebar a {
+    color: white;
+    text-decoration: none;
+    display: block;
+    padding: 12px 0;
+    font-size: 18px;
+}
+
+.sidebar a:hover {
+    background-color: #575757;
+    border-radius: 5px;
+}
+
+.sidebar a.active {
+    font-weight: bold;
+    background-color: var(--element-green);
+}
+
+.hamburger-btn {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    font-size: 30px;
+    background-color: transparent;
+    border: none;
+    color: #ffffff6f;
+    cursor: pointer;
+    z-index: 1000;
+}
+
+.hamburger-icon {
+    display: block;
+    width: 35px;
+    height: 5px;
+    background-color: white;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.hamburger-icon::before,
+.hamburger-icon::after {
+    content: '';
+    position: absolute;
+    width: 35px;
+    height: 5px;
+    background-color: white;
+    transition: all 0.3s ease;
+}
+
+.hamburger-icon::before {
+    top: -10px;
+}
+
+.hamburger-icon::after {
+    top: 10px;
+}
+
+.katana_logo {
+    width: 250px;
+    height: auto;
+    margin-bottom: 20px;
+}
+
+.katana_intro h2 {
+    font-family: 'Fugaz One', cursive;
+    font-size: 28px;
+    color: var(--element-green);
+    margin-bottom: 20px;
+}
+
+.katana_intro h1 {
+    font-family: 'Fugaz One', cursive;
+    font-size: 40px;
+    color: var(--element-green);
+    margin-bottom: 20px;
+}
+
+.katana_intro strong {
+    color: var(--element-red);
+}
+
+.boxed-text {
+    border: var(--border-width) solid var(--border-color);
+    padding: var(--box-padding);
+    background-color: rgba(0, 0, 0, 0.3); /* Semi-transparent background */
+    border-radius: 8px;
+    width: fit-content;
+    max-width: 39%;  
+    margin-bottom: 20px;
+    color: white;
+}
+
+.boxed-text p strong {
+    color: var(--element-green);
+}
+
+.boxed-text h1 strong {
+    color: var(--element-red);
+}
+
+.boxed-text h1 {
+    font-size: 36px; /* Adjust size for h1 inside boxed text */
+    margin-bottom: 10px;
+}
+
+.boxed-text p {
+    font-size: 18px;
+    line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+    .katana_logo {
+        width: 200px;
+    }
+
+    .main_content {
+        padding: 10px;
+    }
+
+    .katana_intro h2 {
+        font-size: 22px;
+    }
+
+    .sidebar {
+        width: 200px;
+    }
+
+    .hamburger-btn {
+        left: 15px;
+    }
+
+    .boxed-text {
+        width: 100%;
+    }
+}
+
+/* Footer Styling */
+.footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background-color: var(--background-light-grey);
+    display: flex;
+    justify-content: space-between;  /* Align the items to the sides */
+    padding: 15px 30px;
+    z-index: 200;
+    box-sizing: border-box;
+}
+
+/* Social Media Button Container */
+.social-buttons {
+    display: flex;
+    align-items: center;
+}
+
+.social-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--element-green);
+    color: white;
+    text-decoration: none;
+    padding: 12px 20px;
+    margin: 0 10px;
+    border-radius: 5px;
+    font-size: 18px;
+    transition: background-color 0.3s;
+    box-sizing: border-box;
+}
+
+.social-btn i {
+    margin-right: 8px; /* Space between icon and text */
+}
+
+.social-btn:hover {
+    background-color: var(--element-red);
+}
+
+/* Specific color for each social button */
+.discord-btn {
+    background-color: #7289da;
+}
+
+.github-btn {
+    background-color: #333;
+}
+
+.linkedin-btn {
+    background-color: #0077b5;
+}
+
+.discord-btn:hover {
+    background-color: #5d6c8e;
+}
+
+.github-btn:hover {
+    background-color: #444;
+}
+
+.linkedin-btn:hover {
+    background-color: #005582;
+}
+
+.twitter-btn {
+    background-color: #1da1f2;
+}
+
+.twitter-btn:hover {
+    background-color: #0b7bc1;
+}
+
+/* Footer Info Styling (Email and Copyright) */
+.footer-info {
+    color: white;
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;  /* Align to the right */
+    justify-content: center;
+}
+
+.footer-info a {
+    color: var(--element-green);
+    text-decoration: none;
+}
+
+.footer-info a:hover {
+    text-decoration: underline;
+}
+
+.footer-info p {
+    margin: 5px 0;
+}
