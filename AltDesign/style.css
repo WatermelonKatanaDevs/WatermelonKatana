@@ -1,0 +1,196 @@
+:root {
+  --background: white;
+  --sidebar: #222222;
+  --sidebarText: white;
+  --sidebarButton: #2f2f2f;
+  --sidebarButtonHover: #3f3f3f;
+  --sidebarButtonActive: #4f4f4f;
+  --button: #1e90ff;
+  --buttonHover: #2ea0ff;
+  --buttonActive: #3eb0ff;
+  --gray: #ccc;
+  --theme: #1e90ff;
+  --mainText: black;
+}
+@font-face {
+  font-family: "MaterialSymbols-Outlined";
+  src: url('https://cdn.glitch.global/b27b68c0-df0a-4252-850d-d84d72f09843/MaterialSymbolsOutlined-VariableFont_FILL%2CGRAD%2Copsz%2Cwght.ttf?v=1731443099776');
+}
+::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+::-webkit-scrollbar-track {
+  background: transparent; 
+}
+::-webkit-scrollbar-thumb {
+  background: #888; 
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #555; 
+}
+html {
+  height: 100%;
+}
+body {
+  height: 100%;
+  margin: 0;
+  background: var(--background);
+  display: flex;
+  font-family: Inter, sans-serif;
+  color: var(--mainText);
+}
+.app {
+  display: flex;
+  flex-direction: row;
+  flex-grow: 1;
+  gap: 5px;
+  overflow: hidden;
+}
+.sidebarPadding {
+  padding: 5px;
+}
+.sidebar {
+  width: 250px;
+  background: var(--sidebar);
+  border-radius: 10px;
+  box-shadow: 0 3px 10px -1px rgba(0,0,0,0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  height: 100%;
+}
+.sidebar .logo {
+  padding: 10px;
+  transition: 0.1s;
+  cursor: pointer;
+}
+.sidebar .logo:active:hover {
+  transform: scale(0.95);
+}
+.sidebarButtons {
+  display: flex;
+  flex-direction: column;
+  font-size: 20px;
+  padding: 5px;
+  gap: 2px;
+  overflow-y: auto;
+}
+.sidebarButtons button {
+  font-family: inherit;
+  font-size: 15px;
+  border: none;
+  border-radius: 2px;
+  text-align: left;
+  padding: 5px 10px;
+  background: var(--sidebarButton);
+  color: var(--sidebarText);
+  display: flex;
+  gap: 5px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-drag: none;
+  transition: 0.2s;
+}
+.sidebarButtons button.active {
+  font-weight: bold;
+}
+.sidebarButtons button.active .symbol {
+  font-weight: normal;
+}
+.sidebarButtons button:first-of-type {
+  border-radius: 7px 7px 2px 2px;
+}
+.sidebarButtons button:last-of-type {
+  border-radius: 2px 2px 7px 7px;
+}
+.sidebarButtons button:first-of-type:last-of-type {
+  border-radius: 7px;
+}
+.sidebarButtons button:hover {
+  background: var(--sidebarButtonHover);
+}
+.sidebarButtons button:active:hover {
+  background: var(--sidebarButtonActive);
+}
+.symbol {
+  font-family: "MaterialSymbols-Outlined", sans-serif;
+  font-weight: normal;
+}
+.hideIfNotAdmin {
+  display: none !important;
+}
+.hideIfLoggedOut {
+  display: none !important;
+}
+.spacer {
+  flex-grow: 1;
+}
+.user {
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  user-select: none;
+  -webkit-user-drag: none;
+  color: var(--sidebarText);
+}
+.user img {
+  width: 30px;
+  height: 30px;
+  object-fit: cover;
+  padding: 0;
+  margin: 0;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: 0.1s;
+}
+.user img:active:hover {
+  transform: scale(0.95);
+}
+.user .username {
+  flex-grow: 1;
+}
+.user button {
+  background: var(--button);
+  color: var(--sidebarText);
+  border: none;
+  border-radius: 100px;
+  font-size: 15px;
+  padding: 3px 6px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.user button:hover {
+  background: var(--buttonHover);
+}
+.user button:active:hover {
+  background: var(--buttonActive);
+}
+.main {
+  flex-grow: 1;
+  overflow: auto;
+  transition: 0.2s;
+}
+.loading {
+  width: 35px;
+  height: 35px;
+  margin: auto;
+  border-radius: 100px;
+  border: 4px solid var(--gray);
+  border-left-color: var(--theme);
+  animation: loading 1s;
+  animation-iteration-count: infinite;
+}
+@keyframes loading {
+  0% {
+      transform: rotate(0deg);
+  }
+  100% {
+      transform: rotate(360deg);
+  }
+}
