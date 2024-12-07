@@ -37,7 +37,7 @@ body {
 }
 
 .sidebar {
-    position: fixed;
+    position: sticky;
     top: 0;
     left: -250px;
     width: var(--sidebar-width);

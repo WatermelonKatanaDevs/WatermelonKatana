@@ -11,10 +11,11 @@ body {
 
 .container {
 	width: 90%;
-  overflow: hidden;
+	overflow: scroll;
+	scrollbar-width: none;
 	padding: 20px;
-  margin: 2.5em auto auto;
-  background: #202020;
+	margin: 2.5em auto auto;
+	background: #202020;
 	border-radius: 10px;
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
