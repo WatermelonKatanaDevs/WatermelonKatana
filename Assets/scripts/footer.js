@@ -2,6 +2,10 @@ const footer = document.createElement('footer');
 footer.className = "footer";
 footer.innerHTML = `
 <div class="social-buttons">
+    <button id="dismiss-footer" style="position: absolute; top: 0px; left: 0px; background-image: none"
+    onclick="document.body.removeChild(document.querySelector('.footer'))"> 
+    X 
+    </button>
     <a href="https://discord.gg/S8XTzKEz5f" target="_blank" class="social-btn discord-btn">
         <i class="fab fa-discord"></i> Discord
     </a>
@@ -11,7 +15,7 @@ footer.innerHTML = `
     <a href="https://www.linkedin.com/company/watermelonkatana/" target="_blank" class="social-btn linkedin-btn">
         <i class="fab fa-linkedin"></i> LinkedIn
     </a>
-    <a href="https://twitter.com/watermelonktn" target="_blank" class="social-btn twitter-btn">
+    <a href="https://twitter.com/WatermelonKatana" target="_blank" class="social-btn twitter-btn">
         <i class="fab fa-twitter"></i> Twitter
     </a>
 </div>
