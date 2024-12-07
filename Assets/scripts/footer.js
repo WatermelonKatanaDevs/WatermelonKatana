@@ -11,7 +11,7 @@ footer.innerHTML = `
     <a href="https://www.linkedin.com/company/watermelonkatana/" target="_blank" class="social-btn linkedin-btn">
         <i class="fab fa-linkedin"></i> LinkedIn
     </a>
-    <a href="https://twitter.com/WatermelonKatana" target="_blank" class="social-btn twitter-btn">
+    <a href="https://twitter.com/watermelonktn" target="_blank" class="social-btn twitter-btn">
         <i class="fab fa-twitter"></i> Twitter
     </a>
 </div>
