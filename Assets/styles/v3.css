@@ -37,7 +37,7 @@ body {
 }
 
 .sidebar {
-    position: sticky;
+    position: fixed;
     top: 0;
     left: -250px;
     width: var(--sidebar-width);
@@ -204,7 +204,7 @@ body {
 
 /* Footer Styling */
 .footer {
-    position: fixed;
+    position: sticky;
     bottom: 0;
     width: 100%;
     background-color: var(--background-light-grey);
