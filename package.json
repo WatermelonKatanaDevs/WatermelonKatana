@@ -14,7 +14,7 @@
     "dependencies": {
         "bcryptjs": "^2.4.3",
         "canvas": "^2.11.2",
-        "cookie-parser": "^1.4.6",
+        "cookie-parser": "^1.4.7",
         "cookieparser": "^0.1.0",
         "cors": "^2.8.5",
         "cross-fetch": "^4.0.0",
