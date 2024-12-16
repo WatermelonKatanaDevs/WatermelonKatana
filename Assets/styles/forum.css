@@ -23,6 +23,10 @@
   display: block;
 }
 
+.comment-content img {
+  max-width: 98%;
+}
+
 .comment {
   color: #ccc;
   background-color: #333;
