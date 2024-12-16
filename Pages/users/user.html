@@ -180,6 +180,7 @@
             userData.favorites.map(async (pid) => {
               const res = await fetch("/api/project/data/" + pid);
               const proj = await res.json();
+              if(proj.mature && !tok.mature) { return }
               projHTML(favlist)(proj);
             }),
           );
