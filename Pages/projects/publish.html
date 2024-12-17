@@ -80,7 +80,7 @@
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      if( form.isSubmitted ) { prompt("you have already submitted a request please wait") }
+      if( form.isSubmitted ) { return prompt("you have already submitted a request please wait") }
       display.textContent = '';
       if (!link.value.match(/^https?:\/\/[^"]+$/))
         return (display.textContent = "Link is not a vaild URL");
