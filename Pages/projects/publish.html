@@ -80,6 +80,7 @@
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      if( form.isSubmitted ) { prompt("you have already submitted a request please wait") }
       display.textContent = '';
       if (!link.value.match(/^https?:\/\/[^"]+$/))
         return (display.textContent = "Link is not a vaild URL");
@@ -91,6 +92,7 @@
       if (taglist.length > 10)
         return display.textContent = 'You can only choose a maximum of 10 tags';
       try {
+        form.isSubmitted = true;
         const res = await fetch('/api/project/publish', {
           method: 'POST',
           body: JSON.stringify({
@@ -107,11 +109,13 @@
         });
         const data = await res.json();
         if (res.status === 400 || res.status === 401) {
+          form.isSubmitted = false;
           return display.textContent = data.message + ". " + (data.error ? data.error : '');
         }
         await populateCDOStorage(link.value, storage.value);
         location.assign('/project/' + data.id);
       } catch (err) {
+        form.isSubmitted = false;
         console.log(err.message);
         alert(err.message);
       }
