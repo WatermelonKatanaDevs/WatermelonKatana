@@ -2,8 +2,7 @@ const footer = document.createElement('footer');
 footer.className = "footer";
 footer.innerHTML = `
 <div class="social-buttons">
-    <button id="dismiss-footer" style="position: absolute; top: 0px; left: 0px; background-image: none"
-    onclick="document.body.removeChild(document.querySelector('.footer'))"> 
+    <button id="dismiss-footer" style="position: absolute; top: 0px; left: 0px; background-image: none"> 
     X 
     </button>
     <a href="https://discord.gg/S8XTzKEz5f" target="_blank" class="social-btn discord-btn">
@@ -25,5 +24,12 @@ footer.innerHTML = `
     <p>Stay updated with our <a href="/news">latest news</a>!</p>
 </div>
 `;
-
+footer.onclick = function() {
+    localStorage.footerDissmissed = true;
+    let target = document.querySelector(".container");
+    document.querySelector("#dismiss-footer").remove();
+    target.innerHTML += `<div class="${footer.className}" style="position: inherit">${footer.innerHTML}</div>`;
+    document.getElementsByTagName("footer")[0].remove();
+}
 document.body.appendChild(footer);
+if(localStorage.footerDissmissed) { document.querySelector("button").click(); }
