@@ -24,15 +24,12 @@ footer.innerHTML = `
     <p>Stay updated with our <a href="/news">latest news</a>!</p>
 </div>
 `;
-footer.onclick = function () {
+footer.onclick = function() {
     localStorage.footerDissmissed = true;
     let target = document.querySelector(".container");
     document.querySelector("#dismiss-footer").remove();
     target.innerHTML += `<div class="${footer.className}" style="position: inherit">${footer.innerHTML}</div>`;
     document.getElementsByTagName("footer")[0].remove();
 }
-if (localStorage.footerDissmissed) {
-    document.querySelector(".container").innerHTML += `<div class="${footer.className}" style="position: inherit">${footer.innerHTML}</div>`;
-} else {
-    document.body.appendChild(footer);
-}
+document.body.appendChild(footer);
+if(localStorage.footerDissmissed) { document.querySelector("button").click(); }
