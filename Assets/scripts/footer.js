@@ -25,11 +25,11 @@ footer.innerHTML = `
 </div>
 `;
 footer.onclick = function() {
-    localStorage.footerDissmissed = true;
     let target = document.querySelector(".container");
     document.querySelector("#dismiss-footer").remove();
     target.innerHTML += `<div class="${footer.className}" style="position: inherit">${footer.innerHTML}</div>`;
     document.getElementsByTagName("footer")[0].remove();
+    localStorage.footerDissmissed = true;
 }
 document.body.appendChild(footer);
 if(localStorage.footerDissmissed) { document.querySelector("button").click(); }
