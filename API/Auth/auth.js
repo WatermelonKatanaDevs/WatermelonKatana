@@ -2,6 +2,7 @@ const Users = require("../../Database/model/Users");
 const Discussions = require("../../Database/model/Projects");
 const Posts = require("../../Database/model/Posts");
 const Media = require("../../Database/model/Media");
+const Profanity = require("../../util/js/censored");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
@@ -10,6 +11,7 @@ exports.register = async (req, res, next) => {
   const { username, password } = req.body;
   if (!username.match(/^[\w\d_-]+$/)) return res.status(400).json({ message: "Username can only contain letters, numbers, and underscores" });
   if (password.length < 6) return res.status(400).json({ message: "Password must be at least 6 characters" });
+  if (Profanity.isProfane(username)) { return res.status(400).json({ message: "Oh no! This violates our TOS, please try another name" }) }
   try {
     var hash = await bcrypt.hash(password, 10);
     const user = await Users.create({
@@ -86,6 +88,7 @@ exports.login = async (req, res, next) => {
 exports.update = async (req, res, next) => {
   const { username, avatar, banner, biography, mature } = req.body;
   if (!username.match(/^[\w\d_-]+$/)) return res.status(400).json({ message: "Username can only contain letters, numbers, and underscores" });
+  if (Profanity.isProfane(username)) { return res.status(400).json({ message: "Oh no! This violates our TOS, please try another name" }) }
   const userId = res.locals.userToken?.id;
   console.log(req.body);
   try {
@@ -113,7 +116,7 @@ exports.update = async (req, res, next) => {
     user.username = username;
     user.avatar = avatar;
     user.banner = banner;
-    user.biography = biography;
+    user.biography = Profanity.censorText(biography);
     user.mature = mature;
     await user.save();
     res.status(201).json({
