@@ -6,7 +6,7 @@ const censorText = (text) => {
     words.forEach((word) => {
         const regex = new RegExp(`\\b${word}\\b`, 'gi');
         censoredText = censoredText.replace(regex, '****');
-        console.log(logWarn(`Censoring word: ${word}`));
+        //console.log(logWarn(`Censoring word: ${word}`));
     });
     return censoredText;
 };
