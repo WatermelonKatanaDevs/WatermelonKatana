@@ -1,4 +1,5 @@
 const Users = require("../../Database/model/Users");
+const Profanity = require("../../util/js/censored");
 
 function interpretBool(obj,name,str) {
   if (str == "0" || str == "false") obj[name] = false;
@@ -47,6 +48,9 @@ notifyUserFollowers(title,user,content,link) {
   
 async publish(req, res, next) {
   var { title, content, tags, mature, hidden, privateRecipients } = req.body;
+  title = Profanity.censorText(title);
+  content = Profanity.censorText(content);
+  tags = Profanity.censorText(tags);
   console.log(title,content);
   try {
     const uid = res.locals.userToken.id;
@@ -99,9 +103,9 @@ async update(req, res, next) {
     if (post.posterId !== user.id && user.role !== "Admin") return res.status(403).json({
       message: "Not Authorized. You do not own this post",
     });
-    post.title = title;
-    post.content = content;
-    post.tags = tags;
+    post.title = Profanity.censorText(title);
+    post.content = Profanity.censorText(content);
+    post.tags = Profanity.censorText(tags);
     post.mature = mature;
     post.hidden = hidden;
     post.privateRecipients = privateRecipients;
@@ -253,6 +257,7 @@ async feature(req, res, next) {
     console.log(error.message);
   }
 };
+
 async unfeature(req, res, next) {
   try {
     const pid = req.params.id;
@@ -280,6 +285,7 @@ async unfeature(req, res, next) {
 
 async comment(req, res, next) {
   var { content } = req.body;
+  content = Profanity.censorText(content);
   console.log(content);
   try {
     const pid = req.params.id;
@@ -370,6 +376,7 @@ async deleteComment(req, res, next) {
 
 async editComment(req, res, next) {
   var { content, index } = req.body;
+  content = Profanity.censorText(content);
   console.log(content,index);
   try {
     const pid = req.params.id;
