@@ -47,10 +47,8 @@ notifyUserFollowers(title,user,content,link) {
 }
   
 async publish(req, res, next) {
+  req.body = JSON.parse(Profanity.censorText(JSON.stringify(req.body)));
   var { title, content, tags, mature, hidden, privateRecipients } = req.body;
-  title = Profanity.censorText(title);
-  content = Profanity.censorText(content);
-  tags = Profanity.censorText(tags);
   console.log(title,content);
   try {
     const uid = res.locals.userToken.id;
@@ -90,6 +88,7 @@ async publish(req, res, next) {
 }
   
 async update(req, res, next) {
+  req.body = JSON.parse(Profanity.censorText(JSON.stringify(req.body)));
   var { title, content, tags, mature, hidden, privateRecipients } = req.body;
   console.log(title,content);
   try {
@@ -103,9 +102,9 @@ async update(req, res, next) {
     if (post.posterId !== user.id && user.role !== "Admin") return res.status(403).json({
       message: "Not Authorized. You do not own this post",
     });
-    post.title = Profanity.censorText(title);
-    post.content = Profanity.censorText(content);
-    post.tags = Profanity.censorText(tags);
+    post.title = title;
+    post.content = content;
+    post.tags = tags;
     post.mature = mature;
     post.hidden = hidden;
     post.privateRecipients = privateRecipients;
