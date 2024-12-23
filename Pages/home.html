@@ -32,6 +32,7 @@
           <a href="/search">Project Gallery</a>
           <a href="/forum">Forum</a>
           <a href="/updates">Announcements</a>
+          <a href="javascript:alert('Not availible yet, we appreciate your support!');location.reload()"> Donate </a>
         </nav>
       </header>
       <section class="intro">
@@ -104,10 +105,9 @@
           <a href="/forum">Forum</a>
           <a href="/updates">Announcements</a>
           <a href="/userlist">User List</a>
+          ${(data.user.role === "Admin" ? `<a href="/admin">Admin List</a>`: "")}
+          <a href="/donate">Donate</a>
         `;
-        if (data.user.role === "Admin") {
-          header.innerHTML += `<a href="/admin">Admin List</a>`;
-        }
       })();
     </script>
   </body>
