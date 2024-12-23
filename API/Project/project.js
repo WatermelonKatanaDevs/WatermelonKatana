@@ -1,4 +1,5 @@
 const Users = require("../../Database/model/Users");
+const Profanity = require("../../util/js/censored");
 var PostAPI = require("../Forum/post.js");
 module.exports = class extends PostAPI {
   constructor(model) {
@@ -29,6 +30,7 @@ processLink(link,thumbnail) {
 }
   
 async publish(req, res, next) {
+  req.body = JSON.parse(Profanity.censorText(JSON.stringify(req.body)));
   var { title, link, content, thumbnail, tags, mature, hidden, privateRecipients, platform } = req.body;
   console.log(title,link,thumbnail);
   try {
@@ -77,6 +79,7 @@ async publish(req, res, next) {
 };
 
 async update(req, res, next) {
+  req.body = JSON.parse(Profanity.censorText(JSON.stringify(req.body)));
   var { title, link, content, thumbnail, tags, mature, hidden, privateRecipients, platform } = req.body;
   console.log(title,link,thumbnail);
   try {
