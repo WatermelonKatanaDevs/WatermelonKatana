@@ -48,7 +48,7 @@
           headers: { 'Content-Type': 'application/json' }
         });
         const data = await res.json();
-        if (res.status === 400 || res.status === 401) {
+        if (res.status >= 400) {
           return display.textContent = `${data.message}. ${data.error ? data.error : ''}`
         }
         var redirect = params.get("redir") || "/";
