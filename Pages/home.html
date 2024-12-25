@@ -97,7 +97,7 @@
         const data = await getAuth();
         if (!data.auth) return;
         //<p>Signed in as ${data.user.username}</p><br/>
-        user.innerHTML = `<p>Signed in as <strong class="logo-text">${data.user.username}</strong></p>`;
+        user.innerHTML = `<p>Signed in as <a href="/user/${data.user.name}"><strong class="logo-text">${data.user.username}</strong></a></p>`;
         header.innerHTML = `
           <a href="/publish">Publish</a>
           <a href="/chat">Chat</a>
