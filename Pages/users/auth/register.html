@@ -50,12 +50,7 @@
         })
         const data = await res.json()
         if (res.status === 400 || res.status === 401) {
-          if (data.message == "User not successful created" || data.error.includes("E11000")) {
-            //username taken error. assume E11000 is the error code
-            return display.textContent = "Sorry, this username has been taken.";
-          } else {
-            return display.textContent = data.message+". "+(data.error ? data.error : '');
-          }
+          return display.textContent = data.message+". "+(data.error ? data.error : '');
         }
         var redirect = params.get("redir") || "/";
         location.assign(redirect);
