@@ -36,15 +36,10 @@
           bookmarks += `\n<h2> <a href="/updates?page=${p}"> ${p.replace(/_/g, " ").replace(/\b\w/g, e => e.toUpperCase())} </a></h2>`;
         }
         bookmarks += "\n</div>";
-        document.write(`<head>
-          <link rel="stylesheet" type="text/css" href="/styles/style.css">
-        </head>
-        <body>
-          <script src="scripts/navbar.js"><\/script>
+        document.querySelector("#content").innerHTML(`
           <h1> Here is the List of Updates </h1>
           <br>
           ${bookmarks}
-        </body>
         `);
       } else {
         fetchMarkdown(`https://raw.githubusercontent.com/WatermelonKatanaDevs/${updatePages[page]}`);
