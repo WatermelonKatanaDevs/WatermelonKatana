@@ -185,6 +185,10 @@ label > input[type=checkbox] {
 	opacity: 0;
 }
 
+img {
+	max-width: 100%;
+}
+
 label {
 	display: inline-flex;
 }
