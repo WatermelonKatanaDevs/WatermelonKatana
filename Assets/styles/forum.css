@@ -1,3 +1,9 @@
+#display {
+  position: relative;
+  width: 90%;
+  left: 5%;
+}
+
 #comments {
   display: block;
   margin: auto;
