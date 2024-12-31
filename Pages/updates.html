@@ -17,7 +17,7 @@
 <body>
   <script src="/scripts/navbar.js"></script>
 
-  <div id="content" style="width: 90%">Loading...</div>
+  <div id="content" style="width: 90%; text-align: center">Loading...</div>
 
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="/scripts/md-render.js"></script>
@@ -31,7 +31,7 @@
     window.onload = function() {
       let page = new URLSearchParams(location.search).get("page") || "";
       if (typeof updatePages[page] !== "string") {
-        let bookmarks = "<div id='bookmarks' style='text-align: center'>";
+        let bookmarks = "<div id='bookmarks'>";
         for(let p in updatePages) {
           bookmarks += `\n<h2> <a href="/updates?page=${p}"> ${p.replace(/_/g, " ").replace(/\b\w/g, e => e.toUpperCase())} </a></h2>`;
         }
