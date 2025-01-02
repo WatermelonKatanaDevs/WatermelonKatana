@@ -1,5 +1,7 @@
-#display {
-  width: 100%;
+#post {
+  width: 99%;
+  position: relative;
+  left: 1%;
 }
 
 #comments {
