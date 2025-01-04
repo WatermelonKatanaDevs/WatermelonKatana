@@ -30,7 +30,7 @@ processLink(link,thumbnail) {
 }
   
 async publish(req, res, next) {
-  req.body = JSON.parse(Profanity.censorText(JSON.stringify(req.body)));
+  req.body = req.body.mature ? req.body: JSON.parse(Profanity.censorText(JSON.stringify(req.body)));
   var { title, link, content, thumbnail, tags, mature, hidden, privateRecipients, platform } = req.body;
   console.log(title,link,thumbnail);
   try {
@@ -79,7 +79,7 @@ async publish(req, res, next) {
 };
 
 async update(req, res, next) {
-  req.body = JSON.parse(Profanity.censorText(JSON.stringify(req.body)));
+  req.body = req.body.mature ? req.body: JSON.parse(Profanity.censorText(JSON.stringify(req.body)));
   var { title, link, content, thumbnail, tags, mature, hidden, privateRecipients, platform } = req.body;
   console.log(title,link,thumbnail);
   try {
