@@ -47,7 +47,7 @@ notifyUserFollowers(title,user,content,link) {
 }
   
 async publish(req, res, next) {
-  req.body = JSON.parse(Profanity.censorText(JSON.stringify(req.body)));
+  req.body = req.body.mature ? req.body: JSON.parse(Profanity.censorText(JSON.stringify(req.body)));
   var { title, content, tags, mature, hidden, privateRecipients } = req.body;
   console.log(title,content);
   try {
@@ -88,7 +88,7 @@ async publish(req, res, next) {
 }
   
 async update(req, res, next) {
-  req.body = JSON.parse(Profanity.censorText(JSON.stringify(req.body)));
+  req.body = req.body.mature ? req.body: JSON.parse(Profanity.censorText(JSON.stringify(req.body)));
   var { title, content, tags, mature, hidden, privateRecipients } = req.body;
   console.log(title,content);
   try {
@@ -284,8 +284,6 @@ async unfeature(req, res, next) {
 
 async comment(req, res, next) {
   var { content } = req.body;
-  content = Profanity.censorText(content);
-  console.log(content);
   try {
     const pid = req.params.id;
     const post = await this.model.findOne({ _id: pid });
@@ -301,6 +299,7 @@ async comment(req, res, next) {
     });
     post.activeAt = Date.now();
     post.viewers = [];
+    content = post.mature ? content: Profanity.censorText(content)
     post.comments.push({
       content,
       rating: 0,
@@ -375,7 +374,6 @@ async deleteComment(req, res, next) {
 
 async editComment(req, res, next) {
   var { content, index } = req.body;
-  content = Profanity.censorText(content);
   console.log(content,index);
   try {
     const pid = req.params.id;
@@ -392,6 +390,7 @@ async editComment(req, res, next) {
     });
     post.activeAt = Date.now();
     post.viewers = [];
+    content = post.mature ? content: Profanity.censorText(content)
     comment.content = content;
     await post.save();
     res.status(201).json({
