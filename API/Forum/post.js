@@ -1,4 +1,5 @@
 const Users = require("../../Database/model/Users");
+const Profanity = require("../../util/js/censored");
 
 function interpretBool(obj,name,str) {
   if (str == "0" || str == "false") obj[name] = false;
