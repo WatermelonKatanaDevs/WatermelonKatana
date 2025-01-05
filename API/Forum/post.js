@@ -192,7 +192,7 @@ async list(req, res, next) {
     list = list.map(e=>e.pack());
     var data = {};
     data[this.name] = list;
-    data = await this.censor(data);
+    data = await this.censor(data,res);
     res.status(200).json(data);
   } catch(err) {
     res.status(401).json({ message: "Not successful", error: err.message });
@@ -217,7 +217,7 @@ async search(req, res, next) {
     });
     var data = {};
     data[this.name] = list;
-    data = await this.censor(data);
+    data = await this.censor(data,res);
     res.status(200).json(data);
   } catch(err) {
     res.status(401).json({ message: "Not successful", error: err.message });
