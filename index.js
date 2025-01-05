@@ -9,6 +9,7 @@ const { adminAuth, userAuth, checkAuth } = require("./Middleware/auth");
 const { Turbo } = require("./Turbo/index");
 const PORT = process.env.PORT || 3000;
 const sendFileReplace = require("./Middleware/replace");
+const Profanity = require("../../util/js/censored");
 
 /**
  * Connect to the database
@@ -96,11 +97,9 @@ app.get("/project/:id", checkAuth, async (req, res) => {
   var proj = await Projects.findOne({ _id: req.params.id });
   if (!proj) return res.status(404).sendFile(cldir + "/404.html");
   var tok = res.locals.userToken;
-  if (proj.mature) {
-    if (!tok) return res.status(403).sendFile(__dirname+"/Middleware/403.html");
-    var user = await Users.findOne({ _id: tok.id });
-    if (!user || !user.mature) return res.status(403).sendFile(__dirname+"/Middleware/403.html");
-  }
+  var user = await Users.findOne({ _id: tok.id });
+  if (proj.mature && (!tok || !user || !user.mature)) return res.status(403).sendFile(__dirname+"/Middleware/403.html");
+  if(!user.mature) proj = JSON.parse(Profanity.censorText(JSON.stringify(proj)));
   if (tok && !proj.viewers.includes(tok.id)) proj.viewers.push(tok.id);
   proj.views++;
   sendFileReplace(res, "./Pages/projects/project.html", (s) => s.replace("<!--og:meta-->",`
@@ -143,11 +142,9 @@ app.get("/forum/discussion/:id", checkAuth, async (req, res) => {
   var post = await Posts.findOne({ _id: req.params.id });
   if (!post) return res.status(404).sendFile(cldir + "/404.html");
   var tok = res.locals.userToken;
-  if (post.mature) {
-    if (!tok) return res.status(403).sendFile(__dirname+"/Middleware/403.html");
-    var user = await Users.findOne({ _id: tok.id });
-    if (!user || !user.mature) return res.status(403).sendFile(__dirname+"/Middleware/403.html");
-  }
+  var user = await Users.findOne({ _id: tok.id });
+  if (post.mature && (!tok || !user || !user.mature)) return res.status(403).sendFile(__dirname+"/Middleware/403.html");
+  if(!user.mature) post = JSON.parse(Profanity.censorText(JSON.stringify(post)));
   if (tok && !post.viewers.includes(tok.id)) post.viewers.push(tok.id);
   post.views++;
   sendFileReplace(res, "./Pages/forum/discussion.html", (s) => s.replace("<!--og:meta-->",`
