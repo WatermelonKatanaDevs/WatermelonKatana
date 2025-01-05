@@ -14,8 +14,8 @@ module.exports = class {
 
 route(router,userAuth,adminAuth,checkAuth) {
   router.route("/publish").post(userAuth, this.publish.bind(this));
-  router.route("/list").get(this.list.bind(this));
-  router.route("/search").get(this.search.bind(this));
+  router.route("/list").get(checkAuth,this.list.bind(this));
+  router.route("/search").get(checkAuth,this.search.bind(this));
   router.route("/data/:id").get(checkAuth,this.data.bind(this));
   router.route("/update/:id").put(userAuth, this.update.bind(this));
   router.route("/delete/:id").delete(userAuth, this.delete.bind(this));
