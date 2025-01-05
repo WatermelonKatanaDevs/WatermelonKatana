@@ -1,5 +1,4 @@
 const Users = require("../../Database/model/Users");
-const Profanity = require("../../util/js/censored");
 
 function interpretBool(obj,name,str) {
   if (str == "0" || str == "false") obj[name] = false;
@@ -12,11 +11,11 @@ module.exports = class {
     this.name = name;
   }
 
-route(router,userAuth,adminAuth,checkAuth) {
+route(router,userAuth,adminAuth) {
   router.route("/publish").post(userAuth, this.publish.bind(this));
-  router.route("/list").get(checkAuth,this.list.bind(this));
-  router.route("/search").get(checkAuth,this.search.bind(this));
-  router.route("/data/:id").get(checkAuth,this.data.bind(this));
+  router.route("/list").get(this.list.bind(this));
+  router.route("/search").get(this.search.bind(this));
+  router.route("/data/:id").get(this.data.bind(this));
   router.route("/update/:id").put(userAuth, this.update.bind(this));
   router.route("/delete/:id").delete(userAuth, this.delete.bind(this));
   router.route("/delete/:id").get(userAuth, this.delete.bind(this));
@@ -153,15 +152,6 @@ async delete(req, res, next) {
   }
 }; 
 
-async censor(data, res) {
-  if (res.locals.userToken) {
-    const uid = res.locals.userToken.id;
-    var user = await Users.findOne({ _id: uid });
-    if (user && user.mature) return data;
-  }
-  return JSON.parse(Profanity.censorText(JSON.stringify(data)));
-}
-
 async list(req, res, next) {
   try {
     var search = { hidden: false, mature: false };
@@ -192,7 +182,6 @@ async list(req, res, next) {
     list = list.map(e=>e.pack());
     var data = {};
     data[this.name] = list;
-    data = await this.censor(data);
     res.status(200).json(data);
   } catch(err) {
     res.status(401).json({ message: "Not successful", error: err.message });
@@ -217,14 +206,13 @@ async search(req, res, next) {
     });
     var data = {};
     data[this.name] = list;
-    data = await this.censor(data);
     res.status(200).json(data);
   } catch(err) {
     res.status(401).json({ message: "Not successful", error: err.message });
     console.log(err.message);
   }
 };
-  
+
 async data(req, res, next) {
   try {
     const pid = req.params.id;
@@ -234,8 +222,7 @@ async data(req, res, next) {
       message: "Fetch not successful",
       error: "Post not found",
     });
-    data = await this.censor(post.pack(),res);
-    res.status(200).json(data);
+    res.status(200).json(post.pack());
   } catch(err) {
     res.status(401).json({ message: "Not successful", error: err.message });
     console.log(err.message);
@@ -309,7 +296,6 @@ async comment(req, res, next) {
     });
     post.activeAt = Date.now();
     post.viewers = [];
-    content = post.mature ? content: Profanity.censorText(content)
     post.comments.push({
       content,
       rating: 0,
@@ -400,7 +386,6 @@ async editComment(req, res, next) {
     });
     post.activeAt = Date.now();
     post.viewers = [];
-    content = post.mature ? content: Profanity.censorText(content)
     comment.content = content;
     await post.save();
     res.status(201).json({
