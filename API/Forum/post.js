@@ -1,5 +1,4 @@
 const Users = require("../../Database/model/Users");
-const Profanity = require("../../util/js/censored");
 
 function interpretBool(obj,name,str) {
   if (str == "0" || str == "false") obj[name] = false;
@@ -12,11 +11,11 @@ module.exports = class {
     this.name = name;
   }
 
-route(router,userAuth,adminAuth,checkAuth) {
+route(router,userAuth,adminAuth) {
   router.route("/publish").post(userAuth, this.publish.bind(this));
   router.route("/list").get(this.list.bind(this));
   router.route("/search").get(this.search.bind(this));
-  router.route("/data/:id").get(checkAuth,this.data.bind(this));
+  router.route("/data/:id").get(this.data.bind(this));
   router.route("/update/:id").put(userAuth, this.update.bind(this));
   router.route("/delete/:id").delete(userAuth, this.delete.bind(this));
   router.route("/delete/:id").get(userAuth, this.delete.bind(this));
@@ -47,7 +46,6 @@ notifyUserFollowers(title,user,content,link) {
 }
   
 async publish(req, res, next) {
-  req.body = req.body.mature ? req.body: JSON.parse(Profanity.censorText(JSON.stringify(req.body)));
   var { title, content, tags, mature, hidden, privateRecipients } = req.body;
   console.log(title,content);
   try {
@@ -88,7 +86,6 @@ async publish(req, res, next) {
 }
   
 async update(req, res, next) {
-  req.body = req.body.mature ? req.body: JSON.parse(Profanity.censorText(JSON.stringify(req.body)));
   var { title, content, tags, mature, hidden, privateRecipients } = req.body;
   console.log(title,content);
   try {
@@ -299,7 +296,6 @@ async comment(req, res, next) {
     });
     post.activeAt = Date.now();
     post.viewers = [];
-    content = post.mature ? content: Profanity.censorText(content)
     post.comments.push({
       content,
       rating: 0,
@@ -390,7 +386,6 @@ async editComment(req, res, next) {
     });
     post.activeAt = Date.now();
     post.viewers = [];
-    content = post.mature ? content: Profanity.censorText(content)
     comment.content = content;
     await post.save();
     res.status(201).json({
