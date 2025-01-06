@@ -31,8 +31,8 @@
           <a href="/chat">Chat</a>
           <a href="/search">Project Gallery</a>
           <a href="/forum">Forum</a>
-          <a href="/updates">Announcements</a>
-          <a href="javascript:alert('Not availible yet, we appreciate your support!');location.reload()"> Donate </a>
+          <a href="/updates?page=website_announcements">Announcements</a>
+          <a href="https://www.patreon.com/watermelonkatana"> Donate </a>
         </nav>
       </header>
       <section class="intro">
@@ -103,10 +103,10 @@
           <a href="/chat">Chat</a>
           <a href="/search">Project Gallery</a>
           <a href="/forum">Forum</a>
-          <a href="/updates">Announcements</a>
+          <a href="/updates?page=website_announcements">Announcements</a>
           <a href="/userlist">User List</a>
           ${(data.user.role === "Admin" ? `<a href="/admin">Admin List</a>`: "")}
-          <a href="javascript:alert('Not availible yet, we appreciate your support!');location.reload()"> Donate </a>
+          <a href="https://www.patreon.com/watermelonkatana"> Donate </a>
         `;
       })();
     </script>
