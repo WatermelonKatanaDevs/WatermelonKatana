@@ -1,0 +1,89 @@
+<!-- This is basically a mirror of updates.html, but with better logic -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAQ | WatermelonKatana</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta property="og:title" content="FAQ | WatermelonKatana"/>
+  <meta property="og:type" content="profile"/>
+  <meta property="og:description" content="The WatermelonKatana FAQ"/>
+  <link rel="stylesheet" type="text/css" href="/styles/style.css">
+  <script src="/scripts/script.js"></script>
+</head>
+<body>
+  <script src="/scripts/navbar.js"></script>
+
+  <div id="content" style="width: 90%">Loading...</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="/scripts/md-render.js"></script>
+  <script>
+    // Define update page mappings
+    const updatePages = {
+      "watermelonkatana_overview": "WatermelonKatana/refs/heads/main/README.md",
+      "website_announcements": "discussions/refs/heads/main/announcements/current_announcement.md",
+      "terms_of_service": "WatermelonKatana/refs/heads/main/Assets/md/tos.md",
+      "posting_guidelines": "WatermelonKatana/refs/heads/main/Assets/md/posting_guidelines.md",
+      "turbowarp_guide": "TurboWarp/refs/heads/main/README.md"
+    };
+
+    /**
+     * Fetch and render Markdown content
+     * @param {string} url - URL of the Markdown file
+     */
+    function fetchMarkdown(url) {
+      fetch(url)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`Failed to fetch content from ${url}`);
+          }
+          return response.text();
+        })
+        .then(markdown => {
+          document.querySelector("#content").innerHTML = marked.parse(markdown);
+        })
+        .catch(error => {
+          document.querySelector("#content").innerHTML = `<p style="color:red;">Error loading content: ${error.message}</p>`;
+        });
+    }
+
+    /**
+     * Load bookmarks list
+     */
+    function loadBookmarks() {
+      const bookmarks = `
+        <div id="bookmarks" style="text-align: center">
+          <h1>FAQ</h1>
+          <br>
+          ${Object.keys(updatePages)
+            .map(page => 
+              `<h2><a href="/faq?page=${page}">${page.replace(/_/g, " ").replace(/\b\w/g, e => e.toUpperCase())}</a></h2>`
+            )
+            .join("")}
+        </div>`;
+      document.querySelector("#content").innerHTML = bookmarks;
+    }
+
+    // Main logic for page loading
+    window.onload = function() {
+      const page = new URLSearchParams(location.search).get("page") || "";
+      const fileUrl = updatePages[page];
+      
+      if (fileUrl) {
+        // Fetch the Markdown content if the page exists in updatePages
+        const fullUrl = `https://raw.githubusercontent.com/WatermelonKatanaDevs/${fileUrl}`;
+        fetchMarkdown(fullUrl);
+      } else {
+        // Load the bookmarks list if no valid page is specified
+        loadBookmarks();
+      }
+    };
+  </script>
+</body>
+</html>

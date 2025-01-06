@@ -75,8 +75,7 @@ app.get("/lib/meloncanvas.js", (req, res) => res.sendFile(__dirname + "/lib/melo
 /**
  * WatermelonKatana FAQ pages
  */
-app.get("/tos", (req, res) => res.sendFile(cldir + "/faq/tos.html")); // Terms of Service
-app.get("/posting_guidelines", (req, res) => res.sendFile(cldir + "/faq/posting_guidelines.html")); // Posting Guidelines
+app.get("/faq", (req, res) => res.sendFile(cldir + "/faq/faq.html"));  // Faq
 
 // Logout route: clear the JWT cookie and redirect to home
 app.get("/logout", (req, res) => {
@@ -139,9 +138,6 @@ app.get("/project/:id/delete", userAuth, (req, res) => res.redirect("/api/projec
 
 // Authors
 app.get("/authors", (req, res) => { res.sendFile(cldir + "/authors.html") });
-
-// Updates
-app.get("/updates", (req, res) => res.sendFile(cldir + "/updates.html"));
 
 // Posts
 app.get("/forum", (req, res) => res.sendFile(cldir + "/forum/home.html")); // Forum Home/Search
