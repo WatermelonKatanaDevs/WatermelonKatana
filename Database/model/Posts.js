@@ -96,13 +96,13 @@ const PostSchema = new Mongoose.Schema({
 });
 
 PostSchema.index({
-  title: "text", 
+  title: "text",
   content: "text",
   poster: "text",
   tags: "text",
 },{
   weights: {
-    title: 5, 
+    title: 5,
     content: 2,
     poster: 2,
     tags: 3,

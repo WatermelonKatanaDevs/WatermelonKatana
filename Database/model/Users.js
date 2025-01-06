@@ -50,17 +50,17 @@ const UserSchema = new Mongoose.Schema({
   },
   avatar: {
     type: String,
-    default: "https://fakeimg.pl/300x300",
+    default: "https://watermelonkatana.com/images/default_pfp.png",
     maxlength: 500
   },
   banner: {
     type: String,
-    default: "https://fakeimg.pl/720x360",
+    default: "https://watermelonkatana.com/images/default_banner.png",
     maxlength: 500
   },
   biography: {
     type: String,
-    default: "This user has not added a biography yet.",
+    default: "You can change your bio by going to your profile settings!",
     maxlength: 5000
   },
   badges: [ Number ],

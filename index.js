@@ -62,6 +62,11 @@ app.get("/ui-tester", (req, res) => res.sendFile(cldir + "/ui-tester.html")); //
  */
 app.get("/lib/meloncanvas.js", (req, res) => res.sendFile(__dirname + "/lib/meloncanvas.js"));  // MelonCanvas library
 
+/**
+ * WatermelonKatana FAQ pages
+ */
+app.get("/tos", (req, res) => res.sendFile(cldir + "/tos.html")); // Terms of Service
+
 // Logout route: clear the JWT cookie and redirect to home
 app.get("/logout", (req, res) => {
   res.cookie("jwt", "", { maxAge: "1" });

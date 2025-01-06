@@ -12,8 +12,8 @@
   <script src="/scripts/navbar.js"></script>
   
   <h1>Register</h1>
-  <div class="error" style="background-color: red;"></div>
-  <form>
+  <div class="error" style="background-color: red; color: white; padding: 5px;"></div>
+  <form id="registerForm">
     <br>
     <label for="username">Username</label><br>
     <input type="text" id="username" required/><br>
@@ -21,45 +21,60 @@
     <input type="password" id="password" required><br>
     <label for="password2">Repeat Password</label><br>
     <input type="password" id="password2" required><br>
+    <input type="checkbox" id="agreedTos" required><br>
+    <label for="agreedTos">I agree to the <a href="/terms">Terms of Service</a></label><br>
     <input type="submit" value="Register"><br>
   </form>
 
-  <div style="position: relative; top: 20px" href="/login">
+  <div style="position: relative; top: 20px">
     Already have an account?
     <a href="/login">Login</a>
-    </div>
+  </div>
 
   <script>
-    const form = document.querySelector('form');
+    const form = document.querySelector('#registerForm');
     const username = document.querySelector('#username');
     const password = document.querySelector('#password');
     const password2 = document.querySelector('#password2');
+    const agreedTos = document.querySelector('#agreedTos');
     const display = document.querySelector('.error');
     const params = new URLSearchParams(location.search);
 
     form.addEventListener('submit', async (e) => {
-      e.preventDefault()
-      display.textContent = '';
+      e.preventDefault();
+      display.textContent = ''; // Clear previous errors
+
+      // Check if passwords match
       if (password.value !== password2.value) {
-        return display.textContent = 'Passwords do not match';
+        return display.textContent = 'Passwords do not match.';
       }
+
+      // Check if Terms of Service checkbox is checked
+      if (!agreedTos.checked) {
+        return display.textContent = 'You must agree to the Terms of Service.';
+      }
+
       try {
         const res = await fetch('/api/auth/register', {
           method: 'POST',
           body: JSON.stringify({ username: username.value, password: password.value }),
           headers: { 'Content-Type': 'application/json' }
-        })
-        const data = await res.json()
+        });
+
+        const data = await res.json();
+
         if (res.status === 400 || res.status === 401) {
-          return display.textContent = data.message+". "+(data.error ? data.error : '');
+          return display.textContent = data.message + '. ' + (data.error ? data.error : '');
         }
+
+        // Redirect on successful registration
         var redirect = params.get("redir") || "/";
         location.assign(redirect);
       } catch (err) {
-        console.log(err.message)
+        console.error(err.message);
+        display.textContent = 'An error occurred. Please try again later.';
       }
-    
-    })
+    });
   </script>
 </body>
 </html>
