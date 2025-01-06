@@ -15,6 +15,7 @@ async function fetchMarkdown(url) {
 /**
  * WatermelonParse
  * A simple Markdown-to-HTML parser for WatermelonKatana
+ * By: @colack
  */
 class WatermelonParse {
   /**

@@ -3,6 +3,18 @@ const Mongoose = require("mongoose");
 
 const CommentSchema = require("./Comments");
 
+/*
+  TODO: Find a way to implement slugs for posts
+
+  const PostSchema = new Mongoose.Schema({
+    title: { type, String, required: true, minlength: 2, maxlength: 100 },
+    content: { type: String, default: "", maxlength: 15000 },
+    boardSlug: { type: String, required: true },
+    tags: [ String ],
+    reported: { type: Boolean, default: false },
+    createdAt: { type: Number, required: true },
+*/
+
 const PostSchema = new Mongoose.Schema({
   title: {
     type: String,

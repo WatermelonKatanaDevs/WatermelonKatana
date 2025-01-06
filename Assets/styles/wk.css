@@ -1,0 +1,69 @@
+@import url('https://fonts.googleapis.com/css2?family=Fugaz+One&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
+
+:root {
+    --background-grey: #222222;
+    --background-light-grey: #2d2d2d;
+    --element-green: #c1ff72;
+    --element-red: #f8413c;
+    --border-color: #575757;
+
+    --logo-font : 'Fugaz One', serif;
+
+    --spill-color1: #de6c83;
+	--spill-color2: #ff2e58;
+	--spill-color3: #2cf6b3;
+	--spill-color4: #00b377;
+}
+
+::-webkit-scrollbar {
+    width: 3px;
+    height: 3px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #333333;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555555;
+}
+
+.profile.user .role {
+    color: #5555ff;
+}
+
+.profile.moderator .role {
+    color: #ff5555;
+}
+
+.profile.admin .role {
+    color: #55ff55;
+}
+
+.katana-logo {
+    font-family: var(--logo-font);
+    background: linear-gradient(90deg, var(--spill-color1), var(--spill-color2), var(--spill-color3), var(--spill-color4));
+    background-size: 200% 100%; /* Ensure it stretches horizontally only */
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: liquid 4s ease-in-out infinite;
+}
+
+@keyframes liquid {
+    0% {
+        background-position: 0 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0 50%;
+    }
+}
