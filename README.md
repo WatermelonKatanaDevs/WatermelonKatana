@@ -10,6 +10,9 @@ WatermelonKatana is where creativity meets collaboration. Share your projects, e
 
 ---
 
+![GitHub commit activity](https://img.shields.io/github/commit-activity/t/watermelonkatanadevs/watermelonkatana)
+![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/watermelonkatanadevs/watermelonkatana)
+
 ## 🌟 About WatermelonKatana
 
 Since 2024, we’ve been on a mission to create an open, inclusive platform for developers of all levels. At WatermelonKatana, creativity meets collaboration—it's a place where ideas come to life. Share your projects, explore a diverse library of user-generated content, and connect with a vibrant community of developers, gamers, and creators.
