@@ -57,6 +57,11 @@ app.get("/register", (req, res) => res.sendFile(cldir + "/users/auth/register.ht
 app.get("/login", (req, res) => res.sendFile(cldir + "/users/auth/login.html")); // Login page
 app.get("/ui-tester", (req, res) => res.sendFile(cldir + "/ui-tester.html")); // UI Testing page
 
+/**
+ * WatermelonKatana open-source libraries
+ */
+app.get("/lib/meloncanvas.js", (req, res) => res.sendFile(__dirname + "/lib/meloncanvas.js"));  // MelonCanvas library
+
 // Logout route: clear the JWT cookie and redirect to home
 app.get("/logout", (req, res) => {
   res.cookie("jwt", "", { maxAge: "1" });
