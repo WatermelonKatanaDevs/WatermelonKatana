@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Run GitHub JS as Canvas Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        canvas {
+            display: block;
+            border: 1px solid #ccc;
+        }
+        input, button {
+            margin: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <input type="url" id="scriptUrl" placeholder="Enter GitHub .js file URL" style="width: 300px;">
+    <button id="loadScript">Load and Run</button>
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 600;
+
+        // Basic test environment exposed to the script
+        const gameEnv = {
+            canvas,
+            ctx,
+            clearCanvas: function() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            },
+        };
+
+        // Fetch and execute the external script
+        document.getElementById('loadScript').addEventListener('click', async () => {
+            const scriptUrl = document.getElementById('scriptUrl').value;
+
+            if (!scriptUrl.endsWith('.js')) {
+                alert('Please enter a valid .js file URL.');
+                return;
+            }
+
+            try {
+                // Fetch the script content
+                const response = await fetch(scriptUrl);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch script: ${response.statusText}`);
+                }
+                const scriptContent = await response.text();
+
+                // Clear existing canvas content
+                gameEnv.clearCanvas();
+
+                // Evaluate the script in the context of the gameEnv
+                const scriptFunc = new Function('gameEnv', scriptContent);
+                scriptFunc(gameEnv); // Execute the script
+
+            } catch (error) {
+                console.error('Error loading or running the script:', error);
+                alert('Failed to load or run the script. Check the console for details.');
+            }
+        });
+    </script>
+</body>
+</html>
