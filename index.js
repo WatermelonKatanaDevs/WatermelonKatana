@@ -1,23 +1,34 @@
-/**
- * Import necessary modules and dependencies
- */
+/*
+  External Modules
+*/
 const express = require("express");
-const connectDB = require("./Database/connect");
-const app = express();
 const cookieParser = require("cookie-parser");
-const { adminAuth, userAuth, checkAuth } = require("./Middleware/auth");
-const { Turbo } = require("./Turbo/index");
-const PORT = process.env.PORT || 3000;
-const sendFileReplace = require("./Middleware/replace");
 
-/**
- * Connect to the database
- */
+/*
+  Local Modules
+*/
+const { makeLiteralChars } = require('./util/js/makeLiteralChars');
+const { logInfo, logDebug, logError, logWarn } = require('./util/js/logger');
+
+const connectDB = require("./Database/connect");
+const { adminAuth, userAuth, checkAuth } = require("./Middleware/auth");
+const sendFileReplace = require("./Middleware/replace");
+const { Turbo } = require("./Turbo/index");
+
+/*
+  Constants
+*/
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+/*
+  Database Connection
+*/
 connectDB();
 
-/**
- * Middleware setup
- */
+/*
+  Middleware setup
+*/
 const bigPaths = new RegExp(`^/datablock_storage/[^/]+/(${["populate_key_values", "populate_tables"].join("|")})`);
 app.use((req, res, next) => {
   const maxSize = req.path.match(bigPaths) !== null ? "10mb": "100kb";
@@ -55,17 +66,17 @@ const cldir = __dirname + "/Pages";
 app.get("/", (req, res) => res.sendFile(cldir + "/home.html")); // Home page
 app.get("/register", (req, res) => res.sendFile(cldir + "/users/auth/register.html")); // Registration page
 app.get("/login", (req, res) => res.sendFile(cldir + "/users/auth/login.html")); // Login page
-app.get("/ui-tester", (req, res) => res.sendFile(cldir + "/ui-tester.html")); // UI Testing page
 
 /**
  * WatermelonKatana open-source libraries
  */
-app.get("/lib/meloncanvas.js", (req, res) => res.sendFile(__dirname + "/lib/meloncanvas.js"));  // MelonCanvas library
+app.get("/lib/meloncanvas.js", (req, res) => res.sendFile(__dirname + "/lib/meloncanvas.js")); // MelonCanvas library
 
 /**
  * WatermelonKatana FAQ pages
  */
-app.get("/tos", (req, res) => res.sendFile(cldir + "/tos.html")); // Terms of Service
+app.get("/tos", (req, res) => res.sendFile(cldir + "/faq/tos.html")); // Terms of Service
+app.get("/posting_guidelines", (req, res) => res.sendFile(cldir + "/faq/posting_guidelines.html")); // Posting Guidelines
 
 // Logout route: clear the JWT cookie and redirect to home
 app.get("/logout", (req, res) => {
@@ -83,16 +94,6 @@ app.get("/userlist", userAuth, (req, res) => res.sendFile(cldir + "/users/list.h
 
 // Media list
 app.get("/uploadedmedia", (req, res) => res.sendFile(cldir + "/media.html"));
-
-function makeLiteralChars(string) {
-  string = string.replace(/\&/g,"&amp;");
-  string = string.replace(/</g,"&lt;");
-  string = string.replace(/>/g,"&gt;");
-  string = string.replace(/"/g,"&quot;");
-  string = string.replace(/'/g,"&apos;");
-  //string = string.replace(/ /g,"&nbsp;");
-  return string;
-}
 
 const Users = require("./Database/model/Users"); // Users
 
@@ -256,7 +257,7 @@ app.use("/api", (req, res) => res.status(404).json({ error:"Error: API Not Found
  * Start the server and listen on the specified port
  */
 const server = app.listen(PORT, () => {
-  console.log(`Server Connected to port ${PORT}`);
+  console.log(logInfo(`Server running on port ${PORT}`));
 });
 
 // 404 response page
@@ -269,8 +270,7 @@ server.setTimeout(30000);
  * Handle unhandled promise rejections
  */
 process.on("unhandledRejection", (err) => {
-  console.log(`An error occurred: ${err.message}`);
-  console.log(err);
-  // Uncomment the line below to close the server on unhandled rejection
+  console.log(logError(`An error occurred: ${err.message}`));
+  console.log(logDebug(err));
   // server.close(() => process.exit(1));
 });
