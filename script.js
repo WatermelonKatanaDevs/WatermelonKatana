@@ -7,8 +7,13 @@ var Users =  require("./Database/model/Users");
 
 (async function(){try{
 
-  /*var ulist = await Users.find({ });
+  var ulist = await Users.find({ });
   for (var u of ulist) {
+    // Check if the user has a default avatar and banner
+    if (u.avatar == "https://fakeimg.pl/300x300") u.avatar = "https://watermelonkatana.com/images/default_pfp.png";
+    if (u.banner == "https://fakeimg.pl/720x360") u.banner = "https://watermelonkatana.com/images/default_banner.png";
+
+
     //u.avatar = "https://fakeimg.pl/300x300";
     //u.banner = "https://fakeimg.pl/720x360";
     //u.biography = "This user has not added a biography yet.";
@@ -16,7 +21,7 @@ var Users =  require("./Database/model/Users");
     //u.mature = false;
     console.log(u);
     await u.save();
-  }*/
+  }
   
   //Projects.updateMany({ },{views:0,thumbnail:""}).then(console.log);
 
@@ -56,6 +61,11 @@ var Users =  require("./Database/model/Users");
     console.log(p);
     await p.save();
   }
+
+
   //*/
+
+// Update all users who have a default avatar and banner to the new placeholders
+
   
 console.log("Done!")}catch(e){console.log(e);}})();
