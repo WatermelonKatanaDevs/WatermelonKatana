@@ -36,7 +36,11 @@ exports.transferProject = async (req,res) => {
   }
 };
 exports.resetPassword = async (req,res)=>{
-  const { uid, password } = req.query;
+  /*
+    ~ 1/7/25 - I implemented swapping to req.body instead of req.query, hopefully more secure
+  */
+  const uid = req.body.uid;
+  const password = req.body.password;
   try {
     var hash = await bcrypt.hash(password||"password", 10);
     const user = await Users.findOne({ _id: uid });
