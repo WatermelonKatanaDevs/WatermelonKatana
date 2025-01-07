@@ -3,6 +3,7 @@
 */
 const express = require("express");
 const cookieParser = require("cookie-parser");
+const RateLimit = require("express-rate-limit");
 
 /*
   Local Modules
@@ -20,6 +21,11 @@ const { Turbo } = require("./Turbo/index");
 */
 const app = express();
 const PORT = process.env.PORT || 3000;
+const limiter = RateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: "Too many requests from this IP, please try again after 15 minutes",
+});
 
 /*
   Database Connection
@@ -35,6 +41,11 @@ app.use((req, res, next) => {
   express.json({limit: maxSize})(req, res, next);
 }); // Parse JSON request bodies
 app.use(cookieParser()); // Parse cookies attached to the Client request
+
+/**
+ * Rate limiting middleware
+ */
+app.use(limiter);
 
 /**
  * Serve static files from the Client directory

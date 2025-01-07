@@ -20,6 +20,7 @@
         "cross-fetch": "^4.0.0",
         "ejs": "^3.1.6",
         "express": "^4.19.2",
+        "express-rate-limit": "^7.5.0",
         "gtts": "^0.2.1",
         "jsdom": "^24.1.0",
         "jsonwebtoken": "^8.5.1",
