@@ -75,7 +75,7 @@ app.get("/lib/meloncanvas.js", (req, res) => res.sendFile(__dirname + "/lib/melo
 /**
  * WatermelonKatana FAQ pages
  */
-app.get("/faq", (req, res) => res.sendFile(cldir + "/faq/faq.html"));  // Faq
+app.get("/faq", (req, res) => res.sendFile(cldir + "/faq/faq.html")); // Faq
 
 // Logout route: clear the JWT cookie and redirect to home
 app.get("/logout", (req, res) => {
