@@ -7,7 +7,7 @@ const cookieParser = require("cookie-parser");
 /*
   Local Modules
 */
-const { makeLiteralChars } = require('./util/js/makeLiteralChars');
+const makeLiteralChars = require('./util/js/makeLiteralChars');
 const { logInfo, logDebug, logError, logWarn } = require('./util/js/logger');
 
 const connectDB = require("./Database/connect");
