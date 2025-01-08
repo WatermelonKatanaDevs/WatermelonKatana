@@ -18,10 +18,10 @@ footer.innerHTML = `
         <i class="fab fa-twitter"></i> Twitter
     </a>
     <a href="https://buymeacoffee.com/watermelonkatana" target="_blank" class="social-btn coffee-btn">
-        <i class="fas coffee"></i> BuyMeCoffee
+        <i class="fas fa-coffee"></i> BuyMeCoffee
     </a>
-    <a href="https://www.patreon.com/watermelonkatana?utm_medium=unknown&utm_source=join_link&utm_campaign=creatorshare_creator&utm_content=copyLink" target="_blank" class="social-btn patreon-btn">
-        <i class="fab fa-patreon> Patreon </i>
+    <a href="https://www.patreon.com/watermelonkatana?utm_medium=unknown&amp;utm_source=join_link&amp;utm_campaign=creatorshare_creator&amp;utm_content=copyLink" target="_blank" class="social-btn patreon-btn">
+        <i class="fab fa-patreon"></i> Patreon  
     </a>
 </div>
 <div class="footer-info">
