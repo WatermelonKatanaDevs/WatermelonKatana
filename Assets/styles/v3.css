@@ -278,7 +278,8 @@ body {
 }
 
 .coffee-btn {
-    background-color: #FFDD00;
+    background-color: #fd0d;
+    color: #000000;
 }
 
 .coffee-btn:hover {
