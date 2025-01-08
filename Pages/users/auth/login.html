@@ -50,6 +50,7 @@
         });
         const data = await res.json();
         if (res.status >= 400) {
+          display.style.padding = "5px";
           return display.textContent = `${data.message}. ${data.error ? data.error : ''}`
         }
         var redirect = params.get("redir") || "/";
