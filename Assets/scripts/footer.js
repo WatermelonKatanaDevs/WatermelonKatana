@@ -30,12 +30,12 @@ footer.innerHTML = `
     <p>Stay updated with our <a href="/faq">FAQ</a>!</p>
 </div>
 `;
-footer.onclick = function() {
+document.body.appendChild(footer);
+document.querySelector("#dismiss-footer").onclick = function() {
     let target = document.querySelector(".container");
-    document.querySelector("#dismiss-footer").remove();
+    this.remove();
     target.innerHTML += `<div class="${footer.className}" style="position: inherit">${footer.innerHTML}</div>`;
     document.getElementsByTagName("footer")[0].remove();
     localStorage.footerDissmissed = true;
 }
-document.body.appendChild(footer);
 if(localStorage.footerDissmissed) { document.querySelector("button").click(); }
