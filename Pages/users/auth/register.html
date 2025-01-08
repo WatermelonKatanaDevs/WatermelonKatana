@@ -12,7 +12,7 @@
   <script src="/scripts/navbar.js"></script>
   
   <h1>Register</h1>
-  <div class="error" style="background-color: red; color: white; padding: 5px;"></div>
+  <div class="error" style="background-color: red; color: white"></div>
   <form id="registerForm">
     <br>
     <label for="username">Username</label><br>
@@ -21,8 +21,10 @@
     <input type="password" id="password" required><br>
     <label for="password2">Repeat Password</label><br>
     <input type="password" id="password2" required><br>
-    <input type="checkbox" id="agreedTos" required><br>
-    <label for="agreedTos">I agree to the <a href="/terms">Terms of Service</a></label><br>
+    <input type="checkbox" id="agreedTos" required>
+    <label for="agreedTos" style="padding-bottom: 10px">
+      <p>I agree to the <a href="/terms">Terms of Service</a></p>
+    </label><br>
     <input type="submit" value="Register"><br>
   </form>
 
@@ -64,6 +66,7 @@
         const data = await res.json();
 
         if (res.status === 400 || res.status === 401) {
+          display.style.padding = "5px";
           return display.textContent = data.message + '. ' + (data.error ? data.error : '');
         }
 
