@@ -21,7 +21,7 @@ footer.innerHTML = `
         <i class="fas coffee"></i> BuyMeCoffee
     </a>
     <a href="https://www.patreon.com/watermelonkatana?utm_medium=unknown&utm_source=join_link&utm_campaign=creatorshare_creator&utm_content=copyLink" target="_blank" class="social-btn patreon-btn">
-        <i class="fab fa-patreon> Patreon
+        <i class="fab fa-patreon> Patreon </i>
     </a>
 </div>
 <div class="footer-info">
