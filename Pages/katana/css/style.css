@@ -1,0 +1,144 @@
+/* css/style.css */
+
+body {
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    background-color: #f9f9f9;
+    color: #333;
+}
+
+.app {
+    display: flex;
+    height: 100vh;
+    filter: none; /* Default filter (no blur) */
+    transition: filter 0.3s ease; /* Smooth transition for blur effect */
+}
+
+.app.blurred {
+    filter: blur(5px); /* Applies the blur effect */
+}
+
+.sidebarPadding {
+    padding: 0;
+    background-color: #1e1e2f;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 260px;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.logo {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.logo img {
+    width: 150px;
+    height: auto;
+}
+
+.sidebarButtons button {
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    padding: 12px 15px;
+    font-size: 16px;
+    color: #cfcfcf;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    margin: 5px 0;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.sidebarButtons button:hover {
+    background: #373759;
+    color: #fff;
+}
+
+.sidebarButtons .symbol {
+    font-size: 18px;
+    margin-right: 10px;
+}
+
+.spacer {
+    flex-grow: 1;
+}
+
+.user {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+.userImage img {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+    border: 2px solid #fff;
+}
+
+.username {
+    font-size: 16px;
+    color: #cfcfcf;
+    margin-bottom: 15px;
+}
+
+button.hideIfLoggedIn,
+button.hideIfLoggedOut {
+    padding: 10px 15px;
+    color: #cfcfcf;
+    font-size: 14px;
+    background: none;
+    border: 1px solid #565674;
+    border-radius: 8px;
+    cursor: pointer;
+    margin: 5px 0;
+    transition: all 0.2s;
+}
+
+button.hideIfLoggedIn:hover,
+button.hideIfLoggedOut:hover {
+    background: #565674;
+    color: #fff;
+}
+
+/* Spinner Styles */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid rgba(255, 255, 255, 0.3);
+    border-top: 5px solid #fff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}

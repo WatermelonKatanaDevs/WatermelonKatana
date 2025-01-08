@@ -21,9 +21,14 @@ const { Turbo } = require("./Turbo/index");
 */
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+/**
+  Rate Limiting
+  Should be 5 requests per second, until we can implement a more robust solution.
+ */
 const limiter = RateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  windowMs: 1000,
+  max: 5,
   message: "Too many requests from this IP, please try again after 15 minutes",
 });
 
