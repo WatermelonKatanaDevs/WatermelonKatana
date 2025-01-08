@@ -277,6 +277,22 @@ body {
     background-color: #0b7bc1;
 }
 
+.coffee-btn {
+    background-color: #FFDD00;
+}
+
+.coffee-btn:hover {
+    background-color: #ffdd00ee;
+}
+
+.patreon-btn {
+    background-color: #FF424D;
+}
+
+.patreon-btn:hover {
+    background-color: #ff424bcc;
+}
+
 /* Footer Info Styling (Email and Copyright) */
 .footer-info {
     color: white;
