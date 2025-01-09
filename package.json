@@ -24,7 +24,7 @@
         "gtts": "^0.2.1",
         "jsdom": "^24.1.0",
         "jsonwebtoken": "^8.5.1",
-        "mongoose": "^6.13.0",
+        "mongoose": "^8.9.4",
         "nodemailer": "^6.9.14",
         "nodemon": "^2.0.15",
         "picocolors": "^1.1.1",
