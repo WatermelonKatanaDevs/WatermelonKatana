@@ -218,6 +218,7 @@ body {
 /* Social Media Button Container */
 .social-buttons {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
 }
 
