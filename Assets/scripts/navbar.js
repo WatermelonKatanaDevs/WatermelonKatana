@@ -25,7 +25,8 @@
     }
 
     .topnav {
-      overflow: visible;
+      overflow: scroll;
+      scrollbar-width: none;
       background-color: var(--navbar-bg-color);
       color: var(--navbar-font-color);
       height: 2.5em;
