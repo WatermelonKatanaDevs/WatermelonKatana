@@ -25,7 +25,7 @@
     }
 
     .topnav {
-      overflow: scroll;
+      overflow: scroll hidden;
       scrollbar-width: none;
       background-color: var(--navbar-bg-color);
       color: var(--navbar-font-color);
