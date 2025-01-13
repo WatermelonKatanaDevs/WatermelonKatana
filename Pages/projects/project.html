@@ -130,24 +130,16 @@
               break;
             case "swf":
               window.RufflePlayer = window.RufflePlayer || {};
-              RufflePlayer.createPlayer({
-                url: data.link,
-                container: game.contentDocument.body,
-                width: "100%",
-                height: "100%"
-              }).then(game => {
-                game.play();
-              })
-              // const container = game;
+              const container = game.contentDocument.body;
 
-              // const ruffle = window.RufflePlayer.newest();
-              // const player = ruffle.createPlayer();
-              // container.appendChild(player);
+              const ruffle = window.RufflePlayer.newest();
+              const player = ruffle.createPlayer();
+              container.appendChild(player);
 
-              // player.style.width = "100%";
-              // player.style.height = "100%";
+              player.style.width = "100%";
+              player.style.height = "100%";
 
-              // player.ruffle().load(data.link);
+              player.ruffle().load(data.link);
             default:
               game.src = data.link;
               game.style.width = "calc(100vw - 30px - 2.5em)";
