@@ -133,12 +133,13 @@
               const container = game.contentDocument.body;
               const ruffle = window.RufflePlayer.newest();
               const player = ruffle.createPlayer({
-                url: "/xhr?u=" + data.link,
+                url: data.link,
                 container: container,
                 width: "100%",
                 height: "100%"
               });
               container.appendChild(player);
+              break;
               // const player = ruffle.createPlayer();
               // container.appendChild(player);
 
