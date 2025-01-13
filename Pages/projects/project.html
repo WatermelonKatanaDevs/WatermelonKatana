@@ -132,21 +132,21 @@
               window.RufflePlayer = window.RufflePlayer || {};
               const container = game.contentDocument.body;
               const ruffle = window.RufflePlayer.newest();
-              const player = ruffle.createPlayer({
-                url: data.link,
-                container: container,
-                width: "100%",
-                height: "100%"
-              });
+              // const player = ruffle.createPlayer({
+              //   url: data.link,
+              //   container: container,
+              //   width: "100%",
+              //   height: "100%"
+              // });
+              const player = ruffle.createPlayer();
+              container.appendChild(player);
+
+              player.style.width = "100%";
+              player.style.height = "100%";
+
+              player.load({url: data.link});
               container.appendChild(player);
               break;
-              // const player = ruffle.createPlayer();
-              // container.appendChild(player);
-
-              // player.style.width = "100%";
-              // player.style.height = "100%";
-
-              // player.ruffle().load(data.link);
             default:
               game.src = data.link;
               game.style.width = "calc(100vw - 30px - 2.5em)";
