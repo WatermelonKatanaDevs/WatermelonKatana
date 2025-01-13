@@ -10,6 +10,8 @@ processLink(link,thumbnail) {
   const iscdo = link.match(/^https?:\/\/studio\.code\.org\/projects\/(applab|gamelab)\/([^/]+)/);
   const isscratch = link.match(/^https?:\/\/scratch\.mit\.edu\/projects\/(\d+)/) || link.match(/^https?:\/\/turbowarp\.org\/(\d+)/);
   const iskhan = link.match(/^https?:\/\/www\.khanacademy\.org\/computer-programming\/([^/]+\/\d+)/);
+  const isjsfile = link.match(/^https?:\/\/[^\s]*\.js$/);
+  const isswf = link.match(/^https?:\/\/[^\s]*\.swf$/);
   if (!thumbnail && iscdo) thumbnail = `https://studio.code.org/v3/files/${iscdo[2]}/.metadata/thumbnail.png`;
   if (!thumbnail && isscratch) thumbnail = `https://uploads.scratch.mit.edu/get_image/project/${isscratch[1]}_432x288.png`;
   //if (!thumbnail && iskhan) thumbnail = `https://www.khanacademy.org/computer-programming/${iskhan[1]}/???.png`;
@@ -25,6 +27,14 @@ processLink(link,thumbnail) {
   if (iskhan) {
     link = iskhan[0];
     platform = "khan";
+  }
+  if (isjsfile) {
+    link = isjsfile[0];
+    platform = "js";
+  }
+  if (isswf) {
+    link = isswf[0];
+    platform = "swf";
   }
   return { link, platform, thumbnail }
 }
@@ -50,8 +60,8 @@ async publish(req, res, next) {
       content,
       tags,
       thumbnail: e.thumbnail,
-      mature, 
-      hidden, 
+      mature,
+      hidden,
       privateRecipients,
       platform: e.platform,
       postedAt: Date.now(),

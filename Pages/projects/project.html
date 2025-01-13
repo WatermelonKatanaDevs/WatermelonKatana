@@ -12,6 +12,7 @@
     <script src="/scripts/script.js"></script>
     <script src="/scripts/markdowntextbox.js"></script>
     <script src="/scripts/forum.js"></script>
+    <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
   </head>
   <body>
     <script src="/scripts/mediaupload.js"></script>
@@ -79,11 +80,13 @@
                 khan: "Khan Academy",
                 scratch: "Scratch",
                 embed: "Unknown",
+                js: "JavaScript",
+                swf: "Flash"
               }[data.platform]
             }</a>
             <br>
             <div>
-            <b>Score:</b> <span id="score">${data.score}</span> 
+            <b>Score:</b> <span id="score">${data.score}</span>
             <b>Views:</b> <span id="views">${data.views}</span>
             ${await createActionButton("edit", `onclick="window.location.href += '/edit'"`)}
             ${await createDeleteButton("project", "search")}
@@ -123,6 +126,20 @@
               game.style.width = "calc(100vw - 30px - 2.5em)";
               game.style.height = "calc(100vh - 15px - 2.5em)";
               break;
+            case "js":
+              break;
+            case "swf":
+              window.RufflePlayer = window.RufflePlayer || {};
+              const container = game;
+
+              const ruffle = window.RufflePlayer.newest();
+              const player = ruffle.createPlayer();
+              container.appendChild(player);
+
+              player.style.width = "100%";
+              player.style.height = "100%";
+
+              player.ruffle().load(data.link);
             default:
               game.src = data.link;
               game.style.width = "calc(100vw - 30px - 2.5em)";
