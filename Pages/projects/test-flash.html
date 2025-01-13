@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruffle Flash Player</title>
+    <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        #container {
+            width: 800px;
+            height: 600px;
+            border: 1px solid #ccc;
+        }
+        input, button {
+            margin: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <input type="url" id="swfUrl" placeholder="Enter SWF file URL" style="width: 300px;">
+    <button id="loadSwf">Load and Play</button>
+    <div id="container"></div>
+
+    <script>
+        window.RufflePlayer = window.RufflePlayer || {};
+        const container = document.getElementById("container");
+
+        document.getElementById("loadSwf").addEventListener("click", () => {
+            const swfUrl = document.getElementById("swfUrl").value;
+
+            if (!swfUrl.endsWith('.swf')) {
+                alert('Please enter a valid .swf file URL.');
+                return;
+            }
+
+            // Clear previous content
+            container.innerHTML = '';
+
+            // Load the specified SWF game
+            const ruffle = window.RufflePlayer.newest();
+            const player = ruffle.createPlayer();
+            container.appendChild(player);
+
+            player.style.width = '100%';
+            player.style.height = '100%';
+
+            player.ruffle().load(swfUrl);
+        });
+    </script>
+</body>
+</html>
