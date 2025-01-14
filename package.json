@@ -14,8 +14,7 @@
     "dependencies": {
         "bcryptjs": "^2.4.3",
         "canvas": "^2.11.2",
-        "cookie-parser": "^1.4.6",
-        "cookieparser": "^0.1.0",
+        "cookie-parser": "1.4.7",
         "cors": "^2.8.5",
         "cross-fetch": "^4.0.0",
         "ejs": "^3.1.6",
@@ -28,7 +27,7 @@
         "nodemailer": "^6.9.14",
         "nodemon": "^2.0.15",
         "picocolors": "^1.1.1",
-        "profane-words": "^1.5.11",
+        "profane-words": "^1.6.0",
         "slugify": "^1.6.6"
     },
     "devDependencies": {
