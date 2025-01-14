@@ -132,8 +132,8 @@
             game.srcdoc = `
               <html>
                 <head>
-                  <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>\
-                </head>
+                  <script src="https://unpkg.com/@ruffle-rs/ruffle"><\/script>
+                <\/head>
                 <body>
                   <script>
                     RufflePlayer = RufflePlayer || {};
@@ -144,8 +144,8 @@
                     player.style = "width: 98vw; height: 97vh"
                     player.load("${data.link}");
                   <\/script>
-                </body>
-              </html>
+                <\/body>
+              <\/html>
               `;
               game.style.width = "calc(100vw - 30px - 2.5em)";
               game.style.height = "calc(100vh - 15px - 2.5em)";
