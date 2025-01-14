@@ -12,7 +12,7 @@
     <script src="/scripts/script.js"></script>
     <script src="/scripts/markdowntextbox.js"></script>
     <script src="/scripts/forum.js"></script>
-    <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
+    <!-- <script src="https://unpkg.com/@ruffle-rs/ruffle"></script> -->
   </head>
   <body>
     <script src="/scripts/mediaupload.js"></script>
@@ -129,23 +129,26 @@
             case "js":
               break;
             case "swf":
-              window.RufflePlayer = window.RufflePlayer || {};
-              const container = game.contentDocument.body;
-              const ruffle = window.RufflePlayer.newest();
-              // const player = ruffle.createPlayer({
-              //   url: data.link,
-              //   container: container,
-              //   width: "100%",
-              //   height: "100%"
-              // });
-              const player = ruffle.createPlayer();
-              container.appendChild(player);
-
-              player.style.width = "100%";
-              player.style.height = "100%";
-
-              player.ruffle().load(data.link);
-              container.appendChild(player);
+            game.srcdoc = `
+              <html>
+                <head>
+                  <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>\
+                </head>
+                <body>
+                  <script>
+                    RufflePlayer = RufflePlayer || {};
+                    const container = document.body;
+                    const ruffle = RufflePlayer.newest();
+                    const player = ruffle.createPlayer({});
+                    container.appendChild(player);
+                    player.style = "width: 98vw; height: 97vh"
+                    player.load("${data.link}");
+                  <\/script>
+                </body>
+              </html>
+              `;
+              game.style.width = "calc(100vw - 30px - 2.5em)";
+              game.style.height = "calc(100vh - 15px - 2.5em)";
               break;
             default:
               game.src = data.link;
