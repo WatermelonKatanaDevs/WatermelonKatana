@@ -137,6 +137,9 @@
                 <body>
                   <script>
                     RufflePlayer = RufflePlayer || {};
+                    RufflePlayer.config = {
+                      autoplay: "on"
+                    };
                     const container = document.body;
                     const ruffle = RufflePlayer.newest();
                     const player = ruffle.createPlayer({});
