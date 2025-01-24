@@ -54,10 +54,11 @@ body {
 
 .profile {
 	display: inline-block;
-	background: #333;
 	border-radius: 12%;
 	padding: 5px 15px;
 	margin-bottom: 2vh;
+	border-style: groove;
+	border-color: var(--spill-color4);
 	transition: background-color 0.3s ease, color 0.3s ease;
 }
 
@@ -68,7 +69,8 @@ body {
 }
 
 .profile:hover {
-	background: #444;
+	background: #333;
+	border-color: var(--spill-color1);
 }
 
 .intro {
