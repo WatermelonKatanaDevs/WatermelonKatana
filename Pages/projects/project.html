@@ -126,31 +126,57 @@
               game.style.width = "calc(100vw - 30px - 2.5em)";
               game.style.height = "calc(100vh - 15px - 2.5em)";
               break;
-            case "js":
+            case "wk":
+              const configPattern = /(\w+)(?:\s*=\s*["'])([^"']+)/g;
+              const sanitizeBaseURI = /^(https?:\/\/|www)[^"]+/;
+              const sanitizeDimensions = /auto|fit-content|inherit|initial|(?:min|max)-content|revert-layer|unset|\d+.{0,2}/;
+              const config = {title: "JS Game", main: "index.js", style: "position: fixed; top: 0px; left: 0px"};
+              let setup = await fetch(data.link);
+              setup = setup.text();
+              let configProperty;
+              while((configProperty = configPattern.exec(setup)) !== null) {
+                  config[configProperty[1]] = configProperty[2];
+              }
+              config.baseURI = Object(config.baseURI.match(sanitizeBaseURI))[0];
+              config.width = Object(config.width.match(sanitizeDimensions))[0];
+              config.height = Object(config.height.match(sanitizeDimensions))[0];
+              game.srcdoc = `
+                <html>
+                  <head>
+                    <base href="${config.baseURI ? config.baseURI: location.origin}" target="_self">
+                    <script src="/${config.main}"><\/script>
+                  <\/head>
+                  <body>
+                    <canvas id="game-instance"><\/canvas>
+                  <\/body>
+                  <\/html>
+              `;
+              game.style.width = config.width || "calc(100vmin - 15px - 2.5em)";
+              game.style.height = config.height || "calc(100vmin - 15px - 2.5em)";
               break;
             case "swf":
-            game.srcdoc = `
-              <html>
-                <head>
-                  <script src="https://unpkg.com/@ruffle-rs/ruffle"><\/script>
-                <\/head>
-                <body>
-                  <script>
-                    RufflePlayer = RufflePlayer || {};
-                    RufflePlayer.config = {
-                      autoplay: "on",
-                      unmuteOverlay: "hidden"
-                    };
-                    const container = document.body;
-                    const ruffle = RufflePlayer.newest();
-                    const player = ruffle.createPlayer({});
-                    container.appendChild(player);
-                    player.style = "position: fixed; top: 0px; left: 0px; width: 100vw; height: 100vh"
-                    player.load("${data.link}");
-                  <\/script>
-                <\/body>
-              <\/html>
-              `;
+              game.srcdoc = `
+                <html>
+                  <head>
+                    <script src="https://unpkg.com/@ruffle-rs/ruffle"><\/script>
+                  <\/head>
+                  <body>
+                    <script>
+                      RufflePlayer = RufflePlayer || {};
+                      RufflePlayer.config = {
+                        autoplay: "on",
+                        unmuteOverlay: "hidden"
+                      };
+                      const container = document.body;
+                      const ruffle = RufflePlayer.newest();
+                      const player = ruffle.createPlayer({});
+                      container.appendChild(player);
+                      player.style = "position: fixed; top: 0px; left: 0px; width: 100vw; height: 100vh"
+                      player.load("${data.link}");
+                    <\/script>
+                  <\/body>
+                <\/html>
+                `;
               game.style.width = "calc(100vw - 30px - 2.5em)";
               game.style.height = "calc(100vh - 15px - 2.5em)";
               break;
