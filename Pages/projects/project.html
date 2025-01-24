@@ -80,7 +80,7 @@
                 khan: "Khan Academy",
                 scratch: "Scratch",
                 embed: "Unknown",
-                js: "JavaScript",
+                wk: "Watermelon Katana",
                 swf: "Flash"
               }[data.platform]
             }</a>
@@ -132,7 +132,7 @@
               const sanitizeDimensions = /auto|fit-content|inherit|initial|(?:min|max)-content|revert-layer|unset|\d+.{0,2}/;
               const config = {title: "JS Game", main: "index.js", style: "position: fixed; top: 0px; left: 0px"};
               let setup = await fetch(data.link);
-              setup = setup.text();
+              setup = await setup.text();
               let configProperty;
               while((configProperty = configPattern.exec(setup)) !== null) {
                   config[configProperty[1]] = configProperty[2];
