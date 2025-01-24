@@ -145,7 +145,7 @@
               game.srcdoc = `
                 <html>
                   <head>
-                    <base href="${config.baseURI ? config.baseURI: location.origin}/" target="_self">
+                    <script> document.domain = "${config.baseURI ? config.baseURI: location.origin}/" <\/script>
                     <script src="${config.main}"><\/script>
                   <\/head>
                   <body>
