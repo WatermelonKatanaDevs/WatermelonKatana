@@ -130,7 +130,7 @@
               const configPattern = /(\w+)(?:\s*=\s*["'])([^"']+)/g;
               const sanitizeBaseURI = /^(https?:\/\/|www)[^"]+/;
               const sanitizeDimensions = /auto|fit-content|inherit|initial|(?:min|max)-content|revert-layer|unset|\d+.{0,2}/;
-              const config = {title: "JS Game", main: "index.js", style: "position: fixed; top: 0px; left: 0px"};
+              const config = {title: "JS Game", main: "index.js", style: "position: fixed; top: 0px; left: 0px", width: "", height: ""};
               let setup = await fetch(data.link);
               setup = await setup.text();
               let configProperty;
