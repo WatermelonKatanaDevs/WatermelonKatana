@@ -8,7 +8,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/@ruffle-rs/ruffle"></script> <!-- Ruffle Flash Player for Flash Emulation -->
+    <script src="https://unpkg.com/@ruffle-rs/ruffle"></script> <!-- Ruffle Flash Player -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- jQuery -->
 </head>
 <body>
     <style id="stylesheet"></style>
@@ -19,111 +20,64 @@
                     <img src="img/logo.png" alt="Katana">
                 </div>
                 <div class="sidebarButtons">
-                    <button id="sidebar.home">
-                        <span class="symbol">Home</span>
-                    </button>
-                    <button id="sidebar.gallery">
-                        <span class="symbol">Gallery</span>
-                    </button>
-                    <button id="sidebar.boards">
-                        <span class="symbol">Boards</span>
-                    </button>
-                    <button class="hideIfLoggedOut" id="sidebar.users">
-                        <span class="symbol">Users</span>
-                    </button>
-                    <button class="hideIfNotAdmin" id="sidebar.admin">
-                        <span class="symbol">Admin</span>
-                    </button>
-                    <button id="sidebar.announcements">
-                        <span class="symbol">Announcements</span>
-                    </button>
-                    <button id="sidebar.faq">
-                        <span class="symbol">FAQ</span>
-                    </button>
+                    <button id="sidebar.home">Home</button>
+                    <button id="sidebar.gallery">Gallery</button>
+                    <button id="sidebar.boards">Boards</button>
+                    <button class="hideIfLoggedOut" id="sidebar.users">Users</button>
+                    <button class="hideIfNotAdmin" id="sidebar.admin">Admin</button>
+                    <button id="sidebar.announcements">Announcements</button>
+                    <button id="sidebar.faq">FAQ</button>
                 </div>
-                <div class="spacer"></div>
                 <div class="user">
                     <div class="userImage">
                         <img src="img/user.png" alt="User">
                     </div>
                     <div class="username" id="sidebar.user.name"></div>
-                    <button class="hideIfLoggedIn" id="sidebar.login">
-                        <span class="symbol">Login</span>
-                    </button>
-                    <button class="hideIfLoggedIn" id="sidebar.register">
-                        <span class="symbol">Register</span>
-                    </button>
-                    <button class="hideIfLoggedOut" id="sidebar.logout">
-                        <span class="symbol">Logout</span>
-                    </button>
+                    <button class="hideIfLoggedIn" id="sidebar.login">Login</button>
+                    <button class="hideIfLoggedIn" id="sidebar.register">Register</button>
+                    <button class="hideIfLoggedOut" id="sidebar.logout">Logout</button>
                 </div>
             </div>
         </div>
     </div>
+
     <div class="content" id="content"></div>
+
     <div class="loading-overlay" id="loading" style="display: none;">
         <div class="spinner"></div>
     </div>
-    
-</body>
+
 <script>
-// Hide elements based on user login status
-const hideIfLoggedIn = document.querySelectorAll('.hideIfLoggedIn');
-const hideIfLoggedOut = document.querySelectorAll('.hideIfLoggedOut');
-const hideIfNotAdmin = document.querySelectorAll('.hideIfNotAdmin');
-
-const user = {
-    username: 'colack',
-    password: 'password',
-    pfp: 'https://avatars.githubusercontent.com/u/76410718?v=4',
-    admin: false
-}
-
-window.onload = () => {
-    // Show the spinner and blur the background
-    document.querySelector('.app').classList.add('blurred');
-    document.getElementById('loading').style.display = 'flex';
-
-    setTimeout(() => {
-        // Simulate loading process
-        document.querySelector('.app').classList.remove('blurred');
+    const loadContent = async (page) => {
+        document.getElementById('loading').style.display = 'block';
+        const response = await fetch(`/pages/${page}.html`);
+        const html = await response.text();
+        document.getElementById('content').innerHTML = html;
         document.getElementById('loading').style.display = 'none';
-    }, 2000); // Adjust this timeout to match your loading duration
-};
 
-if (user.username) {
-    document.getElementById('sidebar.user.name').innerText = user.username;
-    hideIfLoggedIn.forEach(element => {
-        element.style.display = 'none';
-    });
-    hideIfLoggedOut.forEach(element => {
-        element.style.display = 'block';
-    });
-    if (user.admin) {
-        hideIfNotAdmin.forEach(element => {
-            element.style.display = 'block';
-        });
+        switch (page) {
+            case 'home':
+                loadHomePage();
+                break;
+            default:
+                // Send to 404 page
+                break;
+        }
+    };
+
+    const loadHomePage = async () => {
+
     }
-} else {
-    hideIfLoggedIn.forEach(element => {
-        element.style.display = 'block';
-    });
-    hideIfLoggedOut.forEach(element => {
-        element.style.display = 'none';
-    });
-    hideIfNotAdmin.forEach(element => {
-        element.style.display = 'none';
-    });
-}
 
-if (user.admin) {
-    hideIfNotAdmin.forEach(element => {
-        element.style.display = 'block';
-    });
-} else {
-    hideIfNotAdmin.forEach(element => {
-        element.style.display = 'none';
-    });
-}
+    window.onload = () => {
+        const currentPath = window.location.pathname.split('/')[1] || 'home';
+        loadContent(currentPath);
+    }
+
+    document.getElementById('sidebar.home').onclick = () => loadContent('home');
+    document.getElementById('sidebar.gallery').onclick = () => loadContent('gallery');
+    document.getElementById('sidebar.boards').onclick = () => loadContent('boards');
+    document.getElementById('sidebar.users').onclick = () => loadContent('faq');
 </script>
+</body>
 </html>
