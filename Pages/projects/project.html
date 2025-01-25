@@ -146,7 +146,22 @@
                 <html>
                   <head>
                     <base href="${config.baseURI ? config.baseURI: location.origin}/" target="_blank">
-                    <script src="${config.main}"><\/script>
+                    <script>
+                      // this is a stupid workaround because github is dumb
+                      fetch("${config.main}").then(response => {
+                        if(response.status < 400) {
+                         return response.text();
+                        } else {
+                         throw(response.status);
+                        }
+                      }).then(data => {
+                        let script = document.createElement("script");
+                        script.textContent = data;
+                        document.head.appendChild(script);
+                      }).catch(err => {
+                        console.warn(err);
+                      })
+                    <\/script>
                   <\/head>
                   <body>
                     <canvas id="game-instance"><\/canvas>
