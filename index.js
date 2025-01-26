@@ -50,7 +50,7 @@ app.use(cookieParser()); // Parse cookies attached to the Client request
 /**
  * Rate limiting middleware
  */
-app.use(limiter);
+// app.use(limiter);
 
 /**
  * Serve static files from the Client directory
