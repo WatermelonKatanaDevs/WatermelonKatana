@@ -28,7 +28,7 @@ const PORT = process.env.PORT || 3000;
  */
 const limiter = RateLimit({
   windowMs: 1000,
-  max: 100,
+  max: 300,
   message: "Too many requests from this IP, please try again after 15 minutes",
 });
 
