@@ -52,11 +52,17 @@ router.route("/get/:id/*").get(async (req,res) => {
     var media = await Media.findOne({ _id: mid });
     var request = await fetch(media.url);
     if (request.status >= 206) throw { message: "Could not fetch; Error Code: "+request.status };
-    var blob = await request.blob();
-    var buffer = await blob.arrayBuffer();
-    buffer = Buffer.from(buffer);
-    res.set("Content-Type", blob.type);
-    res.send(buffer);
+    res.setHeader("Content-Type", request.headers.get("Content-Type"));
+    res.send(`<html>
+        <body>
+          <img src="${media.url}"></img>
+        </body>
+      </html>`);
+    // var blob = await request.blob();
+    // var buffer = await blob.arrayBuffer();
+    // buffer = Buffer.from(buffer);
+    // res.set("Content-Type", blob.type);
+    // res.send(buffer);
   } catch(error) {
     res.status(400).json({
       message: "Media not successfully fetched",
