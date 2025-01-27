@@ -3,7 +3,7 @@
 */
 const express = require("express");
 const cookieParser = require("cookie-parser");
-const RateLimit = require("express-rate-limit");
+// const RateLimit = require("express-rate-limit");
 
 /*
   Local Modules
@@ -26,11 +26,11 @@ const PORT = process.env.PORT || 3000;
   Rate Limiting
   Should be 5 requests per second, until we can implement a more robust solution.
  */
-const limiter = RateLimit({
-  windowMs: 1000,
-  max: 300,
-  message: "Too many requests from this IP, please try again after 15 minutes",
-});
+// const limiter = RateLimit({
+//   windowMs: 1000,
+//   max: 300,
+//   message: "Too many requests from this IP, please try again after 15 minutes",
+// });
 
 /*
   Database Connection
