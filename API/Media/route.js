@@ -53,11 +53,7 @@ router.route("/get/:id/*").get(async (req,res) => {
     var request = await fetch(media.url);
     if (request.status >= 206) throw { message: "Could not fetch; Error Code: "+request.status };
     res.setHeader("Content-Type", request.headers.get("Content-Type"));
-    res.send(`<html>
-        <body>
-          <img src="${media.url}"></img>
-        </body>
-      </html>`);
+    res.redirect(media.url);
     // var blob = await request.blob();
     // var buffer = await blob.arrayBuffer();
     // buffer = Buffer.from(buffer);
