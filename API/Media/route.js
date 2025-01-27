@@ -50,7 +50,7 @@ router.route("/get/:id/*").get(async (req,res) => {
   try {
     var mid = req.params.id;
     var media = await Media.findOne({ _id: mid });
-    if(media !== null) { throw {message: "Unable to find the content referenced"} }
+    if(media === null) { throw {message: "Unable to find the content referenced"} }
     res.redirect(media.url);
     // var request = await fetch(media.url);
     // if (request.status >= 206) throw { message: "Could not fetch; Error Code: "+request.status };
