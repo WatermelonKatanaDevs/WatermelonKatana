@@ -1,5 +1,6 @@
 const Users = require("../../Database/model/Users");
 const Profanity = require("../../util/js/censored");
+const { checkFormToken } = require("../../Middleware/auth");
 
 function interpretBool(obj, name, str) {
   if (str == "0" || str == "false") obj[name] = false;
@@ -13,7 +14,7 @@ module.exports = class {
   }
 
   route(router, userAuth, adminAuth, checkAuth) {
-    router.route("/publish").post(userAuth, this.publish.bind(this));
+    router.route("/publish").post(userAuth, checkFormToken, this.publish.bind(this));
     router.route("/list").get(checkAuth, this.list.bind(this));
     router.route("/search").get(checkAuth, this.search.bind(this));
     router.route("/data/:id").get(checkAuth, this.data.bind(this));
@@ -22,7 +23,7 @@ module.exports = class {
     router.route("/delete/:id").get(userAuth, this.delete.bind(this));
     router.route("/feature/:id").get(adminAuth, this.feature.bind(this));
     router.route("/unfeature/:id").get(adminAuth, this.unfeature.bind(this));
-    router.route("/comment/:id").post(userAuth, this.comment.bind(this));
+    router.route("/comment/:id").post(userAuth, checkFormToken, this.comment.bind(this));
     router.route("/comment/:id/edit").put(userAuth, this.editComment.bind(this));
     router.route("/comment/:id/delete").delete(userAuth, this.deleteComment.bind(this));
     router.route("/comment/:id/upvote").get(userAuth, this.upvoteComment.bind(this));
@@ -46,7 +47,7 @@ module.exports = class {
     }));
   }
 
-  async publish(req, res, next) {
+  async publish(req, res, next, clearCookie, reuseCookie) {
     var { title, content, tags, mature, hidden, privateRecipients } = req.body;
     console.log(title, content);
     try {
@@ -76,12 +77,14 @@ module.exports = class {
         id: post._id,
         title: post.title,
       });
+      clearCookie();
       console.log("done!");
     } catch (error) {
       res.status(400).json({
         message: "Post not successfully published",
         error: error.message,
       });
+      reuseCookie();
       console.log(error.message);
     }
   }
@@ -292,7 +295,7 @@ module.exports = class {
     }
   };
 
-  async comment(req, res, next) {
+  async comment(req, res, next, clearCookie, reuseCookie) {
     var { content } = req.body;
     try {
       const pid = req.params.id;
@@ -333,12 +336,14 @@ module.exports = class {
         id: post._id,
         title: post.title,
       });
+      clearCookie();
       console.log("done!");
     } catch (error) {
       res.status(400).json({
         message: "Post not successfully updated",
         error: error.message,
       });
+      reuseCookie();
       console.log(error.message);
     }
   };
