@@ -47,7 +47,7 @@ module.exports = class {
     }));
   }
 
-  async publish(req, res, next, clearCookie, reuseCookie) {
+  async publish(req, res, next) {
     var { title, content, tags, mature, hidden, privateRecipients } = req.body;
     console.log(title, content);
     try {
@@ -77,14 +77,14 @@ module.exports = class {
         id: post._id,
         title: post.title,
       });
-      clearCookie();
+      res.locals.clearCookie();
       console.log("done!");
     } catch (error) {
       res.status(400).json({
         message: "Post not successfully published",
         error: error.message,
       });
-      reuseCookie();
+      res.locals.recycleCookie();
       console.log(error.message);
     }
   }
@@ -295,7 +295,7 @@ module.exports = class {
     }
   };
 
-  async comment(req, res, next, clearCookie, reuseCookie) {
+  async comment(req, res, next) {
     var { content } = req.body;
     try {
       const pid = req.params.id;
@@ -336,14 +336,14 @@ module.exports = class {
         id: post._id,
         title: post.title,
       });
-      clearCookie();
+      res.locals.clearCookie();
       console.log("done!");
     } catch (error) {
       res.status(400).json({
         message: "Post not successfully updated",
         error: error.message,
       });
-      reuseCookie();
+      res.locals.recycleCookie();
       console.log(error.message);
     }
   };
