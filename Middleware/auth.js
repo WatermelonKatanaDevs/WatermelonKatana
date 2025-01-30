@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const jwtSecret = process.env["JWT_SECRET"];
 const cldir = __dirname;
+const formTokens = new Map();
 
 exports.adminAuth = (req, res, next) => {
   const token = req.cookies.jwt;
@@ -53,7 +54,19 @@ exports.checkAuth = (req, res, next) => {
 
 exports.makeFormToken = function (req, res, next) {
   if (!req.cookie("formToken")) {
-    res.cookie("formToken", Math.random(0, Date.now()).toString(36).slice(2) + Math.random().toString(36).slice(2));
+    let formToken = Math.random(0, Date.now()).toString(36).slice(2) + Math.random().toString(36).slice(2);
+    res.cookie("formToken", formToken);
+    formTokens.set(formToken, "pending");
   }
   next();
+}
+
+exports.checkFormToken = function(req, res, next) {
+  let formToken = req.cookie("formToken");
+  if(formToken && formTokens.get(formToken) !== "pending") {
+    formTokens.set(formToken, "processing")
+  } else {
+    res.status(400).send("Form submission already in use");
+  }
+  next(()=>{res.clearCookie(); formTokens.delete(formToken)}, ()=>{formTokens.set(formToken, "pending")})
 }
