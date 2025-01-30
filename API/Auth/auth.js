@@ -157,7 +157,8 @@ async function cleanDeleteUser(res, user) {
     }
   }
 
-  await user.remove();
+  await Users.deleteOne({_id: user._id});
+  //await user.remove();
   res.cookie("jwt", "", { maxAge: "1" });
   res.status(200).json({ message: 'User successfully deleted', user });
 }
