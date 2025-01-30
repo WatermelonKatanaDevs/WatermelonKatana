@@ -72,19 +72,19 @@ module.exports = class {
       await this.notifyUserFollowers(user.username + " posted a discussion", user, title, "/forum/post/" + post._id);
       await this.notifyUserMentions(content, user, title, "/forum/post/" + post._id);
       console.log(post);
+      res.locals.clearCookie();
       res.status(201).json({
         message: "Post successfully published",
         id: post._id,
         title: post.title,
       });
-      res.locals.clearCookie();
       console.log("done!");
     } catch (error) {
+      res.locals.recycleCookie();
       res.status(400).json({
         message: "Post not successfully published",
         error: error.message,
       });
-      res.locals.recycleCookie();
       console.log(error.message);
     }
   }
@@ -331,19 +331,19 @@ module.exports = class {
       var type = this.name === "posts" ? "discussion" : "project";
       owner.notify(user.username + " commented on your " + type, post.name, link, user._id, user.username);
       await owner.save();
+      res.locals.clearCookie();
       res.status(201).json({
         message: "Post successfully updated",
         id: post._id,
         title: post.title,
       });
-      res.locals.clearCookie();
       console.log("done!");
     } catch (error) {
+      res.locals.recycleCookie();
       res.status(400).json({
         message: "Post not successfully updated",
         error: error.message,
       });
-      res.locals.recycleCookie();
       console.log(error.message);
     }
   };
