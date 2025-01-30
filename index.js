@@ -159,7 +159,7 @@ app.get("/authors", (req, res) => { res.sendFile(cldir + "/authors.html") });
 app.get("/forum", (req, res) => res.sendFile(cldir + "/forum/home.html")); // Forum Home/Search
 app.get("/forum/post", userAuth, makeFormToken, (req, res) => res.sendFile(cldir + "/forum/publish.html")); // Publish page, users only
 const Posts = require("./Database/model/Posts"); // Post page with dynamic post ID
-app.get("/forum/discussion/:id", checkAuth, async (req, res) => {
+app.get("/forum/discussion/:id", checkAuth, makeFormToken, async (req, res) => {
   var post = await Posts.findOne({ _id: req.params.id });
   if (!post) return res.status(404).sendFile(cldir + "/404.html");
   var tok = res.locals.userToken;
