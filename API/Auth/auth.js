@@ -31,12 +31,14 @@ exports.register = async (req, res, next) => {
       httpOnly: true,
       maxAge: maxAge * 1000,
     });
+    res.locals.clearCookie();
     res.status(201).json({
       message: "User successfully created",
       user: user._id,
       role: user.role,
     });
   } catch(error) {
+    res.locals.recycleCookie();
     res.status(400).json({
       message: "User not successful created",
       error: error.message.includes("E11000") ? "as there is an account already with this name": error.message,
