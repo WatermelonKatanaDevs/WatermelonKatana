@@ -3,7 +3,7 @@
 */
 const express = require("express");
 const cookieParser = require("cookie-parser");
-// const RateLimit = require("express-rate-limit");
+const RateLimit = require("express-rate-limit");
 
 /*
   Local Modules
