@@ -176,8 +176,9 @@ exports.deleteSelf = async (req, res, next) => {
     if (!isMatch) return res.status(400).json({
       message: "Confirmation password is incorrect",
     });
-    await cleanDeleteUser(res,user);
+    
     res.cookie("jwt", "", { maxAge: "1" });
+    await cleanDeleteUser(res,user);
   } catch(error) {
     res.status(400).json({ message: "An error occurred", error: error.message })
   }
