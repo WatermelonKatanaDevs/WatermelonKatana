@@ -63,7 +63,7 @@ exports.makeFormToken = function (req, res, next) {
 
 exports.checkFormToken = function(req, res, next) {
   let formToken = req.cookies["formToken"];
-  if(formToken && formTokens.get(formToken) !== "pending") {
+  if(formToken && formTokens.get(formToken) === "pending") {
     formTokens.set(formToken, "processing");
     next(()=>{res.clearCookie("formToken"); formTokens.delete(formToken)}, ()=>{formTokens.set(formToken, "pending")});
   } else {
