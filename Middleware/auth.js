@@ -53,7 +53,7 @@ exports.checkAuth = (req, res, next) => {
 };
 
 exports.makeFormToken = function (req, res, next) {
-  if (!req.cookies("formToken")) {
+  if (!req.cookies["formToken"]) {
     let formToken = Math.random(0, Date.now()).toString(36).slice(2) + Math.random().toString(36).slice(2);
     res.cookie("formToken", formToken);
     formTokens.set(formToken, "pending");
