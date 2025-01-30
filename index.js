@@ -12,7 +12,7 @@ const makeLiteralChars = require('./util/js/makeLiteralChars');
 const { logInfo, logDebug, logError, logWarn } = require('./util/js/logger');
 
 const connectDB = require("./Database/connect");
-const { adminAuth, userAuth, checkAuth } = require("./Middleware/auth");
+const { adminAuth, userAuth, checkAuth, makeFormToken } = require("./Middleware/auth");
 const sendFileReplace = require("./Middleware/replace");
 const { Turbo } = require("./Turbo/index");
 
@@ -26,11 +26,11 @@ const PORT = process.env.PORT || 3000;
   Rate Limiting
   Should be 5 requests per second, until we can implement a more robust solution.
  */
-// const limiter = RateLimit({
-//   windowMs: 1000,
-//   max: 300,
-//   message: "Too many requests from this IP, please try again after 15 minutes",
-// });
+const limiter = RateLimit({
+  windowMs: 1000,
+  max: 100,
+  message: "Too many requests from this IP, please try again after 15 minutes",
+});
 
 /*
   Database Connection
@@ -50,7 +50,7 @@ app.use(cookieParser()); // Parse cookies attached to the Client request
 /**
  * Rate limiting middleware
  */
-// app.use(limiter);
+app.use(limiter);
 
 /**
  * Serve static files from the Client directory
@@ -80,7 +80,7 @@ const cldir = __dirname + "/Pages";
  * Define route handlers for serving HTML files
  */
 app.get("/", (req, res) => res.sendFile(cldir + "/home.html")); // Home page
-app.get("/register", (req, res) => res.sendFile(cldir + "/users/auth/register.html")); // Registration page
+app.get("/register", makeFormToken, (req, res) => res.sendFile(cldir + "/users/auth/register.html")); // Registration page
 app.get("/login", (req, res) => res.sendFile(cldir + "/users/auth/login.html")); // Login page
 
 /**
@@ -115,7 +115,7 @@ const Users = require("./Database/model/Users"); // Users
 // Projects
 app.get("/gamejams", (req, res) => res.sendFile(cldir + "/projects/gamejams.html")); // game jam page
 app.get("/search", (req, res) => res.sendFile(cldir + "/projects/search.html")); // Search page
-app.get("/publish", userAuth, (req, res) => res.sendFile(cldir + "/projects/publish.html")); // Publish page, users only
+app.get("/publish", userAuth, makeFormToken, (req, res) => res.sendFile(cldir + "/projects/publish.html")); // Publish page, users only
 const Projects = require("./Database/model/Projects");
 app.get("/project/:id", checkAuth, async (req, res) => {
   // Project page with dynamic project ID
@@ -157,7 +157,7 @@ app.get("/authors", (req, res) => { res.sendFile(cldir + "/authors.html") });
 
 // Posts
 app.get("/forum", (req, res) => res.sendFile(cldir + "/forum/home.html")); // Forum Home/Search
-app.get("/forum/post", userAuth, (req, res) => res.sendFile(cldir + "/forum/publish.html")); // Publish page, users only
+app.get("/forum/post", userAuth, makeFormToken, (req, res) => res.sendFile(cldir + "/forum/publish.html")); // Publish page, users only
 const Posts = require("./Database/model/Posts"); // Post page with dynamic post ID
 app.get("/forum/discussion/:id", checkAuth, async (req, res) => {
   var post = await Posts.findOne({ _id: req.params.id });
