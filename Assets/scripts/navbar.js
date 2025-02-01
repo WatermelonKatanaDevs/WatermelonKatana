@@ -412,7 +412,7 @@ function openreportbtnclick() {
 document.addEventListener("DOMContentLoaded", ()=>{
   window.addEventListener("click", function(e) {
     const notificationIcon = document.querySelector("#notification-icon");
-    if (!notificationIcon.contains(e.target)) {
+    if (notificationIcon && !notificationIcon.contains(e.target)) {
       var dropdown = document.querySelector("#notification-dropdown");
       dropdown.style.display = "none";
     }
@@ -423,4 +423,3 @@ document.addEventListener("DOMContentLoaded", ()=>{
     }
   });
 });
-  
