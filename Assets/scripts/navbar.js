@@ -167,7 +167,7 @@
 
     .dropdown {
       display: none;
-      position: absolute;
+      position: fixed;
       right: 0;
       top: 2.5em;
       background-color: var(--navbar-bg-color);
