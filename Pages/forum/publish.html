@@ -51,6 +51,8 @@
         if (tok.user?.mature) return;
         mature.outerHTML = data.mature.toString();
       })();
+
+      setInterval(function exchangeCookie() { fetch(location.href) }, 84e4);
       
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
