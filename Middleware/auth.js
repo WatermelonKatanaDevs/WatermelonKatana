@@ -64,8 +64,8 @@ setInterval(function handleExpiry() {
 exports.makeFormToken = function (req, res, next) {
   let tokenId = req.cookies["formToken"];
   let formToken = formTokens.get(tokenId);
-  if (formToken) { formTokens.delete(tokenId) }
-  generateFormToken(res);
+  if (formToken && formToken.state === "pending") { formTokens.delete(tokenId) }
+  if(!formToken || formToken.state === "pending") { generateFormToken(res) }
   next();
 }
 
