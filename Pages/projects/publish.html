@@ -78,6 +78,8 @@
       // mature.outerHTML = data.mature.toString(); // sorry dragon this breaks shit
     })();
 
+    setInterval(function exchangeCookie() { fetch(location.href) }, 84e4);
+
     async function uploadThumb() {
       var url = await getFileUpload(thumb.value);
       if (!url) return;
