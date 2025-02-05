@@ -42,6 +42,8 @@
     const display = document.querySelector('.error');
     const params = new URLSearchParams(location.search);
 
+    setInterval(function exchangeCookie() { fetch(location.href) }, 84e4);
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       display.textContent = ''; // Clear previous errors
