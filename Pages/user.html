@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profile | WatermelonKatana</title>
+    <link rel="stylesheet" type="text/css" href="/styles/style.css" />
+    <link rel="stylesheet" type="text/css" href="/styles/user.css" />
+    <script src="/scripts/HtmlSanitizer.js"></script>
+    <script src="/scripts/script.js"></script>
+    <style>
+      .hidden {
+        display: none;
+      }
+
+      .popup {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #333;
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+      }
+
+      .popup-content {
+        position: relative;
+      }
+
+      .close-popup {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        cursor: pointer;
+      }
+
+      .follower-avatar {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        margin-right: 10px;
+        vertical-align: middle;
+      }
+
+      .avatar-basicBorder {
+        border-color: grey;
+      }
+
+      .avatar-adminBorder {
+        border-color: #ff5555;
+      }
+
+      .avatar-modBorder {
+        border-color: #55ff55;
+      }
+
+      #follower-list li {
+        margin: 10px 0;
+      }
+
+      .profile-container {
+        margin-bottom: 20px;
+      }
+
+      .profile-settings {
+        margin-top: 20px;
+      }
+
+      .profile-settings a {
+        display: block;
+        margin: 5px 0;
+        color: #007bff;
+        text-decoration: none;
+      }
+
+      .profile-settings a:hover {
+        text-decoration: underline;
+      }
+    </style>
+</head>
+<body>
+    <script src="/scripts/navbar.js"></script>
+
+    <div id="display" class="profile-container">
+      <!-- User profile content will be inserted here -->
+    </div>
+
+    <div class="projects-container">
+      <h2>Published Projects</h2>
+      <ul id="list" class="project-list"></ul>
+      <h2>Favorites</h2>
+      <ul id="favlist" class="project-list"></ul>
+    </div>
+
+    <div id="follower-popup" class="popup hidden">
+      <div class="popup-content">
+        <span class="close-popup">&times;</span>
+        <h2>Followers</h2>
+        <ul id="follower-list"></ul>
+      </div>
+    </div>
+
+    <script>
+      const list = document.querySelector("#list");
+      const favlist = document.querySelector("#favlist");
+      const display = document.querySelector("#display");
+      location.path = location.pathname.split("/");
+      const name = location.path[2];
+
+      async function renderProfile(userData, isAuthenticated, isOwnProfile) {
+        let roleBorderCSS;
+        let nameCSS;
+        let nameCSSClass;
+
+        switch (userData.role) {
+          case "Moderator":
+            roleBorderCSS = "border-color: #55ff55;";
+            nameCSSClass = "username";
+            nameCSS = "color: #55ff55;";
+            break;
+          case "Admin":
+            roleBorderCSS = "border-color: #ff5555;";
+            nameCSSClass = "logo-text";
+            nameCSS = "font-size: 24px; font-weight: bold;";
+            break;
+          default:
+            roleBorderCSS = "border-color: grey;";
+            nameCSSClass = "username";
+            break;
+        }
+
+        display.innerHTML = `
+    <div class="profile ${userData.role.toLowerCase()}">
+      <img class="banner" src="${userData.banner}">
+      <div class="namecontainer">
+        <img class="avatar" style="${roleBorderCSS}" src="${userData.avatar}">
+        ${isAuthenticated && isOwnProfile ? `
+          <div id="profile-actions">
+            <span class="${nameCSSClass}" style="${nameCSS}; margin-top: 35px; width: 100%">${userData.username}</span>
+            <a class="button" href="/logout">Log Out</a>
+            <a class="button" href="/profile/edit">Edit Profile</a>
+            <a class="button" href="/profile/chpass">Change Password</a>
+            <a class="button" href="/profile/verify">Verify Email</a>
+          </div>` : `<span class="${nameCSSClass}" style="${nameCSS}; margin-top: 35px; width: 100%">${userData.username}</span>`
+        }
+      </div>
+      <p class="biography">${convertMarkdown(userData.biography)}</p>
+      <p class="role">${userData.role}</p>
+      Joined on ${new Date(userData.joinedAt).toUTCString().replace(/\d\d:[^]+$/, "")} |
+      <span id="followercount" class="link">${userData.followers.length}</span> Followers |
+      <span id="followingcount" class="link">${userData.following.length}</span>
+      ${isAuthenticated && !isOwnProfile ? `| <label><input type="checkbox" id="follow-btn" onclick="followbtnclick(this.checked);" ${userData.followers.includes(name) ? "checked" : ""}><span class="checkbox"></span></label> Follow` : ""}
+      | <a href="/uploadedmedia?poster=${userData.username}">Uploaded Media</a>
+    </div>`;
+      }
+
+      (async function () {
+        try {
+          let isAuthenticated = false;
+          let isMature = false;
+          let username = null;
+
+          try {
+            const tok = await getAuth();
+            isAuthenticated = tok.auth;
+            isMature = tok.user.mature;
+            username = tok.user.username;
+          } catch (e) {
+            console.warn("User not authenticated");
+          }
+
+          const res = await fetch(`/api/auth/userdata?username=${name}`);
+          const userData = await res.json();
+
+          const isOwnProfile = isAuthenticated && username === userData.username;
+          await renderProfile(userData, isAuthenticated, isOwnProfile);
+
+          // why the hell isn't this within the userData? published: {} or something of the like should be implemented for "/api/auth/userdata?username=:name"
+          // so i'm not stuck using this bullshit, probably why colack disregaurded it as unimportant when fixing stupid! stupid! stupid!
+          const publishedProjects = await fetch("/api/project/list?poster=" + name + (isMature ? `&showMature=${isMature}`: ""));
+          const publishedPorjectData = await publishedProjects.json();
+          publishedPorjectData.projects.map(projHTML(list));
+
+          await Promise.all(
+            userData.favorites.map(async (pid) => {
+              const res = await fetch("/api/project/data/" + pid);
+              const proj = await res.json();
+              if(proj.mature && !isMature) { return }
+              projHTML(favlist)(proj);
+            }),
+          );
+
+          document.getElementById("followercount").addEventListener("click", function (event) {
+            event.preventDefault();
+            const followerPopup = document.getElementById("follower-popup");
+            const followerList = document.getElementById("follower-list");
+            followerPopup.classList.remove("hidden");
+            if (userData.followers) {
+              followerList.innerHTML = "";
+              userData.followers.forEach(async (followerId) => {
+                const follower = await getUser(followerId);
+                followerList.innerHTML += `<li>
+              <img src="${follower.avatar}" alt="${follower.username}" class="follower-avatar">
+              <a href="/user/${follower.username}">${follower.username}</a>
+            </li>`;
+              });
+            }
+          });
+
+          document.querySelector(".close-popup").addEventListener("click", () => {
+            document.getElementById("follower-popup").classList.add("hidden");
+          });
+
+          window.addEventListener("click", (event) => {
+            const followerPopup = document.getElementById("follower-popup");
+            if (event.target === followerPopup) {
+              followerPopup.classList.add("hidden");
+            }
+          });
+        } catch (e) {
+          alert("Error loading profile");
+          console.error(e);
+        }
+      })();
+    </script>
+</body>
+</html>
