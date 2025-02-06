@@ -177,7 +177,6 @@
 
           const isOwnProfile = isAuthenticated && username === userData.username;
           await renderProfile(userData, isAuthenticated, isOwnProfile);
-          data.projects.map(projHTML(list));
 
           // why the hell isn't this within the userData? published: {} or something of the like should be implemented for "/api/auth/userdata?username=:name"
           // so i'm not stuck using this bullshit, probably why colack disregaurded it as unimportant when fixing stupid! stupid! stupid!
