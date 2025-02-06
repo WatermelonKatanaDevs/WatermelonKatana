@@ -71,7 +71,7 @@
       async function searchPosts() {
         const tok = await getAuth();
         var sparams = new URLSearchParams(location.search);
-        sparams.set("showMature", tok.user?.mature);
+        if (tok.user?.mature) { sparams.set("showMature", tok.user.mature) }
         const res = await fetch('/api/forum/'+(sparams.get("query")?'search':'list')+'?'+sparams);
         const data = await res.json();
         if (!sparams.get("query")) switch (params.get("sort")||"featured") {

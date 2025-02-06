@@ -98,7 +98,7 @@
         try {
           tok = await getAuth();
           const sparams = new URLSearchParams(window.location.search);
-          sparams.set("showMature", tok.user?.mature);
+          if (tok.user?.mature) { sparams.set("showMature", tok.user.mature) }
           const endpoint = sparams.get("query") ? 'search' : 'list';
           const res = await fetch('/api/project/' + endpoint + '?' + sparams);
           const data = await res.json();
