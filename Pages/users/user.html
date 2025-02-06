@@ -166,7 +166,7 @@
           try {
             const tok = await getAuth();
             isAuthenticated = tok.auth;
-            isMature = tok.mature;
+            isMature = tok.user.mature;
             username = tok.user.username;
           } catch (e) {
             console.warn("User not authenticated");
