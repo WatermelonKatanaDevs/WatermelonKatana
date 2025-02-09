@@ -310,6 +310,9 @@
       ${window.location.pathname.startsWith("/project") ? `
       <a class="nav-btn" onclick="l=document.getElementById('game'); l.src=l.src"> 
       Replay
+      </a>
+      <a class="nav-btn" onclick="game.fullscreen">
+      Fullscreen
       </a>`: ""}
     </div>
     <div class="navbar-right">
