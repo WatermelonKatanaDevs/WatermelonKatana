@@ -204,13 +204,7 @@
               break;
           }
           game.fullscreen = () => {
-            if(document.fullscreenElement === null) {
-              if(data.link.includes("gamelab") && data.platform === "cdo") {
-                game.contentDocument.getElementsByTagName("canvas")[0].requestFullscreen();
-              } else {
-                game.requestFullscreen();
-              }
-            } 
+            game.requestFullscreen();
           }
           const tok = await getAuth();
           const favoritebtn = document.querySelector("#favorite-btn");
