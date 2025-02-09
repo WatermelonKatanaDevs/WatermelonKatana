@@ -311,7 +311,7 @@
       <a class="nav-btn" onclick="l=document.getElementById('game'); l.src=l.src"> 
       Replay
       </a>
-      <a class="nav-btn" onclick="game.fullscreen">
+      <a class="nav-btn" onclick="game.fullscreen()">
       Fullscreen
       </a>`: ""}
     </div>
