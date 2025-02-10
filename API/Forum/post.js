@@ -322,8 +322,8 @@ module.exports = class {
       });
       await post.save();
       var link = this.name === "posts" ? "/forum/post/" + post._id : "/project/" + post._id;
-      await this.notifyUserFollowers(user.username + " commented", user, title, link);
-      await this.notifyUserMentions(content, user, title, link);
+      await this.notifyUserFollowers(user.username + " commented", user, post.title, link);
+      await this.notifyUserMentions(content, user, post.title, link);
       // const owner = await Users.findOne({ _id: post.posterId });
       // if (!owner) return res.status(404).json({
       //   message: "Fetch not successful",
