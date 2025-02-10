@@ -321,7 +321,7 @@ module.exports = class {
         postedAt: Date.now(),
       });
       await post.save();
-      var link = this.name === "posts" ? "/forum/post/" + post._id : "/project/" + post._id;
+      var link = this.name === "posts" ? "/forum/discussion/" + post._id : "/project/" + post._id;
       await this.notifyUserFollowers(user.username + " commented", user, post.title, link);
       await this.notifyUserMentions(content, user, post.title, link);
       const owner = await Users.findOne({ _id: post.posterId });
