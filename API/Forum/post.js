@@ -140,7 +140,7 @@ module.exports = class {
         message: "Not Authorized. You do not own this post",
       });
       await this.model.deleteOne({_id: pid});
-      //await post.remove();
+      // await post.remove();
       console.log("deleted " + pid);
       res.status(201).json({
         message: "Post successfully deleted",
@@ -321,17 +321,17 @@ module.exports = class {
         postedAt: Date.now(),
       });
       await post.save();
-      var link = this.name === "posts" ? "/forum/post/" + post._id : "/project/" + post._id;
-      await this.notifyUserFollowers(user.username + " commented", user, title, link);
-      await this.notifyUserMentions(content, user, title, link);
-      const owner = await Users.findOne({ _id: post.posterId });
-      if (!owner) return res.status(404).json({
-        message: "Fetch not successful",
-        error: "Owner not found",
-      });
-      var type = this.name === "posts" ? "discussion" : "project";
-      owner.notify(user.username + " commented on your " + type, post.name, link, user._id, user.username);
-      await owner.save();
+      // var link = this.name === "posts" ? "/forum/post/" + post._id : "/project/" + post._id;
+      // await this.notifyUserFollowers(user.username + " commented", user, title, link);
+      // await this.notifyUserMentions(content, user, title, link);
+      // const owner = await Users.findOne({ _id: post.posterId });
+      // if (!owner) return res.status(404).json({
+      //   message: "Fetch not successful",
+      //   error: "Owner not found",
+      // });
+      // var type = this.name === "posts" ? "discussion" : "project";
+      // owner.notify(user.username + " commented on your " + type, post.name, link, user._id, user.username);
+      // await owner.save();
       res.locals.clearCookie();
       res.status(201).json({
         message: "Post successfully updated",
