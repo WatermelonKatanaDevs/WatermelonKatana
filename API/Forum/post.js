@@ -324,14 +324,14 @@ module.exports = class {
       var link = this.name === "posts" ? "/forum/post/" + post._id : "/project/" + post._id;
       await this.notifyUserFollowers(user.username + " commented", user, post.title, link);
       await this.notifyUserMentions(content, user, post.title, link);
-      // const owner = await Users.findOne({ _id: post.posterId });
-      // if (!owner) return res.status(404).json({
-      //   message: "Fetch not successful",
-      //   error: "Owner not found",
-      // });
-      // var type = this.name === "posts" ? "discussion" : "project";
-      // owner.notify(user.username + " commented on your " + type, post.name, link, user._id, user.username);
-      // await owner.save();
+      const owner = await Users.findOne({ _id: post.posterId });
+      if (!owner) return res.status(404).json({
+        message: "Fetch not successful",
+        error: "Owner not found",
+      });
+      var type = this.name === "posts" ? "discussion" : "project";
+      owner.notify(user.username + " commented on your " + type, post.name, link, user._id, user.username);
+      await owner.save();
       res.locals.clearCookie();
       res.status(201).json({
         message: "Post successfully updated",
