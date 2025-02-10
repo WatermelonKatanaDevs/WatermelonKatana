@@ -74,8 +74,7 @@ exports.checkFormToken = function (req, res, next) {
   let formToken = formTokens.get(tokenId);
   if (tokenId && formToken.state === "pending") {
     formToken.state = "processing";
-    res.locals.clearCookie = () => { res.clearCookie("formToken"); formTokens.delete(tokenId) }
-    res.locals.recycleCookie = () => { formToken.delete(tokenId); generateFormToken(res) }
+    res.locals.clearCookie = () => { res.clearCookie("formToken"); formTokens.delete(tokenId); generateFormToken(res) }
     next();
   } else {
     res.status(400).send("Form submission already in use");

@@ -80,7 +80,7 @@ module.exports = class {
       });
       console.log("done!");
     } catch (error) {
-      res.locals.recycleCookie();
+      res.locals.clearCookie();
       res.status(400).json({
         message: "Post not successfully published",
         error: error.message,
@@ -340,7 +340,7 @@ module.exports = class {
       });
       console.log("done!");
     } catch (error) {
-      res.locals.recycleCookie();
+      res.locals.clearCookie();
       res.status(400).json({
         message: "Post not successfully updated",
         error: error.message,

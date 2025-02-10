@@ -38,7 +38,7 @@ exports.register = async (req, res, next) => {
       role: user.role,
     });
   } catch(error) {
-    res.locals.recycleCookie();
+    res.locals.clearCookie();
     res.status(400).json({
       message: "User not successful created",
       error: error.message.includes("E11000") ? "as there is an account already with this name": error.message,
