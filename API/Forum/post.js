@@ -321,9 +321,9 @@ module.exports = class {
         postedAt: Date.now(),
       });
       await post.save();
-      // var link = this.name === "posts" ? "/forum/post/" + post._id : "/project/" + post._id;
-      // await this.notifyUserFollowers(user.username + " commented", user, title, link);
-      // await this.notifyUserMentions(content, user, title, link);
+      var link = this.name === "posts" ? "/forum/post/" + post._id : "/project/" + post._id;
+      await this.notifyUserFollowers(user.username + " commented", user, title, link);
+      await this.notifyUserMentions(content, user, title, link);
       // const owner = await Users.findOne({ _id: post.posterId });
       // if (!owner) return res.status(404).json({
       //   message: "Fetch not successful",
