@@ -330,7 +330,9 @@ module.exports = class {
         error: "Owner not found",
       });
       var type = this.name === "posts" ? "discussion" : "project";
-      owner.notify(user.username + " commented on your " + type, post.name, link, user._id, user.username);
+      if (owner.id !== user.id) {
+        owner.notify(user.username + " commented on your " + type, post.name, link, user._id, user.username);
+      }
       await owner.save();
       res.locals.clearCookie();
       res.status(201).json({
