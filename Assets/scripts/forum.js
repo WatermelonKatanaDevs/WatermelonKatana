@@ -138,8 +138,9 @@ async function listComments(list,comments,self,events) {
   },self);
   window.onreplybtnclick = (i)=>{
     document.querySelector("#reply").style.display = "block";
-    if (!comments[i]) return;
     var txt = document.querySelector("#reply-textbox");
+    txt.focus();
+    if (!comments[i]) return;
     txt.value = "@"+comments[i].poster+" "+txt.value;
   };
   window.oneditbtnclick = (index)=>{
@@ -147,6 +148,7 @@ async function listComments(list,comments,self,events) {
     var txt = document.querySelector("#reply-textbox");
     var oldmsg = txt.value;
     txt.value = comments[index].content;
+    txt.focus();
     window.editingMsg = {index,oldmsg};
   };
   window.ondeletebtnclick = events.ondelete;
