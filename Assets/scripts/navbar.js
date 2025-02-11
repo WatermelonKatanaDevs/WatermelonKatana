@@ -413,11 +413,11 @@ function openreportbtnclick() {
 }
 
 document.addEventListener("DOMContentLoaded", ()=>{
-  const notificationIcon = document.querySelector("#notification-icon");
-  const notificationDropdown = document.querySelector("#notification-dropdown");
-  const reportIcon = document.querySelector("#report-icon");
-  const reportDropdown = document.querySelector("#report-dropdown");
   window.addEventListener("click", function(e) {
+    const notificationIcon = document.querySelector("#notification-icon");
+    const notificationDropdown = document.querySelector("#notification-dropdown");
+    const reportIcon = document.querySelector("#report-icon");
+    const reportDropdown = document.querySelector("#report-dropdown");
     if (notificationIcon && !notificationIcon.contains(e.target) && !notificationDropdown.contains(e.target)) {
       notificationDropdown.style.display = "none";
     }
