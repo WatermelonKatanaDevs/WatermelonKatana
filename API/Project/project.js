@@ -146,7 +146,7 @@ async delete(req, res, next) {
       await users[i].save();
     }
     //await project.remove();
-    this.model.deleteOne({_id: pid});
+    await this.model.deleteOne({_id: pid});
     console.log("deleted "+pid);
     res.status(201).json({
       message: "Project successfully deleted",
