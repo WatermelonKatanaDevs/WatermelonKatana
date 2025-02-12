@@ -145,7 +145,8 @@ async delete(req, res, next) {
       users[i].favorites.splice(users[i].favorites.indexOf(pid),1);
       await users[i].save();
     }
-    await project.remove();
+    //await project.remove();
+    this.model.deleteOne({_id: pid});
     console.log("deleted "+pid);
     res.status(201).json({
       message: "Project successfully deleted",
