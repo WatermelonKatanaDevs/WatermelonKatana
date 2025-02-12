@@ -117,7 +117,7 @@ app.get("/gamejams", (req, res) => res.sendFile(cldir + "/projects/gamejams.html
 app.get("/search", (req, res) => res.sendFile(cldir + "/projects/search.html")); // Search page
 app.get("/publish", userAuth, makeFormToken, (req, res) => res.sendFile(cldir + "/projects/publish.html")); // Publish page, users only
 const Projects = require("./Database/model/Projects");
-app.get("/project/:id", checkAuth, async (req, res) => {
+app.get("/project/:id", checkAuth, makeFormToken, async (req, res) => {
   // Project page with dynamic project ID
   var proj = await Projects.findOne({ _id: req.params.id });
   if (!proj) return res.status(404).sendFile(cldir + "/404.html");
