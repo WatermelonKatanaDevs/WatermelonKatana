@@ -154,6 +154,7 @@
           params.set("page", currentPage);
           history.pushState({}, "", buildUrl(params));
         } else if (!Number.isFinite(parseInt(params.get("page")))) {
+          params.set("page", currentPage);
           history.replaceState({}, "", buildUrl(params));
         }
         return projects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
