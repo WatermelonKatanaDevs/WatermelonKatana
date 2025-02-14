@@ -153,7 +153,7 @@
         if (!omitState) {
           params.set("page", currentPage);
           history.pushState({}, "", buildUrl(params));
-        } else if (parseInt(params.get("page")) === NaN) {
+        } else if (!Number.isFinite(parseInt(params.get("page")))) {
           history.replaceState({}, "", buildUrl(params));
         }
         return projects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
