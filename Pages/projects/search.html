@@ -141,15 +141,17 @@
           projectPage.forEach(proj => projHTML(list, tok)(proj));
         }
 
-        function mainIndex() {
+        function mainIndex(omitState) {
           if ((currentPage + 1) > Math.ceil((projects.length) / projectsPerPage)) { next.style.visibility = "hidden"; }
           else { next.style.visibility = ""; }
           pageCounter.textContent = `${currentPage} / ${Math.ceil((projects.length) / projectsPerPage)}`;
           if ((currentPage - 1) < 1) { previous.style.visibility = "hidden"; }
           else { previous.style.visibility = ""; }
           let params = new URLSearchParams(location.search);
-          params.set("page", currentPage);
-          history.pushState({}, "", buildUrl(params));
+          if (!omitState) {
+            params.set("page", currentPage);
+            history.pushState({}, "", buildUrl(params));
+          }
           return projects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
         }
 
@@ -159,7 +161,7 @@
           if (page !== currentPage) {
             list.innerHTML = '';
             currentPage = page;
-            let projectPage = mainIndex();
+            let projectPage = mainIndex(true);
             projectPage.forEach(proj => projHTML(list, tok)(proj));
           }
         }
