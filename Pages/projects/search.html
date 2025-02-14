@@ -155,7 +155,10 @@
 
         window.onpopstate = () => {
           let page = location.search.match(/page=([\d]+)/);
-          if(page !== null && parseInt(page[1]) !== currentPage) { mainIndex() }
+          if(page !== null && parseInt(page[1]) !== currentPage) {
+            currentPage = page;
+            mainIndex();
+          }
         }
       }
 
