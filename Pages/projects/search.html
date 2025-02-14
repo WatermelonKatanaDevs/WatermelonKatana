@@ -152,6 +152,11 @@
           history.pushState({}, "", buildUrl(params));
           return projects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
         }
+
+        window.onpopstate = () => {
+          let page = location.search.match(/page=([\d]+)/);
+          if(page !== null && parseInt(page[1]) !== currentPage) { mainIndex() }
+        }
       }
 
       // Initial search when the page loads
