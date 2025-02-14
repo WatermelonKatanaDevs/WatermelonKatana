@@ -154,10 +154,13 @@
         }
 
         window.onpopstate = () => {
-          let page = location.search.match(/page=([\d]+)/);
-          if(page !== null && parseInt(page[1]) !== currentPage) {
+          let params = new URLSearchParams(location.search);
+          let page = parseInt(params.get("page")) || 1;
+          if (page !== currentPage) {
+            list.innerHTML = '';
             currentPage = page;
-            mainIndex();
+            let projectPage = mainIndex();
+            projectPage.forEach(proj => projHTML(list, tok)(proj));
           }
         }
       }
