@@ -301,7 +301,7 @@ body {
     font-size: 14px;
     display: flex;
     flex-direction: column;
-    align-items: flex-end;  /* Align to the right */
+    align-items: center;  /* Align in center can push it right later */
     justify-content: center;
 }
 

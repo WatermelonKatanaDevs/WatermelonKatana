@@ -2,7 +2,7 @@ const footer = document.createElement('footer');
 footer.className = "footer";
 footer.innerHTML = `
 <div class="social-buttons">
-    <button id="dismiss-footer" style="position: absolute; top: 0px; left: 0px; background-image: none"> 
+    <button id="dismiss-footer" style="position: absolute; top: 0px; right: 0px; background-image: none"> 
     X 
     </button>
     <a href="https://discord.gg/S8XTzKEz5f" target="_blank" class="social-btn discord-btn">
