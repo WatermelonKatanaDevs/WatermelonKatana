@@ -1,4 +1,3 @@
-
 async function createPost(post,data,txt,name,reload) {
   var u = await getUser(data.posterId);
   post.innerHTML = `
@@ -114,6 +113,7 @@ async function listComments(list,comments,self,events) {
         </label>
       </div>`:""}
       <p class="comment-content">${convertMarkdown(c.content)}</p>
+      <br>
     </div>`;
     list.innerHTML += div;
   }
