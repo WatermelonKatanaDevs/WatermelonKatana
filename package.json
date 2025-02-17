@@ -12,7 +12,7 @@
     "author": "The WatermelonKatana Developers",
     "license": "MIT",
     "dependencies": {
-        "bcryptjs": "^2.4.3",
+        "bcryptjs": "^3.0.1",
         "canvas": "^3.0.1",
         "cookie-parser": "^1.4.7",
         "cors": "^2.8.5",
