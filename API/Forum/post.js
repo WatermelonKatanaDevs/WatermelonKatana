@@ -195,7 +195,7 @@ module.exports = class {
       var list = await this.model.find(search);
       list = list.map(e => e.pack());
       var data = {};
-      data[this.name] = (showRecent == "true" || showRecent == "1") ? list.slice(-5): list;
+      data[this.name] = (showRecent > 0) ? list.slice(-showRecent): list;
       data = await this.censor(data, res);
       res.status(200).json(data);
     } catch (err) {

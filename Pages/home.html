@@ -74,10 +74,11 @@
         const tok = await getAuth();
         var sparams = new URLSearchParams();
         if (tok.user?.mature) { sparams.set("showMature", tok.user.mature) }
+        sparams.set("showRecent", 5);
         const res = await fetch('/api/project/list?'+sparams);
         const data = await res.json();
         data.projects.sort((a,b)=>(b.postedAt-a.postedAt));
-        data.projects.slice(0, 5).map(projHTML(latestList,tok));
+        // data.projects.slice(0, 5).map(projHTML(latestList,tok));
       })();
 
       (async () => {
