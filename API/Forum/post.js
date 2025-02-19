@@ -193,9 +193,10 @@ module.exports = class {
       }
       if (customQuery) search = JSON.parse(customQuery);
       var list = await this.model.find(search);
+      list = (showRecent > 0) ? list.slice(-showRecent): list;
       list = list.map(e => e.pack());
       var data = {};
-      data[this.name] = (showRecent > 0) ? list.slice(-showRecent): list;
+      data[this.name] = list;
       data = await this.censor(data, res);
       res.status(200).json(data);
     } catch (err) {
