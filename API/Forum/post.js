@@ -169,7 +169,7 @@ module.exports = class {
   async list(req, res, next) {
     try {
       var search = { hidden: false, mature: false };
-      const { poster, platform, postedBefore, postedAfter, includeTags, excludeTags, featured, showMature, showHidden, recipient, customQuery } = req.query;
+      const { poster, platform, postedBefore, postedAfter, includeTags, excludeTags, featured, showMature, showHidden, showRecent, recipient, customQuery } = req.query;
       if (poster) search.poster = poster;
       if (platform) search.platform = platform;
       interpretBool(search, "featured", featured);
@@ -195,7 +195,7 @@ module.exports = class {
       var list = await this.model.find(search);
       list = list.map(e => e.pack());
       var data = {};
-      data[this.name] = list;
+      data[this.name] = (showRecent == "true" || showRecent == "1") ? list.slice(-5): list;
       data = await this.censor(data, res);
       res.status(200).json(data);
     } catch (err) {
