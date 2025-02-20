@@ -192,9 +192,12 @@ module.exports = class {
         }
       }
       if (customQuery) search = JSON.parse(customQuery);
-      var query = this.model.find;
-      var list = showRecent > 0 ? await query(search).sort({ postedAt: -1 }).limit(showRecent).exec()
-      : await query(search);
+      var list, query = this.model.find;
+      if (showRecent > 0) {
+        list = await query(search).sort({ postedAt: -1 }).limit(showRecent).exec();
+      } else {
+        list = await query(search);
+      }
       //list = (showRecent > 0) ? list.slice(-showRecent): list;
       list = list.map(e => e.pack());
       var data = {};
