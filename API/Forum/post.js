@@ -194,7 +194,8 @@ module.exports = class {
       if (customQuery) search = JSON.parse(customQuery);
       var list;
       if (showRecent > 0) {
-        list = await this.model.find(search).sort({ postedAt: -1 }).limit(showRecent).exec();
+        var sortby = this.name === "posts" ? {featured: -1, activeAt: -1} : {postedAt: -1}
+        list = await this.model.find(search).sort(sortby).limit(showRecent).exec();
       } else {
         list = await this.model.find(search);
       }
