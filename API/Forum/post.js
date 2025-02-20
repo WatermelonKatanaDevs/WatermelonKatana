@@ -139,7 +139,7 @@ module.exports = class {
       if (post.posterId !== user.id && user.role !== "Admin") return res.status(403).json({
         message: "Not Authorized. You do not own this post",
       });
-      await this.model.deleteOne({_id: pid});
+      await this.model.deleteOne({ _id: pid });
       // await post.remove();
       console.log("deleted " + pid);
       res.status(201).json({
@@ -192,8 +192,10 @@ module.exports = class {
         }
       }
       if (customQuery) search = JSON.parse(customQuery);
-      var list = await this.model.find(search);
-      list = (showRecent > 0) ? list.slice(-showRecent): list;
+      var query = this.model.find;
+      var list = showRecent > 0 ? await query(search).sort({ postedAt: -1 }).limit(showRecent).exec()
+      : await query(search);
+      //list = (showRecent > 0) ? list.slice(-showRecent): list;
       list = list.map(e => e.pack());
       var data = {};
       data[this.name] = list;
