@@ -97,7 +97,7 @@ a, .link {
 }
 
 a:hover, .link:hover {
-	cursor: url("images/pointer.png"), pointer;
+	cursor: url("/images/pointer.png"), pointer;
 	color: var(--palette-link-hover);
 }
 
@@ -121,7 +121,7 @@ input[type=button], input[type=submit], button, select, option, .button {
 input[type=button]:hover, input[type=submit]:hover, button:hover, .button:hover {
 	background-color: rgba(0, 0, 0, 0.3);
 	color: var(--palette-white);
-	cursor: url("images/pointer.png"), pointer;
+	cursor: url("/images/pointer.png"), pointer;
 }
 
 #deletebtn, #discardbtn, .delete {
