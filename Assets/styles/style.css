@@ -91,13 +91,13 @@ body {
 
 a, .link {
 	color: var(--palette-link);
+	cursor: url("/images/pointer.png"), pointer !important;
 	text-decoration: none;
 	font-size: 1em;
 	transition: color 0.2s;
 }
 
 a:hover, .link:hover {
-	cursor: url("/images/pointer.png"), pointer !important;
 	color: var(--palette-link-hover);
 }
 
@@ -108,6 +108,7 @@ input[type=button], input[type=submit], button, select, option, .button {
 	background-image: url("/images/button.png");
 	background-blend-mode: darken;
 	color: var(--palette-white);
+	cursor: url("/images/pointer.png"), pointer !important;
 	border: none;
 	border-radius: 50px;
 	padding: 8px 16px;
@@ -121,7 +122,6 @@ input[type=button], input[type=submit], button, select, option, .button {
 input[type=button]:hover, input[type=submit]:hover, button:hover, .button:hover {
 	background-color: rgba(0, 0, 0, 0.3);
 	color: var(--palette-white);
-	cursor: url("/images/pointer.png"), pointer !important;
 }
 
 #deletebtn, #discardbtn, .delete {
