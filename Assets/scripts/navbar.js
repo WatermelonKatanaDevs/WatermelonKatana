@@ -197,7 +197,7 @@
     .dropdown-icon {
       position: relative;
       margin-right: 5px;
-      cursor: pointer;
+      cursor: url("/images/pointer.png"), pointer !important;
       width: 2em;
       height: 2em;
       position: relative;

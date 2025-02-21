@@ -59,7 +59,7 @@
 body {
 	background-color: var(--palette-background-grey);
 	color: var(--palette-white);
-	cursor: url("/images/cursor.png"), default;
+	cursor: url("/images/cursor.png"), default !important;
 	font-family: var(--body-font), serif;
 	margin: 0;
 	padding: 0;
@@ -97,7 +97,7 @@ a, .link {
 }
 
 a:hover, .link:hover {
-	cursor: url("/images/pointer.png"), pointer;
+	cursor: url("/images/pointer.png"), pointer !important;
 	color: var(--palette-link-hover);
 }
 
@@ -121,7 +121,7 @@ input[type=button], input[type=submit], button, select, option, .button {
 input[type=button]:hover, input[type=submit]:hover, button:hover, .button:hover {
 	background-color: rgba(0, 0, 0, 0.3);
 	color: var(--palette-white);
-	cursor: url("/images/pointer.png"), pointer;
+	cursor: url("/images/pointer.png"), pointer !important;
 }
 
 #deletebtn, #discardbtn, .delete {
