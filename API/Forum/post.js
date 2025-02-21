@@ -195,7 +195,7 @@ module.exports = class {
       var list;
       if (showRecent > 0) {
         var sortby = this.name === "posts" ? {featured: -1, activeAt: -1} : {postedAt: -1}
-        list = await this.model.find(search).sort(sortby).limit(showRecent).exec();
+        list = await this.model.find(search).sort(sortby).limit(showRecent);
       } else {
         list = await this.model.find(search);
       }
