@@ -128,14 +128,11 @@ module.exports = class {
     }
   };
 
-  async entriesLength(req, res, next, ...filter) {
+  async entriesLength(filter) {
     try {
-      await this.model.countDocuments(...filter)
+      return await this.model.countDocuments(filter)
     } catch (error) {
-      res.status(404).json({
-        message: "unable to count",
-        error: error.message
-      })
+      return 0;
     }
   }
 
@@ -228,8 +225,10 @@ module.exports = class {
       }
       //list = (showRecent > 0) ? list.slice(-showRecent): list;
       list = list.map(e => e.pack());
-      var data = {};
-      data[this.name] = list;
+      var data = {
+        [this.name]: list,
+        length: await this.entriesLength(search)
+      };
       data = await this.censor(data, res);
       res.status(200).json(data);
     } catch (err) {
