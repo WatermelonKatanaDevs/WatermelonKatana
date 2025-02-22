@@ -220,7 +220,7 @@ module.exports = class {
           limitby = entriesPerPage;
         }
         if (!Number.isSafeInteger(parseInt(length))) {
-          length = await this.entriesLength(search, res);
+          length = await this.entriesLength(search);
         }
         list = await this.model.find(search).skip(skipby).sort(sortby).limit(limitby);
       } else {
@@ -242,12 +242,16 @@ module.exports = class {
 
   async search(req, res, next) {
     try {
-      const { query, page, showMature, showHidden } = req.query;
+      const { query, page, total, showMature, showHidden } = req.query;
       var search = { hidden: false, mature: false, $text: { $search: query } };
-      var skipby = 0;
+      var skipby = 0, length = total;
       if (showMature == "true" || showMature == "1") delete search.mature;
       if (showHidden == "true" || showHidden == "1") delete search.hidden;
-      if (page > 0 && Number.isSafeInteger(parseInt(page))) {
+      if (page > 0) {
+        if (!Number.isSafeInteger(parseInt(length))) {
+          page = 1;
+          length = await this.entriesLength(search);
+        }
         skipby = (page - 1) * entriesPerPage;
       }
       var list = await this.model.find(
@@ -259,8 +263,10 @@ module.exports = class {
         c.relevance = e.relevance;
         return c;
       });
-      var data = {};
-      data[this.name] = list;
+      var data = {
+        [this.name]: list,
+        length: length
+      };
       data = await this.censor(data, res);
       res.status(200).json(data);
     } catch (err) {
