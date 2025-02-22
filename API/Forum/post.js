@@ -196,12 +196,17 @@ module.exports = class {
       var list = [];
       if (showRecent > 0 || typeof sort === "string" || page > 0) {
         var sortby = {}, limitby = showRecent, skipby = 0;
+        //sort = showRecent > 0 && typeof sort !== "string" ? "none"
+        sortby = this.name === "posts" ? { featured: -1, activeAt: -1 } : { postedAt: -1 }
         switch (sort) {
-          case "score": case "views": sortby = { [sort]: -1 }; break;
+          case "score": sortby = { [sort]: -1, veiws: -1 }; break;
+          case "views": sortby = { [sort]: -1, score: -1 }; break;
           case "latest": sortby = { postedAt: -1 }; break;
           case "oldest": sortby = { postedAt: 1 }; break;
           default:
-            sortby = this.name === "posts" ? { featured: -1, activeAt: -1 } : { postedAt: -1 }
+            sortby = showRecent > 0 && typeof sort !== "string"
+              ? (this.name === "posts" ? { featured: -1, activeAt: -1 } : { postedAt: -1 })
+              : { score: -1, views: -1 };
             break;
         }
         if (Number.isSafeInteger(parseInt(page))) {
