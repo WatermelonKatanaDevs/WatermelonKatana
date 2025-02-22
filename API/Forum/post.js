@@ -196,8 +196,6 @@ module.exports = class {
       var list = [];
       if (showRecent > 0 || typeof sort === "string" || page > 0) {
         var sortby = {}, limitby = showRecent, skipby = 0;
-        //sort = showRecent > 0 && typeof sort !== "string" ? "none"
-        sortby = this.name === "posts" ? { featured: -1, activeAt: -1 } : { postedAt: -1 }
         switch (sort) {
           case "score": sortby = { [sort]: -1, veiws: -1 }; break;
           case "views": sortby = { [sort]: -1, score: -1 }; break;
