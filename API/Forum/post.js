@@ -130,7 +130,7 @@ module.exports = class {
 
   async entriesLength(filter) {
     try {
-      return await this.model.countDocuments(filter);
+      return await this.model.countDocuments(filter) - 1;
     } catch (error) {
       return 0;
     }
