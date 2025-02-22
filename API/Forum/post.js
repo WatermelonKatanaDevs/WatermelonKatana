@@ -195,7 +195,7 @@ module.exports = class {
       if (customQuery) search = JSON.parse(customQuery);
       var list = [];
       if (showRecent > 0 || typeof sort === "string" || page > 0) {
-        var sortby = {}, skipby = 0;
+        var sortby = {}, limitby = showRecent, skipby = 0;
         switch (sort) {
           case "score": case "views": sortby = { [sort]: -1 }; break;
           case "latest": sortby = { postedAt: -1 }; break;
@@ -206,9 +206,9 @@ module.exports = class {
         }
         if (Number.isSafeInteger(parseInt(page))) {
           skipby = (page - 1) * entriesPerPage;
-          showRecent = entriesPerPage;
+          limitby = entriesPerPage;
         }
-        list = await this.model.find(search).skip(skipby).sort(sortby).limit(showRecent);
+        list = await this.model.find(search).skip(skipby).sort(sortby).limit(limitby);
       } else {
         list = await this.model.find(search);
       }
