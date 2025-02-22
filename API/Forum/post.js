@@ -128,11 +128,9 @@ module.exports = class {
     }
   };
 
-  async entriesLength(filter, res) {
+  async entriesLength(filter) {
     try {
-      let length = await this.model.countDocuments(filter);
-      res.cookie(`${this.name}Length`, length, { maxAge: 1000 });
-      return length;
+      return await this.model.countDocuments(filter);
     } catch (error) {
       return 0;
     }
@@ -180,7 +178,7 @@ module.exports = class {
   async list(req, res, next) {
     try {
       var search = { hidden: false, mature: false };
-      const { poster, platform, postedBefore, postedAfter, includeTags, excludeTags, featured, page, sort, showMature, showHidden, showRecent, recipient, customQuery } = req.query;
+      const { poster, platform, postedBefore, postedAfter, includeTags, excludeTags, featured, page, total, sort, showMature, showHidden, showRecent, recipient, customQuery } = req.query;
       if (poster) search.poster = poster;
       if (platform) search.platform = platform;
       interpretBool(search, "featured", featured);
@@ -203,7 +201,7 @@ module.exports = class {
         }
       }
       if (customQuery) search = JSON.parse(customQuery);
-      var list = [], length = req.cookies[`${this.name}Length`] || undefined;
+      var list = [], length = total;
       if (showRecent > 0 || typeof sort === "string" || page > 0) {
         var sortby = {}, limitby = showRecent, skipby = 0;
         switch (sort) {
