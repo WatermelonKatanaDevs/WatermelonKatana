@@ -131,7 +131,7 @@ module.exports = class {
   async entriesLength(filter, res) {
     try {
       let length = await this.model.countDocuments(filter);
-      res.cookie(`${this.name}Length`, length, { maxAge: 1 });
+      res.cookie(`${this.name}Length`, length, { maxAge: 1000 });
       return length;
     } catch (error) {
       return 0;
@@ -203,7 +203,7 @@ module.exports = class {
         }
       }
       if (customQuery) search = JSON.parse(customQuery);
-      var list = [];
+      var list = [], length = req.cookies[`${this.name}Length`] || undefined;
       if (showRecent > 0 || typeof sort === "string" || page > 0) {
         var sortby = {}, limitby = showRecent, skipby = 0;
         switch (sort) {
@@ -221,6 +221,9 @@ module.exports = class {
           skipby = (page - 1) * entriesPerPage;
           limitby = entriesPerPage;
         }
+        if (length < 1) {
+          length = await this.entriesLength(search, res);
+        }
         list = await this.model.find(search).skip(skipby).sort(sortby).limit(limitby);
       } else {
         list = await this.model.find(search);
@@ -229,7 +232,7 @@ module.exports = class {
       list = list.map(e => e.pack());
       var data = {
         [this.name]: list,
-        length: (req.cookies[`${this.name}Length`] || await this.entriesLength(search, res))
+        length: length
       };
       data = await this.censor(data, res);
       res.status(200).json(data);
