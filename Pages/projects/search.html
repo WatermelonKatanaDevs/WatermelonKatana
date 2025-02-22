@@ -114,7 +114,7 @@
           }
         }
         list.innerHTML = '';
-        updatePageIndexer(data.projects);
+        updatePageIndexer(data.projects, (data.length || data.projects.length));
         data.projects = data.projects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
         data.projects.forEach(proj => projHTML(list, tok)(proj));
       } catch (err) {
@@ -124,49 +124,59 @@
     }
 
     // Project cache indexing veiwer
-    function updatePageIndexer(projects) {
+    function updatePageIndexer(projects, length) {
+      const pages = [];
+      pages[currentPage] = pages[currentPage] || projects;
       mainIndex(true);
 
-      previous.onclick = function (e) {
+      previous.onclick = async function (e) {
         e.preventDefault();
         list.innerHTML = '';
         currentPage -= 1;
-        let projectPage = mainIndex();
+        let projectPage = await mainIndex();
         projectPage.forEach(proj => projHTML(list, tok)(proj));
       }
 
-      next.onclick = function (e) {
+      next.onclick = async function (e) {
         e.preventDefault();
         list.innerHTML = '';
         currentPage += 1;
-        let projectPage = mainIndex();
+        let projectPage = await mainIndex();
         projectPage.forEach(proj => projHTML(list, tok)(proj));
       }
 
-      function mainIndex(omitState) {
-        if ((currentPage + 1) > Math.ceil((projects.length) / projectsPerPage)) { next.style.visibility = "hidden"; }
+      async function mainIndex(omitState) {
+        if ((currentPage + 1) > Math.ceil((length) / projectsPerPage)) { next.style.visibility = "hidden"; }
         else { next.style.visibility = ""; }
-        pageCounter.textContent = `${currentPage} / ${Math.ceil((projects.length) / projectsPerPage)}`;
+        pageCounter.textContent = `${currentPage} / ${Math.ceil((length) / projectsPerPage)}`;
         if ((currentPage - 1) < 1) { previous.style.visibility = "hidden"; }
         else { previous.style.visibility = ""; }
         let params = new URLSearchParams(location.search);
         if (!omitState) {
           params.set("page", currentPage);
+          params.set("total", length);
           history.pushState({}, "", buildUrl(params));
-        } else if (Number.isNaN(parseInt(params.get("page")))) {
+        } else if (Number.isSafeInteger(parseInt(params.get("page")))) {
           params.set("page", currentPage);
+          params.set("total", length);
           history.replaceState({}, "", buildUrl(params));
         }
-        return projects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
+        if (pages[currentPage] === undefined) {
+          const endpoint = params.get("query") ? 'search' : 'list';
+          const res = await fetch('/api/project/' + endpoint + '?' + params);
+          const data = await res.json();
+          pages[currentPage] = data.projects;
+        }
+        return pages[currentPage];
       }
 
-      window.onpopstate = () => {
+      window.onpopstate = async () => {
         let params = new URLSearchParams(location.search);
         let page = parseInt(params.get("page")) || 1;
         if (page !== currentPage) {
           list.innerHTML = '';
           currentPage = page;
-          let projectPage = mainIndex(true);
+          let projectPage = await mainIndex(true);
           projectPage.forEach(proj => projHTML(list, tok)(proj));
         }
       }
