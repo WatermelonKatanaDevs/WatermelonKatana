@@ -127,7 +127,7 @@
     function updatePageIndexer(projects, length) {
       const pages = [];
       pages[currentPage] = pages[currentPage] || projects;
-      mainIndex(true);
+      mainIndex(true, currentPage);
 
       previous.onclick = async function (e) {
         e.preventDefault();
