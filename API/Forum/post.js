@@ -128,6 +128,17 @@ module.exports = class {
     }
   };
 
+  async entriesLength(req, res, next, ...filter) {
+    try {
+      await this.model.countDocuments(...filter)
+    } catch (error) {
+      res.status(404).json({
+        message: "unable to count",
+        error: error.message
+      })
+    }
+  }
+
   async delete(req, res, next) {
     try {
       const pid = req.params.id;
@@ -229,14 +240,18 @@ module.exports = class {
 
   async search(req, res, next) {
     try {
-      const { query, showMature, showHidden } = req.query;
+      const { query, page, showMature, showHidden } = req.query;
       var search = { hidden: false, mature: false, $text: { $search: query } };
+      var skipby = 0;
       if (showMature == "true" || showMature == "1") delete search.mature;
       if (showHidden == "true" || showHidden == "1") delete search.hidden;
+      if (page > 0 && Number.isSafeInteger(parseInt(page))) {
+        skipby = (page - 1) * entriesPerPage;
+      }
       var list = await this.model.find(
         search,
         { relevance: { $meta: "textScore" } }
-      ).sort({ relevance: { $meta: "textScore" } });
+      ).skip(skipby).sort({ relevance: { $meta: "textScore" } }).limit(entriesPerPage);
       list = list.map(e => {
         var c = e.pack();
         c.relevance = e.relevance;
