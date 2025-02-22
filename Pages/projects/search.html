@@ -132,16 +132,22 @@
         e.preventDefault();
         list.innerHTML = '';
         currentPage -= 1;
+        let page = currentPage;
         let projectPage = await mainIndex();
-        projectPage.forEach(proj => projHTML(list, tok)(proj));
+        if (currentPage === page) {
+          projectPage.forEach(proj => projHTML(list, tok)(proj));
+        }
       }
 
       next.onclick = async function (e) {
         e.preventDefault();
         list.innerHTML = '';
         currentPage += 1;
+        let page = currentPage;
         let projectPage = await mainIndex();
-        projectPage.forEach(proj => projHTML(list, tok)(proj));
+        if (currentPage === page) {
+          projectPage.forEach(proj => projHTML(list, tok)(proj));
+        }
       }
 
       async function mainIndex(omitState) {
