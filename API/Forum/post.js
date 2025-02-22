@@ -131,7 +131,7 @@ module.exports = class {
   async entriesLength(filter, res) {
     try {
       let length = await this.model.countDocuments(filter);
-      res.cookie(`${this.name}Length`, length, { maxAge: 1 })
+      res.cookie(`${this.name}Length`, length, { maxAge: 1 });
       return length;
     } catch (error) {
       return 0;
@@ -229,7 +229,7 @@ module.exports = class {
       list = list.map(e => e.pack());
       var data = {
         [this.name]: list,
-        length: (res.cookies[`${this.name}Length`] || await this.entriesLength(search, res))
+        length: (req.cookies[`${this.name}Length`] || await this.entriesLength(search, res))
       };
       data = await this.censor(data, res);
       res.status(200).json(data);
