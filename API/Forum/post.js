@@ -1,6 +1,7 @@
 const Users = require("../../Database/model/Users");
 const Profanity = require("../../util/js/censored");
 const { checkFormToken } = require("../../Middleware/auth");
+const entriesPerPage = 30;
 
 function interpretBool(obj, name, str) {
   if (str == "0" || str == "false") obj[name] = false;
@@ -169,7 +170,7 @@ module.exports = class {
   async list(req, res, next) {
     try {
       var search = { hidden: false, mature: false };
-      const { poster, platform, postedBefore, postedAfter, includeTags, excludeTags, featured, showMature, showHidden, showRecent, recipient, customQuery } = req.query;
+      const { poster, platform, postedBefore, postedAfter, includeTags, excludeTags, featured, page, sort, showMature, showHidden, showRecent, recipient, customQuery } = req.query;
       if (poster) search.poster = poster;
       if (platform) search.platform = platform;
       interpretBool(search, "featured", featured);
@@ -192,10 +193,22 @@ module.exports = class {
         }
       }
       if (customQuery) search = JSON.parse(customQuery);
-      var list;
-      if (showRecent > 0) {
-        var sortby = this.name === "posts" ? {featured: -1, activeAt: -1} : {postedAt: -1}
-        list = await this.model.find(search).sort(sortby).limit(showRecent);
+      var list = [];
+      if (showRecent > 0 || typeof sort === "string" || page > 0) {
+        var sortby = {}, skipby = 0;
+        switch (sort) {
+          case "score": case "views": sortby = { [sort]: -1 }; break;
+          case "latest": sortby = { postedAt: -1 }; break;
+          case "oldest": sortby = { postedAt: 1 }; break;
+          default:
+            sortby = this.name === "posts" ? { featured: -1, activeAt: -1 } : { postedAt: -1 }
+            break;
+        }
+        if (Number.isSafeInteger(parseInt(page))) {
+          skipby = (page - 1) * entriesPerPage;
+          showRecent = entriesPerPage;
+        }
+        list = await this.model.find(search).skip(skipby).sort(sortby).limit(showRecent);
       } else {
         list = await this.model.find(search);
       }
