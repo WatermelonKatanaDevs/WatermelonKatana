@@ -114,7 +114,7 @@
           }
         }
         list.innerHTML = '';
-        await updatePageIndexer(data.projects, (data.length || data.projects.length));
+        await updatePageIndexer(data.projects, (data.length || data.projects.length - 1));
         data.projects.forEach(proj => projHTML(list, tok)(proj));
       } catch (err) {
         alert('An error occurred while searching: ' + err.message);
