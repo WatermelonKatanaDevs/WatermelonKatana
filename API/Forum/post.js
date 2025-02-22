@@ -247,13 +247,10 @@ module.exports = class {
       var skipby = 0, length = total;
       if (showMature == "true" || showMature == "1") delete search.mature;
       if (showHidden == "true" || showHidden == "1") delete search.hidden;
-      if (page > 0) {
-        if (!Number.isSafeInteger(parseInt(length))) {
-          page = 1;
-          length = await this.entriesLength(search);
-        }
-        skipby = (page - 1) * entriesPerPage;
+      if (!Number.isSafeInteger(parseInt(length))) {
+        length = await this.entriesLength(search);
       }
+      skipby = ((page || 1) - 1) * entriesPerPage;
       var list = await this.model.find(
         search,
         { relevance: { $meta: "textScore" } }
