@@ -221,7 +221,7 @@ module.exports = class {
           skipby = (page - 1) * entriesPerPage;
           limitby = entriesPerPage;
         }
-        if (length < 1) {
+        if (Number.isSafeInteger(parseInt(length))) {
           length = await this.entriesLength(search, res);
         }
         list = await this.model.find(search).skip(skipby).sort(sortby).limit(limitby);
