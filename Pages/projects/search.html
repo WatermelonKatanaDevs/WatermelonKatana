@@ -114,8 +114,7 @@
           }
         }
         list.innerHTML = '';
-        updatePageIndexer(data.projects, (data.length || data.projects.length));
-        data.projects = data.projects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
+        await updatePageIndexer(data.projects, (data.length || data.projects.length));
         data.projects.forEach(proj => projHTML(list, tok)(proj));
       } catch (err) {
         alert('An error occurred while searching: ' + err.message);
@@ -127,13 +126,13 @@
     function updatePageIndexer(projects, length) {
       const pages = [];
       pages[currentPage] = pages[currentPage] || projects;
-      mainIndex(true, currentPage);
+      mainIndex(true);
 
       previous.onclick = async function (e) {
         e.preventDefault();
         list.innerHTML = '';
         currentPage -= 1;
-        let projectPage = await mainIndex(false, currentPage);
+        let projectPage = await mainIndex();
         projectPage.forEach(proj => projHTML(list, tok)(proj));
       }
 
@@ -141,33 +140,33 @@
         e.preventDefault();
         list.innerHTML = '';
         currentPage += 1;
-        let projectPage = await mainIndex(false, currentPage);
+        let projectPage = await mainIndex();
         projectPage.forEach(proj => projHTML(list, tok)(proj));
       }
 
-      async function mainIndex(omitState, page) {
-        if ((page + 1) > Math.ceil((length) / projectsPerPage)) { next.style.visibility = "hidden"; }
+      async function mainIndex(omitState) {
+        if ((currentPage + 1) > Math.ceil((length) / projectsPerPage)) { next.style.visibility = "hidden"; }
         else { next.style.visibility = ""; }
-        pageCounter.textContent = `${page} / ${Math.ceil((length) / projectsPerPage)}`;
-        if ((page - 1) < 1) { previous.style.visibility = "hidden"; }
+        pageCounter.textContent = `${currentPage} / ${Math.ceil((length) / projectsPerPage)}`;
+        if ((currentPage - 1) < 1) { previous.style.visibility = "hidden"; }
         else { previous.style.visibility = ""; }
         let params = new URLSearchParams(location.search);
         if (!omitState) {
-          params.set("page", page);
+          params.set("page", currentPage);
           params.set("total", length);
           history.pushState({}, "", buildUrl(params));
         } else if (Number.isSafeInteger(parseInt(params.get("page")))) {
-          params.set("page", page);
+          params.set("page", currentPage);
           params.set("total", length);
           history.replaceState({}, "", buildUrl(params));
         }
-        if (pages[page] === undefined) {
+        if (pages[currentPage] === undefined) {
           const endpoint = params.get("query") ? 'search' : 'list';
           const res = await fetch('/api/project/' + endpoint + '?' + params);
           const data = await res.json();
-          pages[page] = data.projects;
+          pages[currentPage] = data.projects;
         }
-        return currentPage === page ? pages[page]: [];
+        return pages[currentPage];
       }
 
       window.onpopstate = async () => {
@@ -176,7 +175,7 @@
         if (page !== currentPage) {
           list.innerHTML = '';
           currentPage = page;
-          let projectPage = await mainIndex(true, currentPage);
+          let projectPage = await mainIndex(true);
           projectPage.forEach(proj => projHTML(list, tok)(proj));
         }
       }
