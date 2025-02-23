@@ -102,6 +102,7 @@
         tok = await getAuth();
         const sparams = new URLSearchParams(window.location.search);
         if (tok.user?.mature) { sparams.set("showMature", tok.user.mature) }
+        if(!sparams.get("sort") && !sparams.get("query")) { sparams.set("sort", "score") }
         if (!sparams.get("page")) { sparams.set("page", currentPage) }
         const endpoint = sparams.get("query") ? 'search' : 'list';
         const res = await fetch('/api/project/' + endpoint + '?' + sparams);
@@ -167,7 +168,7 @@
       window.onpopstate = async () => {
         let params = new URLSearchParams(location.search);
         let page = parseInt(params.get("page")) || 1;
-        cachePage = pages["PAGE:" + (params.get("query") || sparams.get("sort"))];
+        cachePage = pages["PAGE:" + (params.get("query") || params.get("sort"))];
         total = parseInt(params.get("total")) || undefined;
         if (page !== currentPage) {
           list.innerHTML = '';
