@@ -169,10 +169,11 @@
           history.replaceState({}, "", buildUrl(params));
         }
         if (pages[currentPage] === undefined) {
+          let page = currentPage;
           const endpoint = params.get("query") ? 'search' : 'list';
           const res = await fetch('/api/project/' + endpoint + '?' + params);
           const data = await res.json();
-          pages[currentPage] = data.projects;
+          pages[page] = data.projects;
         }
         return pages[currentPage];
       }
