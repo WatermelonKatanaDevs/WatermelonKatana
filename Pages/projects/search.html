@@ -181,8 +181,8 @@
         if (page !== currentPage || oldCache !== cachePage) {
           list.innerHTML = '';
           currentPage = page;
-          checkArrows();
           let projectPage = await mainIndex(true);
+          checkArrows();
           projectPage.forEach(proj => projHTML(list, tok)(proj));
         }
       }
