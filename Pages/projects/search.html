@@ -102,7 +102,7 @@
         const sparams = new URLSearchParams(window.location.search);
         if (tok.user?.mature) { sparams.set("showMature", tok.user.mature) }
         if (!sparams.get("page")) { sparams.set("page", currentPage) }
-        history.replaceState({}, "", buildUrl(params));
+        history.replaceState({}, "", buildUrl(sparams));
         const endpoint = sparams.get("query") ? 'search' : 'list';
         const res = await fetch('/api/project/' + endpoint + '?' + sparams);
         const data = await res.json();
