@@ -115,18 +115,18 @@
         // if (!sparams.get("total")) { sparams.set("total", length) }
         history.replaceState({}, "", buildUrl(sparams));
         list.innerHTML = '';
-        let projectPage = await updatePageIndexer((sparams.get("query") ? "QUERY:" + sparams.get("query") : "SORT:" + sparams.get("sort")));
-        projectPage.forEach(proj => projHTML(list, tok)(proj));
+        await updatePageIndexer((sparams.get("query") ? "QUERY:" + sparams.get("query") : "SORT:" + sparams.get("sort")));
       } catch (err) {
         alert('An error occurred while searching: ' + err.message);
         console.error(err.message);
       }
     }
 
-    function updatePageIndexer(id) {
+    async function updatePageIndexer(id) {
       let total = length;
       let cachePage = pages[id] = pages[id] || [];
-      mainIndex(true);
+      let projectPage = await mainIndex(true);
+      projectPage.forEach(proj => projHTML(list, tok)(proj));
 
       previous.onclick = async function (e) {
         e.preventDefault();
