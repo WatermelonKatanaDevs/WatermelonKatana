@@ -105,14 +105,6 @@
         if (!sparams.get("sort") && !sparams.get("query")) { sparams.set("sort", "score") }
         if (!sparams.get("page")) { sparams.set("page", currentPage) }
         const endpoint = sparams.get("query") ? 'search' : 'list';
-        // const pageId = (sparams.get("query") ? "QUERY:" + sparams.get("query") : "SORT:" + sparams.get("sort"));
-        // let data;
-        // if (pages[pageId][currentPage] === undefined) {
-        //   const res = await fetch('/api/project/' + endpoint + '?' + sparams);
-        //   data = await res.json();
-        // } else { data = pages[pageId][currentPage] }
-        // const length = data.length || data.projects.length;
-        // if (!sparams.get("total")) { sparams.set("total", length) }
         history.replaceState({}, "", buildUrl(sparams));
         list.innerHTML = '';
         updatePageIndexer((sparams.get("query") ? "QUERY:" + sparams.get("query") : "SORT:" + sparams.get("sort")));
@@ -124,7 +116,7 @@
 
     function updatePageIndexer(id) {
       let total, maxPage;
-      let cachePage = pages[id] = pages[id] || { projects: [] };
+      let cachePage = pages[id] = pages[id] || [];
       mainIndex(true).then(projectPage => {
         projectPage.forEach(proj => projHTML(list, tok)(proj));
         checkArrows();
@@ -158,19 +150,19 @@
           params.set("page", currentPage);
           history.replaceState({}, "", buildUrl(params));
         }
-        if (cachePage.projects[page - 1] === undefined) {
+        if (cachePage[page - 1] === undefined) {
           const endpoint = params.get("query") ? 'search' : 'list';
           const res = await fetch('/api/project/' + endpoint + '?' + params);
           const data = await res.json();
-          cachePage.length = total = data.length;
+          total = data.length;
           if (!params.get("total")) {
             params.set("total", total);
             history.replaceState({}, "", buildUrl(params));
           }
-          cachePage.projects[page - 1] = data.projects;
+          cachePage[page - 1] = data.projects;
         }
         maxPage = Math.ceil(total / projectsPerPage);
-        return page === currentPage ? cachePage.projects[page - 1] : [];
+        return page === currentPage ? cachePage[page - 1] : [];
       }
 
       function checkArrows() {
