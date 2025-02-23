@@ -102,7 +102,7 @@
         tok = await getAuth();
         const sparams = new URLSearchParams(window.location.search);
         if (tok.user?.mature) { sparams.set("showMature", tok.user.mature) }
-        if(!sparams.get("sort") && !sparams.get("query")) { sparams.set("sort", "score") }
+        if (!sparams.get("sort") && !sparams.get("query")) { sparams.set("sort", "score") }
         if (!sparams.get("page")) { sparams.set("page", currentPage) }
         const endpoint = sparams.get("query") ? 'search' : 'list';
         const res = await fetch('/api/project/' + endpoint + '?' + sparams);
@@ -156,21 +156,22 @@
           history.replaceState({}, "", buildUrl(params));
         }
         let page = currentPage;
-        if (cachePage[page] === undefined) {
+        if (cachePage[page - 1] === undefined) {
           const endpoint = params.get("query") ? 'search' : 'list';
           const res = await fetch('/api/project/' + endpoint + '?' + params);
           const data = await res.json();
-          cachePage[page] = data.projects;
+          cachePage[page - 1] = data.projects;
         }
-        return page === currentPage ? cachePage[page] : [];
+        return page === currentPage ? cachePage[page - 1] : [];
       }
 
       window.onpopstate = async () => {
         let params = new URLSearchParams(location.search);
         let page = parseInt(params.get("page")) || 1;
+        let oldCache = cachePage;
         cachePage = pages["PAGE:" + (params.get("query") || params.get("sort"))];
         total = parseInt(params.get("total")) || undefined;
-        if (page !== currentPage) {
+        if (page !== currentPage || oldCache !== cachePage) {
           list.innerHTML = '';
           currentPage = page;
           let projectPage = await mainIndex(true);
