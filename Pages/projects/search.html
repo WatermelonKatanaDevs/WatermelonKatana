@@ -155,11 +155,11 @@
           const res = await fetch('/api/project/' + endpoint + '?' + params);
           const data = await res.json();
           cachePage.length = data.length;
-          if (!params.get("total")) {
-            params.set("total", cachePage.length);
-            history.replaceState({}, "", buildUrl(params));
-          }
           cachePage.projects[page - 1] = data.projects;
+        }
+        if (!params.get("total")) {
+          params.set("total", cachePage.length);
+          history.replaceState({}, "", buildUrl(params));
         }
         maxPage = Math.ceil(cachePage.length / projectsPerPage);
         return page === currentPage ? cachePage.projects[page - 1] : [];
