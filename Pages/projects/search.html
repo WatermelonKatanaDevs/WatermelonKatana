@@ -115,8 +115,8 @@
         // if (!sparams.get("total")) { sparams.set("total", length) }
         history.replaceState({}, "", buildUrl(sparams));
         list.innerHTML = '';
-        await updatePageIndexer((sparams.get("query") ? "QUERY:" + sparams.get("query") : "SORT:" + sparams.get("sort")));
-        data.projects.forEach(proj => projHTML(list, tok)(proj));
+        let projectPage = await updatePageIndexer((sparams.get("query") ? "QUERY:" + sparams.get("query") : "SORT:" + sparams.get("sort")));
+        projectPage.forEach(proj => projHTML(list, tok)(proj));
       } catch (err) {
         alert('An error occurred while searching: ' + err.message);
         console.error(err.message);
