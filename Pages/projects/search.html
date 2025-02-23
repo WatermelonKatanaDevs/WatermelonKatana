@@ -105,13 +105,17 @@
         if (!sparams.get("sort") && !sparams.get("query")) { sparams.set("sort", "score") }
         if (!sparams.get("page")) { sparams.set("page", currentPage) }
         const endpoint = sparams.get("query") ? 'search' : 'list';
-        const res = await fetch('/api/project/' + endpoint + '?' + sparams);
-        const data = await res.json();
+        const pageId = (sparams.get("query") ? "QUERY:" + sparams.get("query") : "SORT:" + sparams.get("sort"));
+        let data;
+        if (pages[pageId][currentPage] === undefined) {
+          const res = await fetch('/api/project/' + endpoint + '?' + sparams);
+          data = await res.json();
+        } else { data = pages[pageId][currentPage] }
         const length = data.length || data.projects.length;
         if (!sparams.get("total")) { sparams.set("total", length) }
         history.replaceState({}, "", buildUrl(sparams));
         list.innerHTML = '';
-        await updatePageIndexer(data.projects, (sparams.get("query") ? "QUERY:" + sparams.get("query") : "SORT:" + sparams.get("sort")), length);
+        await updatePageIndexer(data.projects, pageId, length);
         data.projects.forEach(proj => projHTML(list, tok)(proj));
       } catch (err) {
         alert('An error occurred while searching: ' + err.message);
