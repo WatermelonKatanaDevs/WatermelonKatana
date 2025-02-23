@@ -124,7 +124,7 @@
 
     function updatePageIndexer(id) {
       let total, maxPage;
-      let cachePage = pages[id] = pages[id] || [];
+      let cachePage = pages[id] = pages[id] || { projects: [] };
       mainIndex(true).then(projectPage => {
         projectPage.forEach(proj => projHTML(list, tok)(proj));
         checkArrows();
@@ -158,16 +158,19 @@
           params.set("page", currentPage);
           history.replaceState({}, "", buildUrl(params));
         }
-        if (cachePage[page - 1] === undefined) {
+        if (cachePage.projects[page - 1] === undefined) {
           const endpoint = params.get("query") ? 'search' : 'list';
           const res = await fetch('/api/project/' + endpoint + '?' + params);
           const data = await res.json();
-          total = data.length;
-          if (!params.get("total")) { params.set("total", total) }
-          cachePage[page - 1] = data.projects;
+          cachePage.length = total = data.length;
+          if (!params.get("total")) {
+            params.set("total", total);
+            history.replaceState({}, "", buildUrl(params));
+          }
+          cachePage.projects[page - 1] = data.projects;
         }
         maxPage = Math.ceil(total / projectsPerPage);
-        return page === currentPage ? cachePage[page - 1] : [];
+        return page === currentPage ? cachePage.projects[page - 1] : [];
       }
 
       function checkArrows() {
