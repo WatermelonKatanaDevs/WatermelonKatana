@@ -45,6 +45,7 @@
     const previous = document.querySelector("#prev-page");
     const pageCounter = document.querySelector("#page-count");
     const next = document.querySelector("#next-page");
+    const pages = {};
     const projectsPerPage = 30;
     let tok = { auth: false };
     let currentPage = location.search.match(/page=([\d]+)/);
@@ -109,7 +110,7 @@
         if (!sparams.get("total")) { sparams.set("total", length) }
         history.replaceState({}, "", buildUrl(sparams));
         list.innerHTML = '';
-        await updatePageIndexer(data.projects, length);
+        await updatePageIndexer(data.projects, "PAGE:" + (sparams.get("query") || sparams.get("sort")), length);
         data.projects.forEach(proj => projHTML(list, tok)(proj));
       } catch (err) {
         alert('An error occurred while searching: ' + err.message);
@@ -117,10 +118,9 @@
       }
     }
 
-    function updatePageIndexer(projects, length) {
-      const pages = [];
+    function updatePageIndexer(projects, id, length) {
       let total = length;
-      pages[currentPage] = pages[currentPage] || projects;
+      let cachePage = pages[id] = pages[id] || [];
       mainIndex(true);
 
       previous.onclick = async function (e) {
@@ -155,18 +155,19 @@
           history.replaceState({}, "", buildUrl(params));
         }
         let page = currentPage;
-        if (pages[page] === undefined) {
+        if (cachePage[page] === undefined) {
           const endpoint = params.get("query") ? 'search' : 'list';
           const res = await fetch('/api/project/' + endpoint + '?' + params);
           const data = await res.json();
-          pages[page] = data.projects;
+          cachePage[page] = data.projects;
         }
-        return page === currentPage ? pages[page] : [];
+        return page === currentPage ? cachePage[page] : [];
       }
 
       window.onpopstate = async () => {
         let params = new URLSearchParams(location.search);
         let page = parseInt(params.get("page")) || 1;
+        cachePage = pages["PAGE:" + (params.get("query") || sparams.get("sort"))];
         total = parseInt(params.get("total")) || undefined;
         if (page !== currentPage) {
           list.innerHTML = '';
