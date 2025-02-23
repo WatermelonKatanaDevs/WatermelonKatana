@@ -102,21 +102,14 @@
         const sparams = new URLSearchParams(window.location.search);
         if (tok.user?.mature) { sparams.set("showMature", tok.user.mature) }
         if (!sparams.get("page")) { sparams.set("page", currentPage) }
-        history.replaceState({}, "", buildUrl(sparams));
         const endpoint = sparams.get("query") ? 'search' : 'list';
         const res = await fetch('/api/project/' + endpoint + '?' + sparams);
         const data = await res.json();
-        if (!sparams.get("query")) {
-          const sort = sparams.get("sort") || "score";
-          switch (sort) {
-            case "score": data.projects.sort((a, b) => b.score - a.score || b.views - a.views); break;
-            case "views": data.projects.sort((a, b) => b.views - a.views || b.score - a.score); break;
-            case "latest": data.projects.sort((a, b) => new Date(b.postedAt) - new Date(a.postedAt)); break;
-            case "oldest": data.projects.sort((a, b) => new Date(a.postedAt) - new Date(b.postedAt)); break;
-          }
-        }
+        const length = data.length || data.projects.length;
+        if (!sparams.get("total")) { sparams.set("total", length) }
+        history.replaceState({}, "", buildUrl(sparams));
         list.innerHTML = '';
-        await updatePageIndexer(data.projects, (data.length || data.projects.length));
+        await updatePageIndexer(data.projects, length);
         data.projects.forEach(proj => projHTML(list, tok)(proj));
       } catch (err) {
         alert('An error occurred while searching: ' + err.message);
@@ -124,9 +117,9 @@
       }
     }
 
-    // Project cache indexing veiwer
     function updatePageIndexer(projects, length) {
       const pages = [];
+      let total = length;
       pages[currentPage] = pages[currentPage] || projects;
       mainIndex(true);
 
@@ -134,53 +127,48 @@
         e.preventDefault();
         list.innerHTML = '';
         currentPage -= 1;
-        let page = currentPage;
         let projectPage = await mainIndex();
-        if (currentPage === page) {
-          projectPage.forEach(proj => projHTML(list, tok)(proj));
-        }
+        projectPage.forEach(proj => projHTML(list, tok)(proj));
       }
 
       next.onclick = async function (e) {
         e.preventDefault();
         list.innerHTML = '';
         currentPage += 1;
-        let page = currentPage;
         let projectPage = await mainIndex();
-        if (currentPage === page) {
-          projectPage.forEach(proj => projHTML(list, tok)(proj));
-        }
+        projectPage.forEach(proj => projHTML(list, tok)(proj));
       }
 
       async function mainIndex(omitState) {
-        if ((currentPage + 1) > Math.ceil((length) / projectsPerPage)) { next.style.visibility = "hidden"; }
+        const maxPage = Math.ceil(total / projectsPerPage);
+        if ((currentPage + 1) > maxPage) { next.style.visibility = "hidden"; }
         else { next.style.visibility = ""; }
-        pageCounter.textContent = `${currentPage} / ${Math.ceil((length) / projectsPerPage)}`;
+        pageCounter.textContent = `${currentPage} / ${maxPage}`;
         if ((currentPage - 1) < 1) { previous.style.visibility = "hidden"; }
         else { previous.style.visibility = ""; }
         let params = new URLSearchParams(location.search);
         if (!omitState) {
           params.set("page", currentPage);
-          params.set("total", length);
           history.pushState({}, "", buildUrl(params));
         } else if (Number.isSafeInteger(parseInt(params.get("page")))) {
           params.set("page", currentPage);
-          params.set("total", length);
           history.replaceState({}, "", buildUrl(params));
         }
-        if (pages[currentPage] === undefined) {
-          let page = currentPage;
+        let page = currentPage;
+        if (pages[page] === undefined) {
           const endpoint = params.get("query") ? 'search' : 'list';
           const res = await fetch('/api/project/' + endpoint + '?' + params);
           const data = await res.json();
           pages[page] = data.projects;
         }
-        return pages[currentPage];
+        return page === currentPage ? pages[page] : [];
       }
 
       window.onpopstate = async () => {
         let params = new URLSearchParams(location.search);
         let page = parseInt(params.get("page")) || 1;
+        total = parseInt(params.get("total")) || undefined;
+        console.log(total)
         if (page !== currentPage) {
           list.innerHTML = '';
           currentPage = page;
