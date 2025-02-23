@@ -168,7 +168,6 @@
         let params = new URLSearchParams(location.search);
         let page = parseInt(params.get("page")) || 1;
         total = parseInt(params.get("total")) || undefined;
-        console.log(total)
         if (page !== currentPage) {
           list.innerHTML = '';
           currentPage = page;
