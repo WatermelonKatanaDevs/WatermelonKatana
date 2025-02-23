@@ -111,7 +111,7 @@
         if (!sparams.get("total")) { sparams.set("total", length) }
         history.replaceState({}, "", buildUrl(sparams));
         list.innerHTML = '';
-        await updatePageIndexer(data.projects, "PAGE:" + (sparams.get("query") || sparams.get("sort")), length);
+        await updatePageIndexer(data.projects, (sparams.get("query") ? "QUERY:" + sparams.get("query") : "SORT:" + sparams.get("sort")), length);
         data.projects.forEach(proj => projHTML(list, tok)(proj));
       } catch (err) {
         alert('An error occurred while searching: ' + err.message);
@@ -169,7 +169,7 @@
         let params = new URLSearchParams(location.search);
         let page = parseInt(params.get("page")) || 1;
         let oldCache = cachePage;
-        cachePage = pages["PAGE:" + (params.get("query") || params.get("sort"))];
+        cachePage = pages[(params.get("query") ? "QUERY:" + params.get("query") : "SORT:" + params.get("sort"))];
         total = parseInt(params.get("total")) || undefined;
         if (page !== currentPage || oldCache !== cachePage) {
           list.innerHTML = '';
