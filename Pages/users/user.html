@@ -180,7 +180,9 @@
 
           // why the hell isn't this within the userData? published: {} or something of the like should be implemented for "/api/auth/userdata?username=:name"
           // so i'm not stuck using this bullshit, probably why colack disregaurded it as unimportant when fixing stupid! stupid! stupid!
-          const publishedProjects = await fetch("/api/project/list?poster=" + name + (isMature ? `&showMature=${isMature}`: ""));
+          const publishedProjects = await fetch("/api/project/list?poster=" + name + 
+          (isMature ? `&showMature=${isMature}`: "") + 
+          (isOwnProfile ? `&showHidden=${isOwnProfile}`: ""));
           const publishedPorjectData = await publishedProjects.json();
           publishedPorjectData.projects.map(projHTML(list));
 
