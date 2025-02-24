@@ -115,30 +115,16 @@
     }
 
     function updatePageIndexer(id) {
-      let total, maxPage;
+      let maxPage;
       let cachePage = pages[id] = pages[id] || { projects: [] };
       mainIndex(true).then(projectPage => {
         projectPage.forEach(proj => projHTML(list, tok)(proj));
         checkArrows();
       });
 
-      previous.onclick = async function (e) {
-        e.preventDefault();
-        list.innerHTML = '';
-        currentPage -= 1;
-        checkArrows();
-        let projectPage = await mainIndex();
-        projectPage.forEach(proj => projHTML(list, tok)(proj));
-      }
+      previous.onclick = async e => await changePage(e, -1);
 
-      next.onclick = async function (e) {
-        e.preventDefault();
-        list.innerHTML = '';
-        currentPage += 1;
-        checkArrows();
-        let projectPage = await mainIndex();
-        projectPage.forEach(proj => projHTML(list, tok)(proj));
-      }
+      next.onclick = async e => await changePage(e, 1);
 
       async function mainIndex(omitState) {
         let params = new URLSearchParams(location.search);
@@ -171,6 +157,15 @@
         pageCounter.textContent = `${currentPage} / ${maxPage}`;
         if ((currentPage - 1) < 1) { previous.style.visibility = "hidden"; }
         else { previous.style.visibility = ""; }
+      }
+
+      async function changePage(e, amount) {
+        e.preventDefault();
+        list.innerHTML = '';
+        currentPage += amount;
+        checkArrows();
+        let projectPage = await mainIndex();
+        projectPage.forEach(proj => projHTML(list, tok)(proj));
       }
 
       window.onpopstate = async () => {
