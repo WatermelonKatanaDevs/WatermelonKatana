@@ -1,89 +1,100 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>WatermelonKatana Forum</title>
-    <link rel="stylesheet" type="text/css" href="/styles/style.css">
-    <link rel="stylesheet" type="text/css" href="/styles/home.css">
-    <script src="/scripts/HtmlSanitizer.js"></script>
-    <script src="/scripts/script.js"></script>
-  </head>
-  <body>
-    <script src="/scripts/navbar.js"></script>
-    <h1>The WatermelonKatana Forum</h1>
-    <div id="header" class="main-nav">
-      <a href="/forum/post">Post</a>
-      <a href="/chat">Chat</a>
-    </div>
-    <section class="intro">
-      <p>Post Questions, Get Help! This is your place to get help coding.</p>
-    </section>
-    <div id="controls">
-      <form style="font-size: 25px">
-        <select id="sortOptions" style="font-size: inherit">
-          <option value="featured">Featured</option>
-          <option value="active">Active</option>
-          <option value="views">Views</option>
-          <option value="latest">Latest</option>
-        </select>
-        <input type="text" id="searchBar" placeholder="Search here" style="font-size: inherit">
-        <input type="submit" value="Search" style="font-size: inherit">
-      </form>
-    </div>
-    
-    Discussions
-    <ul id="list" class="post-list"></ul>
-    
-    <div id="footer"></div>
-    
-    <script>
-      const form = document.querySelector('form')
-      const list = document.querySelector('#list');
-      const sortOptions = document.querySelector('#sortOptions');
-      const searchBar = document.querySelector('#searchBar');
-      var params = new URLSearchParams(location.search);
-      sortOptions.value = params.get("sort")||"featured";
-      searchBar.value = params.get("query")||"";
-    
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault()
-        try {
-          var query = searchBar.value;
-          const url = new URL(location);
-          if (query) {
-            url.searchParams.set("query", query);
-            url.searchParams.delete("sort");
-          } else {
-            url.searchParams.set("sort", sortOptions.value);
-            url.searchParams.delete("query");
-          }
-          history.pushState({}, "", url);
-          params = new URLSearchParams(location.search);
-          searchPosts();
-        } catch (err) {
-          alert(err.message);
-          console.log(err.message)
-        }
-      });
 
-      async function searchPosts() {
-        const tok = await getAuth();
-        var sparams = new URLSearchParams(location.search);
-        if (tok.user?.mature) { sparams.set("showMature", tok.user.mature) }
-        const res = await fetch('/api/forum/'+(sparams.get("query")?'search':'list')+'?'+sparams);
-        const data = await res.json();
-        if (!sparams.get("query")) switch (params.get("sort")||"featured") {
-          case "featured": data.posts.sort((a,b)=>(Number(b.featured)-Number(a.featured))||(b.activeAt-a.activeAt)); break;
-          case "active": data.posts.sort((a,b)=>(b.activeAt-a.activeAt)); break;
-          case "views": data.posts.sort((a,b)=>(b.views-a.views)); break;
-          case "latest": data.posts.sort((a,b)=>(b.postedAt-a.postedAt)); break;
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WatermelonKatana Forum</title>
+  <link rel="stylesheet" type="text/css" href="/styles/style.css">
+  <link rel="stylesheet" type="text/css" href="/styles/home.css">
+  <script src="/scripts/HtmlSanitizer.js"></script>
+  <script src="/scripts/script.js"></script>
+  <script src="/scripts/searchIndexer.js"></script>
+</head>
+
+<body>
+  <script src="/scripts/navbar.js"></script>
+  <h1>The WatermelonKatana Forum</h1>
+  <div id="header" class="main-nav">
+    <a href="/forum/post">Post</a>
+    <a href="/chat">Chat</a>
+  </div>
+  <section class="intro">
+    <p>Post Questions, Get Help! This is your place to get help coding.</p>
+  </section>
+  <div id="controls">
+    <form style="font-size: 25px">
+      <select id="sortOptions" style="font-size: inherit">
+        <option value="featured">Featured</option>
+        <option value="active">Active</option>
+        <option value="views">Views</option>
+        <option value="latest">Latest</option>
+      </select>
+      <input type="text" id="searchBar" placeholder="Search here" style="font-size: inherit">
+      <input type="submit" value="Search" style="font-size: inherit">
+    </form>
+  </div>
+  <div style="padding-bottom: 3vh; font-size: 1.3em; display: flex; gap: 5vw;">
+    <a id="prev-page" style="cursor: pointer; visibility: hidden"> Previous </a>
+    <span id="page-count"> loading... </span>
+    <a id="next-page" style="cursor: pointer; visibility: hidden"> Next </a>
+  </div>
+  <ul id="list" class="post-list"></ul>
+
+  <div id="footer"></div>
+
+  <script>
+    const form = document.querySelector('form')
+    const list = document.querySelector('#list');
+    const sortOptions = document.querySelector('#sortOptions');
+    const searchBar = document.querySelector('#searchBar');
+    const previous = document.querySelector("#prev-page");
+    const pageCounter = document.querySelector("#page-count");
+    const next = document.querySelector("#next-page");
+    var params = new URLSearchParams(location.search);
+    sortOptions.value = params.get("sort") || "featured";
+    searchBar.value = params.get("query") || "";
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault()
+      try {
+        var query = searchBar.value;
+        const url = new URL(location);
+        if (query) {
+          url.searchParams.set("query", query);
+          url.searchParams.delete("sort");
+        } else {
+          url.searchParams.set("sort", sortOptions.value);
+          url.searchParams.delete("query");
         }
-        list.innerHTML = '';
-        data.posts.map(forumHTML(list,tok));
+        history.pushState({}, "", url);
+        params = new URLSearchParams(location.search);
+        searchIndex(1);
+      } catch (err) {
+        alert(err.message);
+        console.log(err.message)
       }
-      searchPosts();
-    </script>
-  </body>
+    });
+
+    // async function searchPosts() {
+    //   const tok = await getAuth();
+    //   var sparams = new URLSearchParams(location.search);
+    //   if (tok.user?.mature) { sparams.set("showMature", tok.user.mature) }
+    //   const res = await fetch('/api/forum/' + (sparams.get("query") ? 'search' : 'list') + '?' + sparams);
+    //   const data = await res.json();
+    //   if (!sparams.get("query")) switch (params.get("sort") || "featured") {
+    //     case "featured": data.posts.sort((a, b) => (Number(b.featured) - Number(a.featured)) || (b.activeAt - a.activeAt)); break;
+    //     case "active": data.posts.sort((a, b) => (b.activeAt - a.activeAt)); break;
+    //     case "views": data.posts.sort((a, b) => (b.views - a.views)); break;
+    //     case "latest": data.posts.sort((a, b) => (b.postedAt - a.postedAt)); break;
+    //   }
+    //   list.innerHTML = '';
+    //   data.posts.map(forumHTML(list, tok));
+    // }
+    // searchPosts();
+    searchIndex();
+  </script>
+</body>
+
 </html>
