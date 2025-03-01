@@ -87,7 +87,7 @@
 
     if (!params.get("query") || !params.get("sort")) {
       params.set("sort", "score");
-      history.replaceState({}, buildUrl(params));
+      history.replaceState({}, "", buildUrl(params));
     }
 
     // Initial search when the page loads
