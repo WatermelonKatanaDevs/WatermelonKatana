@@ -10,6 +10,7 @@
   <meta property="og:type" content="profile" />
   <link rel="stylesheet" type="text/css" href="/styles/style.css">
   <script src="/scripts/HtmlSanitizer.js"></script>
+  <script src="/scripts/searchIndexer.js"></script>
   <script src="/scripts/script.js"></script>
 </head>
 
@@ -39,24 +40,24 @@
 
   <script>
     const form = document.querySelector('form');
-    const list = document.querySelector('#list');
+    // const list = document.querySelector('#list');
     const sortOptions = document.querySelector('#sortOptions');
     const searchBar = document.querySelector('#searchBar');
-    const previous = document.querySelector("#prev-page");
-    const pageCounter = document.querySelector("#page-count");
-    const next = document.querySelector("#next-page");
-    const pages = {};
-    const projectsPerPage = 30;
     let tok = { auth: false };
-    let currentPage = location.search.match(/page=([\d]+)/);
-    if (currentPage === null) { currentPage = 1; }
-    else { currentPage = parseInt(currentPage[1]); }
+    // const previous = document.querySelector("#prev-page");
+    // const pageCounter = document.querySelector("#page-count");
+    // const next = document.querySelector("#next-page");
+    // const pages = {};
+    // const projectsPerPage = 30;
+    // let currentPage = location.search.match(/page=([\d]+)/);
+    // if (currentPage === null) { currentPage = 1; }
+    // else { currentPage = parseInt(currentPage[1]); }
     // Function to build URL with query parameters
-    function buildUrl(params) {
-      const url = new URL(window.location);
-      url.search = new URLSearchParams(params).toString();
-      return url;
-    }
+    // function buildUrl(params) {
+    //   const url = new URL(window.location);
+    //   url.search = new URLSearchParams(params).toString();
+    //   return url;
+    // }
 
     // Populate the list with projects (do we still need this?)
     //async function populateProjects() {
@@ -88,8 +89,8 @@
           params.sort = sortOptions.value;
         }
         history.pushState({}, "", buildUrl(params));
-        currentPage = 1;
-        await searchProjects();
+        //await searchProjects();
+        await searchIndex(1);
       } catch (err) {
         alert('An error occurred: ' + err.message);
         console.error(err.message);
@@ -97,94 +98,94 @@
     });
 
     // Project searching algorithim
-    async function searchProjects() {
-      try {
-        tok = await getAuth();
-        const sparams = new URLSearchParams(window.location.search);
-        if (tok.user?.mature) { sparams.set("showMature", tok.user.mature) }
-        if (!sparams.get("sort") && !sparams.get("query")) { sparams.set("sort", "score") }
-        if (!sparams.get("page")) { sparams.set("page", currentPage) }
-        const endpoint = sparams.get("query") ? 'search' : 'list';
-        history.replaceState({}, "", buildUrl(sparams));
-        list.innerHTML = '';
-        updatePageIndexer((sparams.get("query") ? "QUERY:" + sparams.get("query") : "SORT:" + sparams.get("sort")));
-      } catch (err) {
-        alert('An error occurred while searching: ' + err.message);
-        console.error(err.message);
-      }
-    }
+    // async function searchProjects() {
+    //   try {
+    //     tok = await getAuth();
+    //     const sparams = new URLSearchParams(window.location.search);
+    //     if (tok.user?.mature) { sparams.set("showMature", tok.user.mature) }
+    //     if (!sparams.get("sort") && !sparams.get("query")) { sparams.set("sort", "score") }
+    //     if (!sparams.get("page")) { sparams.set("page", currentPage) }
+    //     const endpoint = sparams.get("query") ? 'search' : 'list';
+    //     history.replaceState({}, "", buildUrl(sparams));
+    //     list.innerHTML = '';
+    //     updatePageIndexer((sparams.get("query") ? "QUERY:" + sparams.get("query") : "SORT:" + sparams.get("sort")));
+    //   } catch (err) {
+    //     alert('An error occurred while searching: ' + err.message);
+    //     console.error(err.message);
+    //   }
+    // }
 
-    function updatePageIndexer(id) {
-      let maxPage;
-      let cachePage = pages[id] = pages[id] || { projects: [] };
-      mainIndex(true).then(projectPage => {
-        projectPage.forEach(proj => projHTML(list, tok)(proj));
-        checkArrows();
-      });
+    // function updatePageIndexer(id) {
+    //   let maxPage;
+    //   let cachePage = pages[id] = pages[id] || { projects: [] };
+    //   mainIndex(true).then(projectPage => {
+    //     projectPage.forEach(proj => projHTML(list, tok)(proj));
+    //     checkArrows();
+    //   });
 
-      previous.onclick = async e => await changePage(e, -1);
+    //   previous.onclick = async e => await changePage(e, -1);
 
-      next.onclick = async e => await changePage(e, 1);
+    //   next.onclick = async e => await changePage(e, 1);
 
-      async function mainIndex(omitState) {
-        let params = new URLSearchParams(location.search);
-        let page = currentPage;
-        if (!omitState) {
-          params.set("page", currentPage);
-          history.pushState({}, "", buildUrl(params));
-        } else if (Number.isSafeInteger(parseInt(params.get("page")))) {
-          params.set("page", currentPage);
-          history.replaceState({}, "", buildUrl(params));
-        }
-        if (cachePage.projects[page - 1] === undefined) {
-          const endpoint = params.get("query") ? 'search' : 'list';
-          const res = await fetch('/api/project/' + endpoint + '?' + params);
-          const data = await res.json();
-          cachePage.length = data.length;
-          cachePage.projects[page - 1] = data.projects;
-        }
-        if (!params.get("total")) {
-          params.set("total", cachePage.length);
-          history.replaceState({}, "", buildUrl(params));
-        }
-        maxPage = Math.ceil(cachePage.length / projectsPerPage);
-        return page === currentPage ? cachePage.projects[page - 1] : [];
-      }
+    //   async function mainIndex(omitState) {
+    //     let params = new URLSearchParams(location.search);
+    //     let page = currentPage;
+    //     if (!omitState) {
+    //       params.set("page", currentPage);
+    //       history.pushState({}, "", buildUrl(params));
+    //     } else if (Number.isSafeInteger(parseInt(params.get("page")))) {
+    //       params.set("page", currentPage);
+    //       history.replaceState({}, "", buildUrl(params));
+    //     }
+    //     if (cachePage.projects[page - 1] === undefined) {
+    //       const endpoint = params.get("query") ? 'search' : 'list';
+    //       const res = await fetch('/api/project/' + endpoint + '?' + params);
+    //       const data = await res.json();
+    //       cachePage.length = data.length;
+    //       cachePage.projects[page - 1] = data.projects;
+    //     }
+    //     if (!params.get("total")) {
+    //       params.set("total", cachePage.length);
+    //       history.replaceState({}, "", buildUrl(params));
+    //     }
+    //     maxPage = Math.ceil(cachePage.length / projectsPerPage);
+    //     return page === currentPage ? cachePage.projects[page - 1] : [];
+    //   }
 
-      function checkArrows() {
-        if ((currentPage + 1) > maxPage) { next.style.visibility = "hidden"; }
-        else { next.style.visibility = ""; }
-        pageCounter.textContent = `${currentPage} / ${maxPage}`;
-        if ((currentPage - 1) < 1) { previous.style.visibility = "hidden"; }
-        else { previous.style.visibility = ""; }
-      }
+    //   function checkArrows() {
+    //     if ((currentPage + 1) > maxPage) { next.style.visibility = "hidden"; }
+    //     else { next.style.visibility = ""; }
+    //     pageCounter.textContent = `${currentPage} / ${maxPage}`;
+    //     if ((currentPage - 1) < 1) { previous.style.visibility = "hidden"; }
+    //     else { previous.style.visibility = ""; }
+    //   }
 
-      async function changePage(e, amount) {
-        e.preventDefault();
-        list.innerHTML = '';
-        currentPage += amount;
-        checkArrows();
-        let projectPage = await mainIndex();
-        projectPage.forEach(proj => projHTML(list, tok)(proj));
-      }
+    //   async function changePage(e, amount) {
+    //     e.preventDefault();
+    //     list.innerHTML = '';
+    //     currentPage += amount;
+    //     checkArrows();
+    //     let projectPage = await mainIndex();
+    //     projectPage.forEach(proj => projHTML(list, tok)(proj));
+    //   }
 
-      window.onpopstate = async () => {
-        let params = new URLSearchParams(location.search);
-        let page = parseInt(params.get("page")) || 1;
-        let oldCache = cachePage;
-        cachePage = pages[(params.get("query") ? "QUERY:" + params.get("query") : "SORT:" + params.get("sort"))];
-        if (page !== currentPage || oldCache !== cachePage) {
-          list.innerHTML = '';
-          currentPage = page;
-          let projectPage = await mainIndex(true);
-          checkArrows();
-          projectPage.forEach(proj => projHTML(list, tok)(proj));
-        }
-      }
-    }
+    //   window.onpopstate = async () => {
+    //     let params = new URLSearchParams(location.search);
+    //     let page = parseInt(params.get("page")) || 1;
+    //     let oldCache = cachePage;
+    //     cachePage = pages[(params.get("query") ? "QUERY:" + params.get("query") : "SORT:" + params.get("sort"))];
+    //     if (page !== currentPage || oldCache !== cachePage) {
+    //       list.innerHTML = '';
+    //       currentPage = page;
+    //       let projectPage = await mainIndex(true);
+    //       checkArrows();
+    //       projectPage.forEach(proj => projHTML(list, tok)(proj));
+    //     }
+    //   }
+    // }
 
     // Initial search when the page loads
-    searchProjects();
+    searchIndex();
   </script>
 </body>
 
