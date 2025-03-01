@@ -1,5 +1,6 @@
 const pageType = location.pathname === "/search" ? "project" : "forum";
 const pageParser = pageType === "project" ? projHTML : forumHTML;
+const cacheType = pageType === "project" ? "projects": "posts";
 const pages = {};
 const projectsPerPage = 30;
 let currentPage = location.search.match(/page=([\d]+)/);
@@ -13,7 +14,7 @@ async function searchIndex(pageNumber) {
     let maxPage, cachePage = pages[id] = pages[id] || { projects: [] };
     currentPage = pageNumber || currentPage;
     list.innerHTML = '';
-    
+
     mainIndex(true).then(posts => {
         posts.forEach(post => pageParser(list, tok)(post));
         checkArrows();
@@ -33,19 +34,19 @@ async function searchIndex(pageNumber) {
             params.set("page", currentPage);
             history.replaceState({}, "", buildUrl(params));
         }
-        if (cachePage.projects[page - 1] === undefined) {
+        if (cachePage[cacheType][page - 1] === undefined) {
             const endpoint = params.get("query") ? 'search' : 'list';
             const res = await fetch(`/api/${pageType}/${endpoint}?${params}`);
             const data = await res.json();
             cachePage.length = data.length;
-            cachePage.projects[page - 1] = data.projects;
+            cachePage[cacheType][page - 1] = data[cacheType];
         }
         if (!params.get("total")) {
             params.set("total", cachePage.length);
             history.replaceState({}, "", buildUrl(params));
         }
         maxPage = Math.ceil(cachePage.length / projectsPerPage);
-        return page === currentPage ? cachePage.projects[page - 1] : [];
+        return page === currentPage ? cachePage[cacheType][page - 1] : [];
     }
 
     function checkArrows() {
