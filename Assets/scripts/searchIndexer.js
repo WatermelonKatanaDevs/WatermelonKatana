@@ -28,7 +28,7 @@ async function searchIndex(pageNumber) {
         if (!omitState) {
             params.set("page", currentPage);
             history.pushState({}, "", buildUrl(params));
-        } else if (Number.isSafeInteger(parseInt(params.get("page")))) {
+        } else if (!Number.isSafeInteger(parseInt(params.get("page")))) {
             params.set("page", currentPage);
             history.replaceState({}, "", buildUrl(params));
         }
