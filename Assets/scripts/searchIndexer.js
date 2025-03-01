@@ -12,7 +12,8 @@ async function searchIndex(pageNumber) {
     const id = params.get("query") ? "QUERY:" + params.get("query") : "SORT:" + params.get("sort");
     let maxPage, cachePage = pages[id] = pages[id] || { projects: [] };
     currentPage = pageNumber || currentPage;
-
+    list.innerHTML = '';
+    
     mainIndex(true).then(posts => {
         posts.forEach(post => pageParser(list, tok)(post));
         checkArrows();
