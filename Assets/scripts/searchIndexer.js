@@ -1,8 +1,5 @@
 const pageType = location.pathname === "/search" ? "project" : "forum";
 const pageParser = pageType === "project" ? projHTML : forumHTML;
-const previous = document.querySelector("#prev-page");
-const pageCounter = document.querySelector("#page-count");
-const next = document.querySelector("#next-page");
 const pages = {};
 const projectsPerPage = 30;
 let currentPage = location.search.match(/page=([\d]+)/);
