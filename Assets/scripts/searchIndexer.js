@@ -11,7 +11,7 @@ async function searchIndex(pageNumber) {
     const tok = await getAuth();
     const params = new URLSearchParams(location.search);
     const id = params.get("query") ? "QUERY:" + params.get("query") : "SORT:" + params.get("sort");
-    let maxPage, cachePage = pages[id] = pages[id] || { projects: [] };
+    let maxPage, cachePage = pages[id] = pages[id] || { [cacheType]: [] };
     currentPage = pageNumber || currentPage;
     list.innerHTML = '';
 
