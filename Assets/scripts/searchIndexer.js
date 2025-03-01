@@ -1,6 +1,5 @@
 const pageType = location.pathname === "/search" ? "project" : "forum";
 const pageParser = pageType === "project" ? projHTML : forumHTML;
-const list = document.querySelector('#list');
 const previous = document.querySelector("#prev-page");
 const pageCounter = document.querySelector("#page-count");
 const next = document.querySelector("#next-page");
