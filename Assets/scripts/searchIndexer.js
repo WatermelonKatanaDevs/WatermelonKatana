@@ -1,4 +1,4 @@
-const pageType = window.location.path[1] === "search" ? "project" : "forum";
+const pageType = location.pathname === "/search" ? "project" : "forum";
 const pageParser = pageType === "project" ? projHTML : forumHTML;
 const list = document.querySelector('#list');
 const previous = document.querySelector("#prev-page");
