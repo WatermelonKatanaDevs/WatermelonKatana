@@ -77,7 +77,7 @@
       }
     });
 
-    if (!params.get("query") || !params.get("sort")) {
+    if (!params.get("query") && !params.get("sort")) {
       params.set("sort", "featured");
       history.replaceState({}, "", buildUrl(params));
     }
