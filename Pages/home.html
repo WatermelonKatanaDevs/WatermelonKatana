@@ -103,6 +103,7 @@
             <div class="comment-top" style="display: flex">
               <img class="comment-avatar" src="${user.avatar || "/images/blank_project.png"}" style="width: 2em; height: 2em">
               <div class="comment-username" style="font-size: 1em">${notif.title} ${notif.content}</div>
+              <p style="font-size:0.5em">${new Date(notif.createdAt).toUTCString().replace(/\d\d:[^]+$/,"")}</p>
             </div>
           </a>`
         }
@@ -113,7 +114,7 @@
             <strong class="logo-text">${data.user.username}</strong>
           </a>
         </p>
-        <div style="border-style: groove; margin: 5px; width: 50%; height: 30vh; transform: translateX(50%); overflow-y: scroll; scrollbar-width: none;">
+        <div style="border-style: groove; margin: 5px; width: 50%; max-height: 30vh; transform: translateX(50%); overflow-y: scroll; scrollbar-width: none;">
               ${notifs.join('')||`No New Notifications`}
         </div>
         `;
