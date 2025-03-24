@@ -419,8 +419,12 @@ document.addEventListener("DOMContentLoaded", ()=>{
     const notificationDropdown = document.querySelector("#notification-dropdown");
     const reportIcon = document.querySelector("#report-icon");
     const reportDropdown = document.querySelector("#report-dropdown");
-    if(e.target !== navbarRight && e.target !== notificationIcon && e.target !== reportIcon) {
-      notificationDropdown.style.display = reportDropdown.style.display = "none"
+    if(e.target === navbarRight) { return }
+    if (notificationIcon && !notificationIcon.contains(e.target) && !notificationDropdown.contains(e.target)) {
+      notificationDropdown.style.display = "none";
+    }
+    if (reportIcon && !reportIcon.contains(e.target) && !reportDropdown.contains(e.target)) {
+      reportDropdown.style.display = "none";
     }
   });
 });
