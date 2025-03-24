@@ -99,7 +99,7 @@
         let notifs = await Promise.all(data.user.notifications.sort((a,b)=>b.createdAt-a.createdAt).map(htmlNotifications));
         async function htmlNotifications(notif, index) {
           let user = await getUser(notif.posterId);
-          return `<a class="user-panel" href="/notification/${index}" style="width: 100%">
+          return `<a class="user-panel" href="/notification/${index}" style="width: 100%; text-align: left">
             <div class="comment-top" style="display: flex">
               <img class="comment-avatar" src="${user.avatar || "/images/blank_project.png"}" style="width: 2em; height: 2em">
               <div class="comment-username" style="font-size: 1em">${notif.title} ${notif.content}</div>
