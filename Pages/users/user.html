@@ -31,7 +31,7 @@
       }
 
       .close-popup {
-        position: absolute;
+        position: fixed;
         right: 10px;
         top: 10px;
         cursor: pointer;
@@ -228,7 +228,7 @@
             </li>`;
               });
             }
-            if(typeof followClose.click !== "function") {
+            if(typeof followClose.onclick !== "function") {
               followClose.addEventListener("click", () => {
                 followPopup.classList.add("hidden");
               })
