@@ -63,10 +63,10 @@
         const tok = await getAuth();
         var sparams = new URLSearchParams();
         if (tok.user?.mature) { sparams.set("showMature", tok.user.mature) }
+        sparams.set("sort", "score");
         sparams.set("featured", 1);
         const res = await fetch('/api/project/list?'+sparams);
         const data = await res.json();
-        data.projects.sort((a,b)=>(b.score-a.score)||(b.views-a.views));
         data.projects.map(projHTML(featuredList,tok));
       })();
 
@@ -77,7 +77,6 @@
         sparams.set("showRecent", 5);
         const res = await fetch('/api/project/list?'+sparams);
         const data = await res.json();
-        data.projects.sort((a,b)=>(b.postedAt-a.postedAt));
         data.projects.map(projHTML(latestList,tok));
       })();
 
@@ -88,8 +87,6 @@
         if (tok.user?.mature) { sparams.set("showMature", tok.user.mature) }
         const res = await fetch('/api/forum/list?'+sparams);
         const data = await res.json();
-        // data.posts.sort((a,b)=>(Number(b.featured)-Number(a.featured))||(b.activeAt-a.activeAt));
-        // data.posts = data.posts.slice(0,5);
         data.posts.map(forumHTML(postlist,tok));
       })();
       
