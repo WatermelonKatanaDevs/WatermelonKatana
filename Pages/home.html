@@ -99,23 +99,23 @@
         let notifs = await Promise.all(data.user.notifications.sort((a,b)=>b.createdAt-a.createdAt).map(htmlNotifications));
         async function htmlNotifications(notif, index) {
           let user = await getUser(notif.posterId);
-          return `<a class="user-panel" href="/notification/${index}">
-            <div class="comment-top">
+          return `<a class="user-panel" href="/notification/${index}" style="width: 100%">
+            <div class="comment-top" style="display: flex">
               <img class="comment-avatar" src="${user.avatar || "/images/blank_project.png"}" style="width: 2em; height: 2em">
               <div class="comment-username" style="font-size: 1em">${notif.title} ${notif.content}</div>
             </div>
           </a>`
         }
         user.innerHTML = `
-        <p> Signed in as
+        <p style="margin-bottom: 0px"> Signed in as
           <a class="profile" href="/user/${data.user.username}">
             <img src="${data.user.avatar}">
             <strong class="logo-text">${data.user.username}</strong>
           </a>
-          <div style="border-style: groove; margin: 5px; width: 50%; height: 10vh; transform: translateX(50%); overflow-y: scroll; scrollbar-width: none;">
-              ${notifs.join('')||`No New Notifications`}
-          </div>
         </p>
+        <div style="border-style: groove; margin: 5px; width: 50%; height: 30vh; transform: translateX(50%); overflow-y: scroll; scrollbar-width: none;">
+              ${notifs.join('')||`No New Notifications`}
+        </div>
         `;
         header.innerHTML = `
           <a href="/publish">Publish</a>
