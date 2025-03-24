@@ -175,6 +175,18 @@ function forumHTML(list,tok) {
   };
 }
 
+async function notificationHTML(notif,index) {
+  var user = await getUser(notif.posterId);
+  return `<a class="user-panel" href="/notification/${index}">
+    <div class="comment-top">
+    <img class="comment-avatar" src="${user.avatar || "/images/blank_project.png"}">
+    <div class="comment-username">${notif.title}</div>
+    </div>
+    ${notif.content}
+    <div>${new Date(notif.createdAt).toUTCString().replace(/\d\d:[^]+$/,"")}</div>
+  </a>`;
+}
+
 function userHTML(list) {
   return function (user) {
     let div = `<a class="user-panel" href="/user/${user.username}">

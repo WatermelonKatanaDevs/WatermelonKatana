@@ -95,12 +95,17 @@
       (async () => {
         const data = await getAuth();
         if (!data.auth) return;
-        //<p>Signed in as ${data.user.username}</p><br/>
+        const notificationCount = data.user.notifications.length;
+        let notifs = await Promise.all(data.user.notifications.sort((a,b)=>b.createdAt-a.createdAt).map(notificationHTML));
         user.innerHTML = `
         <p> Signed in as
           <a class="profile" href="/user/${data.user.username}">
             <img src="${data.user.avatar}">
             <strong class="logo-text">${data.user.username}</strong>
+            <br>
+            <p style="border-style: groove; margin: 5px; width: 50%; height: 10vh; transform: translateX(50%); overflow-y: scroll; scrollbar-width: none;">
+              ${notifs.join('')||`No New Notifications`}
+            </p>
           </a>
         </p>
         `;
