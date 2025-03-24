@@ -97,9 +97,17 @@
 
     <div id="follower-popup" class="popup hidden">
       <div class="popup-content">
-        <span class="close-popup">&times;</span>
+        <span id="follower-x" class="close-popup">&times;</span>
         <h2>Followers</h2>
         <ul id="follower-list"></ul>
+      </div>
+    </div>
+
+    <div id="following-popup" class="popup hidden">
+      <div class="popup-content">
+        <span id="following-x" class="close-popup">&times;</span>
+        <h2>Following</h2>
+        <ul id="following-list"></ul>
       </div>
     </div>
 
@@ -151,7 +159,7 @@
       <p class="role">${userData.role}</p>
       Joined on ${new Date(userData.joinedAt).toUTCString().replace(/\d\d:[^]+$/, "")} |
       <span id="followercount" class="link">${userData.followers.length}</span> Followers |
-      <span id="followingcount" class="link">${userData.following.length}</span>
+      <span id="followingcount" class="link">${userData.following.length} Following</span>
       ${isAuthenticated && !isOwnProfile ? `| <label><input type="checkbox" id="follow-btn" onclick="followbtnclick(this.checked);" ${userData.followers.includes(name) ? "checked" : ""}><span class="checkbox"></span></label> Follow` : ""}
       | <a href="/uploadedmedia?poster=${userData.username}">Uploaded Media</a>
     </div>`;
@@ -197,24 +205,48 @@
 
           document.getElementById("followercount").addEventListener("click", function (event) {
             event.preventDefault();
-            const followerPopup = document.getElementById("follower-popup");
-            const followerList = document.getElementById("follower-list");
-            followerPopup.classList.remove("hidden");
-            if (userData.followers) {
-              followerList.innerHTML = "";
-              userData.followers.forEach(async (followerId) => {
-                const follower = await getUser(followerId);
-                followerList.innerHTML += `<li>
-              <img src="${follower.avatar}" alt="${follower.username}" class="follower-avatar">
-              <a href="/user/${follower.username}">${follower.username}</a>
+            handleFollowPopup("followers");
+            // const followerPopup = document.getElementById("follower-popup");
+            // const followerList = document.getElementById("follower-list");
+            // followerPopup.classList.remove("hidden");
+            // if (userData.followers) {
+            //   followerList.innerHTML = "";
+            //   userData.followers.forEach(async (followerId) => {
+            //     const follower = await getUser(followerId);
+            //     followerList.innerHTML += `<li>
+            //   <img src="${follower.avatar}" alt="${follower.username}" class="follower-avatar">
+            //   <a href="/user/${follower.username}">${follower.username}</a>
+            // </li>`;
+            //   });
+            // }
+          });
+
+          document.getElementById("followingcount").addEventListener("click", function (event) {
+            event.preventDefault();
+            handleFollowPopup("following");
+          })
+
+          function handleFollowPopup(type) {
+            const followPopup = document.getElementById(type + "-popup");
+            const followList = document.getElementById(type + "-list");
+            const followClose = document.getElementById(type + "-x");
+            followPopup.classList.remove("hidden");
+            if (userData[type]) {
+              followList.innerHTML = "";
+              userData[type].forEach(async (followId) => {
+                const follow = await getUser(followId);
+                followList.innerHTML += `<li>
+              <img src="${follow.avatar}" alt="${follow.username}" class="follower-avatar">
+              <a href="/user/${follow.username}">${follow.username}</a>
             </li>`;
               });
             }
-          });
-
-          document.querySelector(".close-popup").addEventListener("click", () => {
-            document.getElementById("follower-popup").classList.add("hidden");
-          });
+            if(typeof followClose.click !== "function") {
+              followClose.addEventListener("click", () => {
+                followPopup.classList.add("hidden");
+              })
+            }
+          }
 
           window.addEventListener("click", (event) => {
             const followerPopup = document.getElementById("follower-popup");
