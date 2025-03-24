@@ -229,18 +229,11 @@
               });
             }
             if(typeof followClose.onclick !== "function") {
-              followClose.addEventListener("click", () => {
+              followPopup.onclick = followClose.onclick = () => {
                 followPopup.classList.add("hidden");
-              })
+              }
             }
           }
-
-          window.addEventListener("click", (event) => {
-            const followerPopup = document.getElementById("follower-popup");
-            if (event.target === followerPopup) {
-              followerPopup.classList.add("hidden");
-            }
-          });
         } catch (e) {
           alert("Error loading profile");
           console.error(e);
