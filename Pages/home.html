@@ -103,8 +103,8 @@
             <div class="comment-top" style="display: flex">
               <img class="comment-avatar" src="${user.avatar || "/images/blank_project.png"}" style="width: 2em; height: 2em">
               <div class="comment-username" style="font-size: 1em">${notif.title} ${notif.content}</div>
-              <p style="font-size:0.5em">${new Date(notif.createdAt).toUTCString().replace(/\d\d:[^]+$/,"")}</p>
             </div>
+            <p style="font-size:0.5em; margin-top: 0px;">${new Date(notif.createdAt).toUTCString().replace(/\d\d:[^]+$/,"")}</p>
           </a>`
         }
         user.innerHTML = `
