@@ -213,7 +213,7 @@ module.exports = class {
           default:
             sortby = showRecent > 0 && typeof sort !== "string"
               ? (this.name === "posts" ? { featured: -1, activeAt: -1 } : { postedAt: -1 })
-              : { score: -1, views: -1 };
+              : (this.name === "posts" ? { featured: -1, activeAt: -1 }: { score: -1, views: -1 });
             break;
         }
         if (Number.isSafeInteger(parseInt(page))) {
