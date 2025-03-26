@@ -28,7 +28,7 @@ async function searchIndex(pageNumber) {
     async function mainIndex(omitState) {
         let params = new URLSearchParams(location.search);
         let page = currentPage;
-        if (mature) { params.set("showMatrue", mature) }
+        if (mature) { params.set("showMature", mature) }
         if (!omitState) { params.set("page", currentPage); }
         else if (!Number.isSafeInteger(parseInt(params.get("page")))) { params.set("page", currentPage); }
         history.replaceState({}, "", buildUrl(params));
