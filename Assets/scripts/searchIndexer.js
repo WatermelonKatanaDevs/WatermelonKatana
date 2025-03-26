@@ -1,6 +1,6 @@
 const pageType = location.pathname === "/search" ? "project" : "forum";
 const pageParser = pageType === "project" ? projHTML : forumHTML;
-const cacheType = pageType === "project" ? "projects": "posts";
+const cacheType = pageType === "project" ? "projects" : "posts";
 const pages = {};
 const projectsPerPage = 30;
 let currentPage = location.search.match(/page=([\d]+)/);
@@ -11,6 +11,7 @@ async function searchIndex(pageNumber) {
     const tok = await getAuth();
     const params = new URLSearchParams(location.search);
     const id = params.get("query") ? "QUERY:" + params.get("query") : "SORT:" + params.get("sort");
+    const mature = tok.user?.mature;
     let maxPage, cachePage = pages[id] = pages[id] || { [cacheType]: [] };
     currentPage = pageNumber || currentPage;
     list.innerHTML = '';
@@ -27,13 +28,10 @@ async function searchIndex(pageNumber) {
     async function mainIndex(omitState) {
         let params = new URLSearchParams(location.search);
         let page = currentPage;
-        if (!omitState) {
-            params.set("page", currentPage);
-            history.pushState({}, "", buildUrl(params));
-        } else if (!Number.isSafeInteger(parseInt(params.get("page")))) {
-            params.set("page", currentPage);
-            history.replaceState({}, "", buildUrl(params));
-        }
+        if (mature) { params.set("showMatrue", mature) }
+        if (!omitState) { params.set("page", currentPage); }
+        else if (!Number.isSafeInteger(parseInt(params.get("page")))) { params.set("page", currentPage); }
+        history.replaceState({}, "", buildUrl(params));
         if (cachePage[cacheType][page - 1] === undefined) {
             const endpoint = params.get("query") ? 'search' : 'list';
             const res = await fetch(`/api/${pageType}/${endpoint}?${params}`);
