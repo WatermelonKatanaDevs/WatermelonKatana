@@ -106,8 +106,13 @@
             case "cdo":
               //do magic
               game.src = location.origin + "/turbowarp?u=" + data.link;
-              game.style.width = "calc(100vmin - 15px - 2.5em)";
-              game.style.height = "calc(100vmin - 15px - 2.5em)";
+              if (data.link.match(/^https:\/\/studio.code.org\/projects\/applab/) !== null) {
+                game.style.width = "calc(-2.5em - 2px + 71vmin)";
+                game.style.height = "calc(-2.5em - 15px + 99vmin)";
+              } else {
+                game.style.width = "calc(100vmin - 15px - 2.5em)";
+                game.style.height = "calc(100vmin - 15px - 2.5em)";
+              }
               break;
             case "scratch":
               game.src = data.link + "/embed";
