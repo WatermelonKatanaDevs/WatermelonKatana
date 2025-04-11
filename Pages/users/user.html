@@ -205,11 +205,13 @@
 
           document.getElementById("followercount").addEventListener("click", function (event) {
             event.preventDefault();
+            document.getElementById("following-x").click();
             handleFollowPopup("followers");
           });
 
           document.getElementById("followingcount").addEventListener("click", function (event) {
             event.preventDefault();
+            document.getElementById("followers-x").click();
             handleFollowPopup("following");
           })
 
