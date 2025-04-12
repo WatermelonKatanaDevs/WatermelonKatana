@@ -124,6 +124,15 @@ input[type=button]:hover, input[type=submit]:hover, button:hover, .button:hover 
 	color: var(--palette-white);
 }
 
+.notifDismiss {
+    background-image: none;
+    background-color: #4444;
+}
+
+.notifDismiss:hover {
+    background-color: #6666;
+}
+
 #deletebtn, #discardbtn, .delete {
 	background-color: rgb(255,0,0,0.8);
 }
