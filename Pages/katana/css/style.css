@@ -63,6 +63,15 @@ body {
     color: #fff;
 }
 
+.notifDismiss {
+    background-image: none;
+    background-color: #4444;
+}
+
+.notifDismiss:hover {
+    background-color: #6666;
+}
+
 .sidebarButtons .symbol {
     font-size: 18px;
     margin-right: 10px;
