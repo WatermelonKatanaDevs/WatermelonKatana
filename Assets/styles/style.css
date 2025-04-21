@@ -9,7 +9,7 @@
 :root {
 	--palette-primary: #de6c83;
 	--palette-secondary: #2cf6be;
-  --palette-primary-hover: rgba(222, 108, 131, 0.8);
+	--palette-primary-hover: rgba(222, 108, 131, 0.8);
 	--palette-secondary-hover: rgba(44, 246, 190, 0.8);
 	--palette-midtone-hover: rgba(193, 172, 192, 0.8);
 
@@ -22,7 +22,7 @@
 
 	--palette-discord: #7289da;
 	--palette-link: #ff9c9c;
-	--palette-link-hover: #f08dff;
+	--palette-link-hover: #39ff14;
 
 	--palette-white: #ffffff;
 	--palette-background-grey: #151515;
@@ -69,7 +69,7 @@ body {
 }
 
 .logo-text {
-  font-family: var(--title-font), serif;
+	font-family: var(--title-font), serif;
 	background: linear-gradient(90deg, var(--spill-color1), var(--spill-color2), var(--spill-color3), var(--spill-color4));
 	background-size: 200% 200%;
 	-webkit-background-clip: text;
@@ -81,15 +81,18 @@ body {
 	0% {
 		background-position: 0 50%;
 	}
+
 	50% {
 		background-position: 100% 50%;
 	}
+
 	100% {
 		background-position: 0 50%;
 	}
 }
 
-a, .link {
+a,
+.link {
 	color: var(--palette-link);
 	cursor: url("/images/pointer.png"), pointer !important;
 	text-decoration: none;
@@ -97,11 +100,17 @@ a, .link {
 	transition: color 0.2s;
 }
 
-a:hover, .link:hover {
+a:hover,
+.link:hover {
 	color: var(--palette-link-hover);
 }
 
-input[type=button], input[type=submit], button, select, option, .button {
+input[type=button],
+input[type=submit],
+button,
+select,
+option,
+.button {
 	width: var(--button-width, auto);
 	height: var(--button-height, auto);
 	background-color: rgba(0, 0, 0, 0.5);
@@ -112,32 +121,40 @@ input[type=button], input[type=submit], button, select, option, .button {
 	border: none;
 	border-radius: 50px;
 	padding: 8px 16px;
-  font-family: var(--body-font), serif;
+	font-family: var(--body-font), serif;
 	font-weight: bold;
 	font-size: 1em;
 	cursor: pointer;
 	transition: background-color 0.2s, transform 0.2s;
 }
 
-input[type=button]:hover, input[type=submit]:hover, button:hover, .button:hover {
+input[type=button]:hover,
+input[type=submit]:hover,
+button:hover,
+.button:hover {
 	background-color: rgba(0, 0, 0, 0.3);
 	color: var(--palette-white);
 }
 
 .notifDismiss {
-    background-image: none;
-    background-color: #4444;
+	background-image: none;
+	background-color: #4444;
 }
 
 .notifDismiss:hover {
-    background-color: #6666;
+	background-color: #6666;
 }
 
-#deletebtn, #discardbtn, .delete {
-	background-color: rgb(255,0,0,0.8);
+#deletebtn,
+#discardbtn,
+.delete {
+	background-color: rgb(255, 0, 0, 0.8);
 }
-#deletebtn:hover, #discardbtn:hover, .delete:hover {
-	background-color: rgb(255,0,0);
+
+#deletebtn:hover,
+#discardbtn:hover,
+.delete:hover {
+	background-color: rgb(255, 0, 0);
 }
 
 .pink-button {
@@ -150,7 +167,11 @@ input[type=button]:hover, input[type=submit]:hover, button:hover, .button:hover 
 	color: var(--palette-white);
 }
 
-input[type=text], input[type=password], input[type=email], textarea, .uploadbutton {
+input[type=text],
+input[type=password],
+input[type=email],
+textarea,
+.uploadbutton {
 	padding: 10px;
 	margin: 10px 0;
 	box-sizing: border-box;
@@ -158,18 +179,21 @@ input[type=text], input[type=password], input[type=email], textarea, .uploadbutt
 	border-radius: 5px;
 	background-color: var(--palette-foreground-grey);
 	color: var(--palette-white);
-  font-family: var(--body-font), serif;
+	font-family: var(--body-font), serif;
 	font-size: 1em;
 	transition: border-color 0.2s;
 }
 
-input[type=text]:focus, input[type=password]:focus, textarea:focus, .uploadbutton:hover {
+input[type=text]:focus,
+input[type=password]:focus,
+textarea:focus,
+.uploadbutton:hover {
 	border-color: var(--palette-primary-hover);
 	background-color: var(--palette-foreground-grey);
 	outline: none;
 }
 
-label > input[type=checkbox] {
+label>input[type=checkbox] {
 	display: none;
 }
 
@@ -205,7 +229,7 @@ label {
 	display: inline-flex;
 }
 
-input[type=checkbox]:checked + .checkbox::after {
+input[type=checkbox]:checked+.checkbox::after {
 	opacity: 1;
 }
 
@@ -216,12 +240,12 @@ input[type=checkbox]:checked + .checkbox::after {
 	margin: 20px 0;
 	border-radius: 10px;
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  font-family: var(--body-font), serif;
+	font-family: var(--body-font), serif;
 	text-decoration: none;
 }
 
 .card-title {
-  font-family: var(--body-font), serif;
+	font-family: var(--body-font), serif;
 	font-size: 1.5em;
 	margin-bottom: 10px;
 	color: var(--palette-primary);
@@ -231,11 +255,13 @@ input[type=checkbox]:checked + .checkbox::after {
 	font-size: 1em;
 }
 
-.project-panel, .post-panel, .user-panel {
+.project-panel,
+.post-panel,
+.user-panel {
 	color: #e0e0e0;
 	background-color: #333333;
 	border-radius: 10px;
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 	transition: transform 0.2s, box-shadow 0.2s;
 	align-items: center;
 	justify-content: center;
@@ -244,9 +270,11 @@ input[type=checkbox]:checked + .checkbox::after {
 	text-decoration: none;
 }
 
-.project-panel:hover, .post-panel:hover, .user-panel:hover {
+.project-panel:hover,
+.post-panel:hover,
+.user-panel:hover {
 	transform: translateY(-5px);
-	box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); 
+	box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
 	text-decoration: none;
 	color: #e0e0e0;
 }
@@ -256,7 +284,8 @@ input[type=checkbox]:checked + .checkbox::after {
 	visibility: visible;
 }
 
-.post-panel, .user-panel {
+.post-panel,
+.user-panel {
 	padding: 5px;
 	display: block;
 }
@@ -266,10 +295,10 @@ input[type=checkbox]:checked + .checkbox::after {
 }
 
 .project-tags {
-	display: flex;           
-	opacity: 0;         
-	visibility: hidden;  
-	transition: opacity 0.3s ease, visibility 0.3s ease; 
+	display: flex;
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity 0.3s ease, visibility 0.3s ease;
 	justify-content: center;
 	flex-wrap: wrap;
 	line-height: 0;
@@ -283,7 +312,8 @@ input[type=checkbox]:checked + .checkbox::after {
 	gap: 0 8px;
 }
 
-.project-tags p, .forum-tags p {
+.project-tags p,
+.forum-tags p {
 	background-color: #444;
 	font-size: 15px;
 	color: #e0e0e0;
@@ -308,7 +338,9 @@ input[type=checkbox]:checked + .checkbox::after {
 	border-radius: 5px;
 }
 
-.project-list, .post-list, .user-list {
+.project-list,
+.post-list,
+.user-list {
 	display: flex;
 	flex-wrap: wrap;
 	flex-direction: row;
@@ -326,8 +358,8 @@ input[type=checkbox]:checked + .checkbox::after {
 	border-radius: 5px;
 	box-shadow: 0 0 10px pink;
 	transition: box-shadow 0.3s;
-	display: flex;          
-	align-items: center;         
+	display: flex;
+	align-items: center;
 }
 
 .thumbnail-border.favorited {
@@ -345,7 +377,8 @@ input[type=checkbox]:checked + .checkbox::after {
 	box-shadow: 0 0 10px yellow;
 }
 
-.project-link, .post-top {
+.project-link,
+.post-top {
 	text-align: center;
 }
 
