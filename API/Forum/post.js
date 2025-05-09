@@ -178,7 +178,7 @@ module.exports = class {
   async list(req, res, next) {
     try {
       var search = { hidden: false, mature: false };
-      const { poster, platform, postedBefore, postedAfter, includeTags, excludeTags, featured, page, total, sort, showMature, showHidden, showRecent, recipient, customQuery } = req.query;
+      const { poster, platform, postedBefore, postedAfter, includeTags, excludeTags, featured, randomEntry, page, total, sort, showMature, showHidden, showRecent, recipient, customQuery } = req.query;
       if (poster) search.poster = poster;
       if (platform) search.platform = platform;
       interpretBool(search, "featured", featured);
@@ -202,7 +202,7 @@ module.exports = class {
       }
       if (customQuery) search = JSON.parse(customQuery);
       var list = [], length = total;
-      if (showRecent > 0 || typeof sort === "string" || page > 0) {
+      if (showRecent > 0 || typeof sort === "string" || page > 0 || randomEntry) {
         var sortby = {}, limitby = showRecent, skipby = 0;
         switch (sort) {
           case "active": sortby = { activeAt: -1, views: -1 }; break;
@@ -216,12 +216,15 @@ module.exports = class {
               : (this.name === "posts" ? { featured: -1, activeAt: -1 }: { score: -1, views: -1 });
             break;
         }
+        if (!Number.isSafeInteger(parseInt(length))) {
+          length = await this.entriesLength(search);
+        }
         if (Number.isSafeInteger(parseInt(page))) {
           skipby = (page - 1) * entriesPerPage;
           limitby = entriesPerPage;
-        }
-        if (!Number.isSafeInteger(parseInt(length))) {
-          length = await this.entriesLength(search);
+        } else if (randomEntry) {
+          skipby = Math.floor(Math.random() * length);
+          limitby = 1;
         }
         list = await this.model.find(search).skip(skipby).sort(sortby).limit(limitby);
       } else {
