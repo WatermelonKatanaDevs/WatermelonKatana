@@ -238,7 +238,7 @@ module.exports = class {
       };
       data = await this.censor(data, res);
       if(toRandomEntry) {
-        res.redirect(data[this.name][0].link);
+        res.redirect("/project/" + data[this.name][0].id);
       } else {
         res.status(200).json(data);
       }
