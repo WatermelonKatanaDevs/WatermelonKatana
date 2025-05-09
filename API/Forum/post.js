@@ -178,7 +178,7 @@ module.exports = class {
   async list(req, res, next) {
     try {
       var search = { hidden: false, mature: false };
-      const { poster, platform, postedBefore, postedAfter, includeTags, excludeTags, featured, randomEntry, page, total, sort, showMature, showHidden, showRecent, recipient, customQuery } = req.query;
+      const { poster, platform, postedBefore, postedAfter, includeTags, excludeTags, featured, toRandomEntry, page, total, sort, showMature, showHidden, showRecent, recipient, customQuery } = req.query;
       if (poster) search.poster = poster;
       if (platform) search.platform = platform;
       interpretBool(search, "featured", featured);
@@ -202,7 +202,7 @@ module.exports = class {
       }
       if (customQuery) search = JSON.parse(customQuery);
       var list = [], length = total;
-      if (showRecent > 0 || typeof sort === "string" || page > 0 || randomEntry) {
+      if (showRecent > 0 || typeof sort === "string" || page > 0 || toRandomEntry) {
         var sortby = {}, limitby = showRecent, skipby = 0;
         switch (sort) {
           case "active": sortby = { activeAt: -1, views: -1 }; break;
@@ -222,7 +222,7 @@ module.exports = class {
         if (Number.isSafeInteger(parseInt(page))) {
           skipby = (page - 1) * entriesPerPage;
           limitby = entriesPerPage;
-        } else if (randomEntry) {
+        } else if (toRandomEntry) {
           skipby = Math.floor(Math.random() * length);
           limitby = 1;
         }
@@ -237,7 +237,11 @@ module.exports = class {
         length: length
       };
       data = await this.censor(data, res);
-      res.status(200).json(data);
+      if(toRandomEntry) {
+        res.redirect(data[this.name][0].link);
+      } else {
+        res.status(200).json(data);
+      }
     } catch (err) {
       res.status(401).json({ message: "Not successful", error: err.message });
       console.log(err.message);
