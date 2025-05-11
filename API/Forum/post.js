@@ -178,7 +178,7 @@ module.exports = class {
   async list(req, res, next) {
     try {
       var search = { hidden: false, mature: false };
-      const { poster, platform, postedBefore, postedAfter, includeTags, excludeTags, featured, toRandomEntry, page, total, sort, showMature, showHidden, showRecent, recipient, customQuery } = req.query;
+      const { poster, platform, postedBefore, postedAfter, includeTags, excludeTags, featured, randomEntryAction, page, total, sort, showMature, showHidden, showRecent, recipient, customQuery } = req.query;
       if (poster) search.poster = poster;
       if (platform) search.platform = platform;
       interpretBool(search, "featured", featured);
@@ -202,7 +202,7 @@ module.exports = class {
       }
       if (customQuery) search = JSON.parse(customQuery);
       var list = [], length = total;
-      if (showRecent > 0 || typeof sort === "string" || page > 0 || toRandomEntry) {
+      if (showRecent > 0 || typeof sort === "string" || page > 0 || randomEntryAction) {
         var sortby = {}, limitby = showRecent, skipby = 0;
         switch (sort) {
           case "active": sortby = { activeAt: -1, views: -1 }; break;
@@ -213,7 +213,7 @@ module.exports = class {
           default:
             sortby = showRecent > 0 && typeof sort !== "string"
               ? (this.name === "posts" ? { featured: -1, activeAt: -1 } : { postedAt: -1 })
-              : (this.name === "posts" ? { featured: -1, activeAt: -1 }: { score: -1, views: -1 });
+              : (this.name === "posts" ? { featured: -1, activeAt: -1 } : { score: -1, views: -1 });
             break;
         }
         if (!Number.isSafeInteger(parseInt(length))) {
@@ -222,7 +222,7 @@ module.exports = class {
         if (Number.isSafeInteger(parseInt(page))) {
           skipby = (page - 1) * entriesPerPage;
           limitby = entriesPerPage;
-        } else if (toRandomEntry) {
+        } else if (randomEntryAction) {
           skipby = Math.floor(Math.random() * length);
           limitby = 1;
         }
@@ -237,7 +237,7 @@ module.exports = class {
         length: length
       };
       data = await this.censor(data, res);
-      if(toRandomEntry) {
+      if (randomEntryAction === 'redirect') {
         res.redirect("/project/" + data[this.name][0].id);
       } else {
         res.status(200).json(data);
