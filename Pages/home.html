@@ -66,7 +66,7 @@
     const postList = document.querySelector('#postList');
     const header = document.querySelector('#header');
     const user = document.getElementById('username');
-    getAuth.then(async tok => {
+    getAuth().then(async tok => {
       let res, data, sparams = new URLSearchParams();
       sparams.set("sort", "score");
       sparams.set("featured", 1);
