@@ -1,105 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home | WatermelonKatana</title>
-    <link rel="icon" type="image/png" href="/favicon/favicon-96x96.png" sizes="96x96" />
-    <!-- <link rel="icon" type="image/svg+xml" href="/favicon/favicon.svg" /> -->
-    <link rel="shortcut icon" href="/favicon.ico" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
-    <meta name="apple-mobile-web-app-title" content="WatermelonKatana" />
-    <link rel="manifest" href="/site.webmanifest">
-    <meta property="og:title" content="WatermelonKatana"/>
-    <meta property="og:type" content="profile"/>
-    <meta property="og:image" content="/favicon/android-chrome-192x192.png"/>
-    <meta property="og:description" content="Post your projects, Interact with other peoples' projects, Chat with your friends & More! We have a large gallery of games and a growing user base, help us out by either posting your browser game here or playing other peoples' games!"/>
-    <link rel="stylesheet" type="text/css" href="/styles/style.css">
-    <link rel="stylesheet" type="text/css" href="/styles/home.css">
-    <link rel="stylesheet" type="text/css" href="/styles/v3.css">
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2363534162574113" crossorigin="anonymous"></script>
-    <script src="/scripts/HtmlSanitizer.js"></script>
-    <script src="/scripts/script.js"></script>
-  </head>
-  <body>
-    <div class="container">
-      <header class="main-header">
-        <h1>Welcome to <strong class="logo-text">WatermelonKatana</strong></h1>
-        <h2 id="username" style="color: #777777"></h2>
-        <nav id="header" class="main-nav">
-          <a href="/register">Register</a>
-          <a href="/login">Login</a>
-          <a href="/chat">Chat</a>
-          <a href="/search">Project Gallery</a>
-          <a href="/forum">Forum</a>
-          <a href="/faq">FAQ</a>
-        </nav>
-      </header>
-      <section class="intro">
-        <p>Post your projects, interact with other people's projects, chat with your friends, and more! We have a large gallery of games and a growing user base. Help us out by either posting your browser game here or playing other people's games!</p>
-        <br>
-      </section>
-      <section class="featured-projects">
-        <h2>Featured Projects</h2>
-        <div id="featuredList" class="project-list"></div>
-      </section>
-      <section class="featured-projects">
-        <h2>Latest Projects</h2>
-        <div id="latestList" class="project-list"></div>
-      </section>
-      <section class="featured-projects">
-        <h2>Hot Forum Topics</h2>
-        <div id="postlist" class="post-list"></div>
-      </section>
-    </div>
-    
-    <script src="/scripts/footer.js"></script>
-    <script>
-      const featuredList = document.querySelector('#featuredList');
-      const latestList = document.querySelector('#latestList');
-      const postlist = document.querySelector('#postlist');
 
-      (async () => {
-        const tok = await getAuth();
-        var sparams = new URLSearchParams();
-        if (tok.user?.mature) { sparams.set("showMature", tok.user.mature) }
-        sparams.set("sort", "score");
-        sparams.set("featured", 1);
-        const res = await fetch('/api/project/list?'+sparams);
-        const data = await res.json();
-        data.projects.map(projHTML(featuredList,tok));
-      })();
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home | WatermelonKatana</title>
+  <link rel="icon" type="image/png" href="/favicon/favicon-96x96.png" sizes="96x96" />
+  <!-- <link rel="icon" type="image/svg+xml" href="/favicon/favicon.svg" /> -->
+  <link rel="shortcut icon" href="/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-title" content="WatermelonKatana" />
+  <link rel="manifest" href="/site.webmanifest">
+  <meta property="og:title" content="WatermelonKatana" />
+  <meta property="og:type" content="profile" />
+  <meta property="og:image" content="/favicon/android-chrome-192x192.png" />
+  <meta property="og:description"
+    content="Post your projects, Interact with other peoples' projects, Chat with your friends & More! We have a large gallery of games and a growing user base, help us out by either posting your browser game here or playing other peoples' games!" />
+  <link rel="stylesheet" type="text/css" href="/styles/style.css">
+  <link rel="stylesheet" type="text/css" href="/styles/home.css">
+  <link rel="stylesheet" type="text/css" href="/styles/v3.css">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2363534162574113"
+    crossorigin="anonymous"></script>
+  <script src="/scripts/HtmlSanitizer.js"></script>
+  <script src="/scripts/script.js"></script>
+</head>
 
-      (async () => {
-        const tok = await getAuth();
-        var sparams = new URLSearchParams();
-        if (tok.user?.mature) { sparams.set("showMature", tok.user.mature) }
-        sparams.set("showRecent", 5);
-        const res = await fetch('/api/project/list?'+sparams);
-        const data = await res.json();
-        data.projects.map(projHTML(latestList,tok));
-      })();
+<body>
+  <div class="container">
+    <header class="main-header">
+      <h1>Welcome to <strong class="logo-text">WatermelonKatana</strong></h1>
+      <h2 id="username" style="color: #777777"></h2>
+      <nav id="header" class="main-nav">
+        <a href="/register">Register</a>
+        <a href="/login">Login</a>
+        <a href="/chat">Chat</a>
+        <a href="/search">Project Gallery</a>
+        <a href="/forum">Forum</a>
+        <a href="/faq">FAQ</a>
+      </nav>
+    </header>
+    <section class="intro">
+      <p>Post your projects, interact with other people's projects, chat with your friends, and more! We have a large
+        gallery of games and a growing user base. Help us out by either posting your browser game here or playing other
+        people's games!</p>
+      <br>
+    </section>
+    <section class="featured-projects">
+      <h2>Featured Projects</h2>
+      <div id="featuredList" class="project-list"></div>
+    </section>
+    <section class="featured-projects">
+      <h2>Latest Projects</h2>
+      <div id="latestList" class="project-list"></div>
+    </section>
+    <section class="featured-projects">
+      <h2>Hot Forum Topics</h2>
+      <div id="postList" class="post-list"></div>
+    </section>
+  </div>
 
-      (async () => {
-        const tok = await getAuth();
-        var sparams = new URLSearchParams();
-        sparams.set("showRecent", 5);
-        if (tok.user?.mature) { sparams.set("showMature", tok.user.mature) }
-        const res = await fetch('/api/forum/list?'+sparams);
-        const data = await res.json();
-        data.posts.map(forumHTML(postlist,tok));
-      })();
-      
-      const header = document.querySelector('#header');
-      const user = document.getElementById('username');
-      (async () => {
-        const data = await getAuth();
-        if (!data.auth) return;
-        const notificationCount = data.user.notifications.length;
-        let notifs = await Promise.all(data.user.notifications.sort((a,b)=>b.createdAt-a.createdAt).map(htmlNotifications));
-        async function htmlNotifications(notif, index) {
-          let user = await getUser(notif.posterId);
-          return `<a class="user-panel" href="/notification/${index}" style="width: 98%; text-align: right">
+  <script src="/scripts/footer.js"></script>
+  <script>
+    const featuredList = document.querySelector('#featuredList');
+    const latestList = document.querySelector('#latestList');
+    const postList = document.querySelector('#postList');
+    const header = document.querySelector('#header');
+    const user = document.getElementById('username');
+    getAuth.then(async tok => {
+      let res, data, sparams = new URLSearchParams();
+      sparams.set("sort", "score");
+      sparams.set("featured", 1);
+      fetch('/api/project/list?' + sparams)
+        .then(res => res.status < 206 ? res.json() : { projects: [] })
+        .then(data => { data.projects.map(projHTML(featuredList, tok)) })
+
+      sparams = new URLSearchParams();
+      sparams.set("showRecent", 5);
+      fetch('/api/project/list?' + sparams)
+        .then(res => res.status < 206 ? res : { projects: [] })
+        .then(data => { data.projects.map(projHTML(latestList, tok)) })
+
+      sparams = new URLSearchParams();
+      sparams.set("showRecent", 5);
+      if (tok.user?.mature) { sparams.set("showMature", tok.user.mature) }
+      fetch('/api/forum/list?' + sparams)
+        .then(res => res.status < 206 ? res : { projects: [] })
+        .then(data => { data.projects.map(projHTML(postList, tok)) })
+
+      if (!tok.auth) return;
+      const notificationCount = tok.user.notifications.length;
+      let notifs = await Promise.all(tok.user.notifications.sort((a, b) => b.createdAt - a.createdAt).map(htmlNotifications));
+      async function htmlNotifications(notif, index) {
+        let user = await getUser(notif.posterId);
+        return `<a class="user-panel" href="/notification/${index}" style="width: 98%; text-align: right">
             <div class="comment-top" style="display: flex">
               <img class="comment-avatar" src="${user.avatar || "/images/blank_project.png"}" style="width: 2em; height: 2em">
               <div class="comment-username" style="font-size: 1em">${notif.title} ${notif.content}</div>
@@ -107,30 +100,31 @@
                 <i class="fa fa-bell-slash" aria-hidden="true"></i>
               </button>
             </div>
-            <p style="font-size:0.6em; margin-top: 0px;">${new Date(notif.createdAt).toUTCString().replace(/\d\d:[^]+$/,"")}</p>
+            <p style="font-size:0.6em; margin-top: 0px;">${new Date(notif.createdAt).toUTCString().replace(/\d\d:[^]+$/, "")}</p>
           </a>`
-        }
-        user.innerHTML = `
+      }
+      user.innerHTML = `
         <p style="margin-bottom: 0px"> Signed in as
-          <a class="profile" href="/user/${data.user.username}">
-            <img src="${data.user.avatar}">
-            <strong class="logo-text">${data.user.username}</strong>
+          <a class="profile" href="/user/${tok.user.username}">
+            <img src="${tok.user.avatar}">
+            <strong class="logo-text">${tok.user.username}</strong>
           </a>
         </p>
         <div style="border-style: groove; margin: 5px; width: 50%; max-height: 30vh; transform: translateX(50%); overflow-y: scroll; scrollbar-width: none;">
-              ${notifs.join('')||`No Notifications`}
+              ${notifs.join('') || `No Notifications`}
         </div>
         `;
-        header.innerHTML = `
+      header.innerHTML = `
           <a href="/publish">Publish</a>
           <a href="/chat">Chat</a>
           <a href="/search">Project Gallery</a>
           <a href="/forum">Forum</a>
           <a href="/faq">FAQ</a>
           <a href="/userlist">User List</a>
-          ${(data.user.role === "Admin" ? `<a href="/admin">Admin List</a>`: "")}
+          ${(tok.user.role === "Admin" ? `<a href="/admin">Admin List</a>` : "")}
         `;
-      })();
-    </script>
-  </body>
+    });
+  </script>
+</body>
+
 </html>
