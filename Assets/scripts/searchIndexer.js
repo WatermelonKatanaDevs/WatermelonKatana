@@ -4,11 +4,16 @@ const cacheType = pageType === "project" ? "projects" : "posts";
 const pages = {};
 const projectsPerPage = 30;
 let currentPage = location.search.match(/page=([\d]+)/);
+let tok;
+getAuth().then(user => {
+    tok = user;
+});
+
 if (currentPage === null) { currentPage = 1; }
 else { currentPage = parseInt(currentPage[1]); }
 
 async function searchIndex(pageNumber) {
-    const tok = await getAuth();
+    if (tok !== undefined) { tok = await getAuth() }
     const params = new URLSearchParams(location.search);
     const id = params.get("query") ? "QUERY:" + params.get("query") : "SORT:" + params.get("sort");
     const mature = tok.user?.mature;
