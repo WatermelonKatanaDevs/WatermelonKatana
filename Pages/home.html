@@ -77,14 +77,13 @@
       sparams = new URLSearchParams();
       sparams.set("showRecent", 5);
       fetch('/api/project/list?' + sparams)
-        .then(res => res.status < 206 ? res : { projects: [] })
+        .then(res => res.status < 206 ? res.json() : { projects: [] })
         .then(data => { data.projects.map(projHTML(latestList, tok)) })
 
       sparams = new URLSearchParams();
       sparams.set("showRecent", 5);
-      if (tok.user?.mature) { sparams.set("showMature", tok.user.mature) }
       fetch('/api/forum/list?' + sparams)
-        .then(res => res.status < 206 ? res : { projects: [] })
+        .then(res => res.status < 206 ? res.json() : { posts: [] })
         .then(data => { data.posts.map(projHTML(postList, tok)) })
 
       if (!tok.auth) return;
