@@ -84,7 +84,7 @@
       sparams.set("showRecent", 5);
       fetch('/api/forum/list?' + sparams)
         .then(res => res.status < 206 ? res.json() : { posts: [] })
-        .then(data => { data.posts.map(projHTML(postList, tok)) })
+        .then(data => { data.posts.map(forumHTML(postList, tok)) })
 
       if (!tok.auth) return;
       const notificationCount = tok.user.notifications.length;
