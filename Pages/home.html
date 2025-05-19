@@ -85,7 +85,7 @@
       if (tok.user?.mature) { sparams.set("showMature", tok.user.mature) }
       fetch('/api/forum/list?' + sparams)
         .then(res => res.status < 206 ? res : { projects: [] })
-        .then(data => { data.projects.map(projHTML(postList, tok)) })
+        .then(data => { data.posts.map(projHTML(postList, tok)) })
 
       if (!tok.auth) return;
       const notificationCount = tok.user.notifications.length;
