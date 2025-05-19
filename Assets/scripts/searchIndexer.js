@@ -4,9 +4,8 @@ const cacheType = pageType === "project" ? "projects" : "posts";
 const pages = {};
 const projectsPerPage = 30;
 let currentPage = location.search.match(/page=([\d]+)/);
-let tok;
 getAuth().then(user => {
-    tok = user;
+    window.tok = user;
 });
 
 if (currentPage === null) { currentPage = 1; }
