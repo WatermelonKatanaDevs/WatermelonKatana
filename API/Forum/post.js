@@ -178,11 +178,12 @@ module.exports = class {
   async list(req, res, next) {
     try {
       var search = { hidden: false, mature: false };
+      let uid = res.locals.userToken;
       const { poster, platform, postedBefore, postedAfter, includeTags, excludeTags, featured, randomEntryAction, page, total, sort, showMature, showHidden, showRecent, recipient, customQuery } = req.query;
       if (poster) search.poster = poster;
       if (platform) search.platform = platform;
       interpretBool(search, "featured", featured);
-      if (showMature == "true" || showMature == "1") delete search.mature;
+      if ((showMature == "true" || showMature == "1") && uid && (await Users.findOne({_id: uid})).mature) delete search.mature;
       if (showHidden == "true" || showHidden == "1") delete search.hidden;
       // work out recipient search later
       if (postedBefore || postedAfter) {
@@ -252,8 +253,8 @@ module.exports = class {
     try {
       const { query, page, total, showMature, showHidden } = req.query;
       var search = { hidden: false, mature: false, $text: { $search: query } };
-      var skipby = 0, length = total;
-      if (showMature == "true" || showMature == "1") delete search.mature;
+      var skipby = 0, length = total, uid = res.locals.userToken;
+      if ((showMature == "true" || showMature == "1") && uid && (await Users.findOne({_id: uid})).mature) delete search.mature;
       if (showHidden == "true" || showHidden == "1") delete search.hidden;
       if (!Number.isSafeInteger(parseInt(length))) {
         length = await this.entriesLength(search);
