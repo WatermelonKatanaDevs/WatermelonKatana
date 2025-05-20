@@ -72,6 +72,7 @@ async publish(req, res, next) {
     await this.notifyUserFollowers(user.username+" published a project",user,title,"/project/"+project._id);
     await this.notifyUserMentions(content,user,title,"/project/"+project._id);
     console.log(project);
+    res.locals.clearCookie();
     res.status(201).json({
       message: "Project successfully published",
       id: project._id,
@@ -79,6 +80,7 @@ async publish(req, res, next) {
     });
     console.log("done!");
   } catch(error) {
+    res.locals.clearCookie();
     res.status(400).json({
       message: "Project not successfully published",
       error: error.message,
