@@ -212,12 +212,12 @@ module.exports = class {
           case "score": sortby = { [sort]: -1, views: -1 }; break;
           case "views": sortby = { [sort]: -1, score: -1 }; break;
           default:
-            sortby = showRecent > 0 && typeof sort !== "string"
+            sortby = limitby > 0 && typeof sort !== "string"
               ? (this.name === "posts" ? { featured: -1, activeAt: -1 } : { postedAt: -1 })
               : (this.name === "posts" ? { featured: -1, activeAt: -1 } : { score: -1, views: -1 });
             break;
         }
-        if (!Number.isSafeInteger(parseInt(length))) {
+        if (!Number.isSafeInteger(parseInt(length)) && !limitby) {
           length = await this.entriesLength(search);
         }
         if (Number.isSafeInteger(parseInt(page))) {
@@ -235,7 +235,7 @@ module.exports = class {
       list = list.map(e => e.pack());
       var data = {
         [this.name]: list,
-        length: length
+        length: length || list.length
       };
       data = await this.censor(data, res);
       if (randomEntryAction === 'redirect') {
