@@ -41,10 +41,6 @@ async function searchIndex(pageNumber) {
             cachePage.length = data[cacheType].length;
             cachePage[cacheType][page - 1] = data[cacheType];
         }
-        if (!params.get("total")) {
-            params.set("total", cachePage.length);
-            history.replaceState({}, "", buildUrl(params));
-        }
         maxPage = Math.ceil(cachePage.length / projectsPerPage);
         return page === currentPage ? cachePage[cacheType][page - 1] : [];
     }
