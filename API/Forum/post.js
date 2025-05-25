@@ -128,6 +128,14 @@ module.exports = class {
     }
   };
 
+  async entriesLength(filter) {
+    try {
+      return await this.model.countDocuments(filter);
+    } catch (error) {
+      return 0;
+    }
+  }
+
   async delete(req, res, next) {
     try {
       const pid = req.params.id;
@@ -171,7 +179,7 @@ module.exports = class {
     try {
       var search = { hidden: false };
       let uid = res.locals.userToken?.id;
-      const { poster, platform, postedBefore, postedAfter, includeTags, excludeTags, featured, randomEntryAction, page, sort, showMature, showHidden, showRecent, recipient, customQuery } = req.query;
+      const { poster, platform, postedBefore, postedAfter, includeTags, excludeTags, featured, randomEntryAction, page, total, sort, showMature, showHidden, showRecent, recipient, customQuery } = req.query;
       if (poster) search.poster = poster;
       if (platform) search.platform = platform;
       interpretBool(search, "featured", featured);
@@ -194,9 +202,9 @@ module.exports = class {
         }
       }
       if (customQuery) search = JSON.parse(customQuery);
-      var list = [];
+      var list = [], length = total;
       if (showRecent > 0 || typeof sort === "string" || page > 0 || randomEntryAction) {
-        var sortby = {}, limitby = showRecent || entriesPerPage, skipby = 0;
+        var sortby = {}, limitby = showRecent, skipby = 0;
         switch (sort) {
           case "active": sortby = { activeAt: -1, views: -1 }; break;
           case "latest": sortby = { postedAt: -1 }; break;
@@ -209,8 +217,14 @@ module.exports = class {
               : (this.name === "posts" ? { featured: -1, activeAt: -1 } : { score: -1, views: -1 });
             break;
         }
-        if (randomEntryAction) {
-          skipby = Math.floor(Math.random() * (await this.entriesLength(search)));
+        if (!Number.isSafeInteger(parseInt(length))) {
+          length = await this.entriesLength(search);
+        }
+        if (Number.isSafeInteger(parseInt(page))) {
+          skipby = (page - 1) * entriesPerPage;
+          limitby = entriesPerPage;
+        } else if (randomEntryAction) {
+          skipby = Math.floor(Math.random() * length);
           limitby = 1;
         }
         list = await this.model.find(search).skip(skipby).sort(sortby).limit(limitby);
@@ -220,7 +234,8 @@ module.exports = class {
       //list = (showRecent > 0) ? list.slice(-showRecent): list;
       list = list.map(e => e.pack());
       var data = {
-        [this.name]: list
+        [this.name]: list,
+        length: length
       };
       data = await this.censor(data, res);
       if (randomEntryAction === 'redirect') {
@@ -236,11 +251,14 @@ module.exports = class {
 
   async search(req, res, next) {
     try {
-      const { query, page, showMature, showHidden } = req.query;
+      const { query, page, total, showMature, showHidden } = req.query;
       var search = { hidden: false, $text: { $search: query } };
-      var skipby = 0, uid = res.locals.userToken?.id;
+      var skipby = 0, length = total, uid = res.locals.userToken?.id;
       if (showMature == "false" || showMature == "0" || !uid || !(await Users.findOne({ _id: uid })).mature) search.mature = false;
       if (showHidden == "true" || showHidden == "1") delete search.hidden;
+      if (!Number.isSafeInteger(parseInt(length))) {
+        length = await this.entriesLength(search);
+      }
       skipby = ((page || 1) - 1) * entriesPerPage;
       var list = await this.model.find(
         search,
@@ -252,7 +270,8 @@ module.exports = class {
         return c;
       });
       var data = {
-        [this.name]: list
+        [this.name]: list,
+        length: length
       };
       data = await this.censor(data, res);
       res.status(200).json(data);
