@@ -38,7 +38,7 @@ async function searchIndex(pageNumber) {
             const endpoint = params.get("query") ? 'search' : 'list';
             const res = await fetch(`/api/${pageType}/${endpoint}?${params}`);
             const data = await res.json();
-            cachePage.length = data.length;
+            cachePage.length = data[cacheType].length;
             cachePage[cacheType][page - 1] = data[cacheType];
         }
         if (!params.get("total")) {
