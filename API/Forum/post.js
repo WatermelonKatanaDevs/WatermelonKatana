@@ -128,14 +128,6 @@ module.exports = class {
     }
   };
 
-  async entriesLength(filter) {
-    try {
-      return await this.model.countDocuments(filter);
-    } catch (error) {
-      return 0;
-    }
-  }
-
   async delete(req, res, next) {
     try {
       const pid = req.params.id;
@@ -204,7 +196,7 @@ module.exports = class {
       if (customQuery) search = JSON.parse(customQuery);
       var list = [];
       if (showRecent > 0 || typeof sort === "string" || page > 0 || randomEntryAction) {
-        var sortby = {}, limitby = showRecent, skipby = 0;
+        var sortby = {}, limitby = showRecent || entriesPerPage, skipby = 0;
         switch (sort) {
           case "active": sortby = { activeAt: -1, views: -1 }; break;
           case "latest": sortby = { postedAt: -1 }; break;
