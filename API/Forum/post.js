@@ -177,9 +177,9 @@ module.exports = class {
 
   async list(req, res, next) {
     try {
-      var search = { hidden: false };
-      let uid = res.locals.userToken?.id;
       const { poster, platform, postedBefore, postedAfter, includeTags, excludeTags, featured, randomEntryAction, page, total, sort, showMature, showHidden, showRecent, recipient, customQuery } = req.query;
+      var search = { mature: Boolean(showMature), hidden: false };
+      let uid = res.locals.userToken?.id;
       if (poster) search.poster = poster;
       if (platform) search.platform = platform;
       interpretBool(search, "featured", featured);
@@ -217,7 +217,7 @@ module.exports = class {
               : (this.name === "posts" ? { featured: -1, activeAt: -1 } : { score: -1, views: -1 });
             break;
         }
-        if (!Number.isSafeInteger(parseInt(length)) && !limitby && !featured) {
+        if (!Number.isSafeInteger(parseInt(length)) && !limitby && !featured && !page) {
           length = await this.entriesLength(search);
         }
         if (Number.isSafeInteger(parseInt(page))) {
@@ -252,7 +252,7 @@ module.exports = class {
   async search(req, res, next) {
     try {
       const { query, page, total, showMature, showHidden } = req.query;
-      var search = { hidden: false, $text: { $search: query } };
+      var search = { mature: Boolean(showMature), hidden: false, $text: { $search: query } };
       var skipby = 0, length = total, uid = res.locals.userToken?.id;
       if (showMature == "false" || showMature == "0" || !uid || !(await Users.findOne({ _id: uid })).mature) search.mature = false;
       if (showHidden == "true" || showHidden == "1") delete search.hidden;
