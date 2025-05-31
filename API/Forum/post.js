@@ -217,7 +217,7 @@ module.exports = class {
               : (this.name === "posts" ? { featured: -1, activeAt: -1 } : { score: -1, views: -1 });
             break;
         }
-        if (!Number.isSafeInteger(parseInt(length)) && !limitby && !featured && !page) {
+        if (!Number.isSafeInteger(parseInt(length)) && !limitby && !featured && page) {
           length = await this.entriesLength(search);
         }
         if (Number.isSafeInteger(parseInt(page))) {
