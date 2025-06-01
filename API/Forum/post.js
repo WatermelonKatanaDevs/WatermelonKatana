@@ -149,7 +149,6 @@ module.exports = class {
         message: "Not Authorized. You do not own this post",
       });
       await this.model.deleteOne({ _id: pid });
-      // await post.remove();
       console.log("deleted " + pid);
       res.status(201).json({
         message: "Post successfully deleted",
@@ -209,12 +208,12 @@ module.exports = class {
           case "active": sortby = { activeAt: -1, views: -1 }; break;
           case "latest": sortby = { postedAt: -1 }; break;
           case "oldest": sortby = { postedAt: 1 }; break;
-          case "score": sortby = { [sort]: -1, views: -1, postedAt: -1}; break;
-          case "views": sortby = { [sort]: -1, score: -1, postedAt: -1}; break;
+          case "score": sortby = { [sort]: -1, views: -1, postedAt: -1 }; break;
+          case "views": sortby = { [sort]: -1, score: -1, postedAt: -1 }; break;
           default:
             sortby = limitby > 0 && typeof sort !== "string"
               ? (this.name === "posts" ? { featured: -1, activeAt: -1 } : { postedAt: -1 })
-              : (this.name === "posts" ? { featured: -1, activeAt: -1 } : { score: -1, views: -1, postedAt: -1});
+              : (this.name === "posts" ? { featured: -1, activeAt: -1 } : { score: -1, views: -1, postedAt: -1 });
             break;
         }
         if (!Number.isSafeInteger(parseInt(length)) && !limitby && !featured && page || randomEntryAction) {
@@ -231,7 +230,6 @@ module.exports = class {
       } else {
         list = await this.model.find(search);
       }
-      //list = (showRecent > 0) ? list.slice(-showRecent): list;
       list = list.map(e => e.pack());
       var data = {
         [this.name]: list,
