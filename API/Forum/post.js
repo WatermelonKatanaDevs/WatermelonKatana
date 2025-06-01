@@ -202,7 +202,7 @@ module.exports = class {
         }
       }
       if (customQuery) search = JSON.parse(customQuery);
-      var list = [], length = total;
+      var list = [], length = parseInt(total);
       if (showRecent > 0 || typeof sort === "string" || page > 0 || randomEntryAction) {
         var sortby = {}, limitby = showRecent, skipby = 0;
         switch (sort) {
@@ -217,7 +217,7 @@ module.exports = class {
               : (this.name === "posts" ? { featured: -1, activeAt: -1 } : { score: -1, views: -1 });
             break;
         }
-        if (!Number.isSafeInteger(parseInt(length)) && !limitby && !featured && page) {
+        if (!Number.isSafeInteger(parseInt(length)) && !limitby && !featured && page || randomEntryAction) {
           length = await this.entriesLength(search);
         }
         if (Number.isSafeInteger(parseInt(page))) {
@@ -253,7 +253,7 @@ module.exports = class {
     try {
       const { query, page, total, showMature, showHidden } = req.query;
       var search = { mature: Boolean(showMature), hidden: false, $text: { $search: query } };
-      var skipby = 0, length = total, uid = res.locals.userToken?.id;
+      var skipby = 0, length = parseInt(total), uid = res.locals.userToken?.id;
       if (showMature == "false" || showMature == "0" || !uid || !(await Users.findOne({ _id: uid })).mature) search.mature = false;
       if (showHidden == "true" || showHidden == "1") delete search.hidden;
       if (!Number.isSafeInteger(parseInt(length))) {
