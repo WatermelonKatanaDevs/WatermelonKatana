@@ -209,12 +209,12 @@ module.exports = class {
           case "active": sortby = { activeAt: -1, views: -1 }; break;
           case "latest": sortby = { postedAt: -1 }; break;
           case "oldest": sortby = { postedAt: 1 }; break;
-          case "score": sortby = { [sort]: -1, views: -1 }; break;
-          case "views": sortby = { [sort]: -1, score: -1 }; break;
+          case "score": sortby = { [sort]: -1, views: -1, postedAt: -1}; break;
+          case "views": sortby = { [sort]: -1, score: -1, postedAt: -1}; break;
           default:
             sortby = limitby > 0 && typeof sort !== "string"
               ? (this.name === "posts" ? { featured: -1, activeAt: -1 } : { postedAt: -1 })
-              : (this.name === "posts" ? { featured: -1, activeAt: -1 } : { score: -1, views: -1 });
+              : (this.name === "posts" ? { featured: -1, activeAt: -1 } : { score: -1, views: -1, postedAt: -1});
             break;
         }
         if (!Number.isSafeInteger(parseInt(length)) && !limitby && !featured && page || randomEntryAction) {
