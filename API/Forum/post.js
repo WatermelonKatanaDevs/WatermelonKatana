@@ -203,7 +203,7 @@ module.exports = class {
       if (customQuery) search = JSON.parse(customQuery);
       var list = [], length = parseInt(total);
       if (showRecent > 0 || typeof sort === "string" || page > 0 || randomEntryAction) {
-        var sortby = {}, limitby = parseInt(showRecent), skipby = 0;
+        var sortby = {}, limitby = showRecent, skipby = 0;
         switch (sort) {
           case "active": sortby = { activeAt: -1, views: -1 }; break;
           case "latest": sortby = { postedAt: -1 }; break;
@@ -219,14 +219,17 @@ module.exports = class {
         // perform search here first to limit double querys then sort here than db method
         // as of now there are 2 queries possibly try aggregating them?
         // i have no idea how to do it, and failed on first implementation may be something that dragon can do??
-        if (!Number.isSafeInteger(parseInt(length)) && !limitby && !featured && page) {
+        if (!Number.isSafeInteger(parseInt(length)) && !limitby && !featured && page || randomEntryAction) {
           length = await this.entriesLength(search);
         }
         if (Number.isSafeInteger(parseInt(page))) {
           skipby = (page - 1) * entriesPerPage;
           limitby = entriesPerPage;
+        } else if (randomEntryAction) {
+          skipby = Math.floor(Math.random() * length);
+          limitby = 1;
         }
-        list = await this.model.find(search).skip(skipby).sort(sortby)[(randomEntryAction ? "sample": "limit")](limitby || 1);
+        list = await this.model.find(search).skip(skipby).sort(sortby).limit(limitby);
       } else {
         list = await this.model.find(search);
       }
