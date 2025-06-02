@@ -216,20 +216,19 @@ module.exports = class {
               : (this.name === "posts" ? { featured: -1, activeAt: -1 } : { score: -1, views: -1, postedAt: -1 });
             break;
         }
-        // perform search here first to limit double querys then sort here than db method
-        // this will be more intricate so i don't have enough time to do now
-        // list = await this.model.find(search)
+        let request = await this.model.aggregate([
+          { $match: search },
+          {
+            $facet: {
+              metadata: [{ $count: "totalResults" }],
+              data: [{ $skip: skipby }, { $sort: sortby }, { limit: limitby }]
+            }
+          }
+        ]);
+        list = request[0].data;
         if (!Number.isSafeInteger(parseInt(length)) && !limitby && !featured && page || randomEntryAction) {
-          length = await this.entriesLength(search);
+          length = request[0].metadata[0].totalResults || list.length;
         }
-        if (Number.isSafeInteger(parseInt(page))) {
-          skipby = (page - 1) * entriesPerPage;
-          limitby = entriesPerPage;
-        } else if (randomEntryAction) {
-          skipby = Math.floor(Math.random() * length);
-          limitby = 1;
-        }
-        list = await this.model.find(search).skip(skipby).sort(sortby).limit(limitby);
       } else {
         list = await this.model.find(search);
       }
@@ -240,7 +239,7 @@ module.exports = class {
       };
       data = await this.censor(data, res);
       if (randomEntryAction === 'redirect') {
-        res.redirect("/project/" + data[this.name][0].id);
+        res.redirect("/project/" + data[this.name][Math.floor(Math.random() * length)].id);
       } else {
         res.status(200).json(data);
       }
@@ -257,14 +256,18 @@ module.exports = class {
       var skipby = 0, length = parseInt(total), uid = res.locals.userToken?.id;
       if (showMature == "false" || showMature == "0" || !uid || !(await Users.findOne({ _id: uid })).mature) search.mature = false;
       if (showHidden == "true" || showHidden == "1") delete search.hidden;
-      if (!Number.isSafeInteger(parseInt(length))) {
-        length = await this.entriesLength(search);
-      }
       skipby = ((page || 1) - 1) * entriesPerPage;
-      var list = await this.model.find(
-        search,
-        { relevance: { $meta: "textScore" } }
-      ).skip(skipby).sort({ relevance: { $meta: "textScore" } }).limit(entriesPerPage);
+      let request = await this.model.aggregate([
+        { $match: search },
+        {
+          $facet: {
+            metadata: [{ $count: "totalResults" }],
+            data: [{ $addFields: { relevance: { $meta: "textScore" } }, $skip: skipby }, { $sort: { relevance: { $meta: "textScore" } } }, { limit: entriesPerPage }]
+          }
+        }
+      ]);
+      let list = request[0].data;
+      length = request[0].metadata[0].totalResults;
       list = list.map(e => {
         var c = e.pack();
         c.relevance = e.relevance;
