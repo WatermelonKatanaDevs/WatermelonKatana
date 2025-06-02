@@ -219,17 +219,36 @@ module.exports = class {
         // perform search here first to limit double querys then sort here than db method
         // as of now there are 2 queries possibly try aggregating them?
         // i have no idea how to do it, and failed on first implementation may be something that dragon can do??
-        if (!Number.isSafeInteger(parseInt(length)) && !limitby && !featured && page || randomEntryAction) {
-          length = await this.entriesLength(search);
-        }
+        // if (!Number.isSafeInteger(parseInt(length)) && !limitby && !featured && page || randomEntryAction) {
+        //   length = await this.entriesLength(search);
+        // }
+        // if (Number.isSafeInteger(parseInt(page))) {
+        //   skipby = (page - 1) * entriesPerPage;
+        //   limitby = entriesPerPage;
+        // } else if (randomEntryAction) {
+        //   skipby = Math.floor(Math.random() * length);
+        //   limitby = 1;
+        // }
+        // list = await this.model.find(search).skip(skipby).sort(sortby).limit(limitby);
         if (Number.isSafeInteger(parseInt(page))) {
           skipby = (page - 1) * entriesPerPage;
           limitby = entriesPerPage;
-        } else if (randomEntryAction) {
-          skipby = Math.floor(Math.random() * length);
-          limitby = 1;
         }
-        list = await this.model.find(search).skip(skipby).sort(sortby).limit(limitby);
+        let results = await this.model.aggregate([
+          { $match: search },
+          {
+            $facet: {
+              totalCount: [{ $count: "count" }],
+              data: [
+                { $skip: skipby },
+                { $sort: sortby },
+                (randomEntryAction ? {$sample: 1}: { $limit: limitby })
+              ]
+            }
+          }
+        ]);
+        length = results[0].totalCount;
+        list = results[0].data;
       } else {
         list = await this.model.find(search);
       }
