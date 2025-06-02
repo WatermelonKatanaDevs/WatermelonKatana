@@ -203,7 +203,7 @@ module.exports = class {
       if (customQuery) search = JSON.parse(customQuery);
       var list = [], length = parseInt(total);
       if (showRecent > 0 || typeof sort === "string" || page > 0 || randomEntryAction) {
-        var sortby = {}, limitby = showRecent, skipby = 0;
+        var sortby = {}, limitby = parseInt(showRecent), skipby = 0;
         switch (sort) {
           case "active": sortby = { activeAt: -1, views: -1 }; break;
           case "latest": sortby = { postedAt: -1 }; break;
@@ -242,7 +242,7 @@ module.exports = class {
               data: [
                 { $skip: skipby },
                 { $sort: sortby },
-                (randomEntryAction ? {$sample: 1}: { $limit: limitby })
+                (randomEntryAction ? {$sample: 1}: Number.isSafeInteger(limitby) ? {$limit: limitby}: {})
               ]
             }
           }
@@ -252,6 +252,7 @@ module.exports = class {
       } else {
         list = await this.model.find(search);
       }
+      console.log(list);
       list = list.map(e => e.pack());
       var data = {
         [this.name]: list,
