@@ -128,13 +128,13 @@ module.exports = class {
     }
   };
 
-  async entriesLength(filter) {
-    try {
-      return await this.model.countDocuments(filter);
-    } catch (error) {
-      return 0;
-    }
-  }
+  // async entriesLength(filter) {
+  //   try {
+  //     return await this.model.countDocuments(filter);
+  //   } catch (error) {
+  //     return 0;
+  //   }
+  // }
 
   async delete(req, res, next) {
     try {
@@ -216,8 +216,9 @@ module.exports = class {
               : (this.name === "posts" ? { featured: -1, activeAt: -1 } : { score: -1, views: -1, postedAt: -1 });
             break;
         }
+        list = this.model.find(search);
         if (!Number.isSafeInteger(parseInt(length)) && !limitby && !featured && page || randomEntryAction) {
-          length = await this.entriesLength(search);
+          length = await list.countDocuments();
         }
         if (Number.isSafeInteger(parseInt(page))) {
           skipby = (page - 1) * entriesPerPage;
@@ -226,7 +227,7 @@ module.exports = class {
           skipby = Math.floor(Math.random() * length);
           limitby = 1;
         }
-        list = await this.model.find(search).skip(skipby).sort(sortby).limit(limitby);
+        list = await list.skip(skipby).sort(sortby).limit(limitby);
       } else {
         list = await this.model.find(search);
       }
@@ -254,14 +255,15 @@ module.exports = class {
       var skipby = 0, length = parseInt(total), uid = res.locals.userToken?.id;
       if (showMature == "false" || showMature == "0" || !uid || !(await Users.findOne({ _id: uid })).mature) search.mature = false;
       if (showHidden == "true" || showHidden == "1") delete search.hidden;
-      if (!Number.isSafeInteger(parseInt(length))) {
-        length = await this.entriesLength(search);
-      }
-      skipby = ((page || 1) - 1) * entriesPerPage;
-      var list = await this.model.find(
+      let list = this.model.find(
         search,
         { relevance: { $meta: "textScore" } }
-      ).skip(skipby).sort({ relevance: { $meta: "textScore" } }).limit(entriesPerPage);
+      );
+      if (!Number.isSafeInteger(parseInt(length))) {
+        length = await list.countDocuments();
+      }
+      skipby = ((page || 1) - 1) * entriesPerPage;
+      list = await list.skip(skipby).sort({ relevance: { $meta: "textScore" } }).limit(entriesPerPage);
       list = list.map(e => {
         var c = e.pack();
         c.relevance = e.relevance;
