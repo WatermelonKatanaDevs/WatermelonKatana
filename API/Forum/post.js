@@ -216,9 +216,6 @@ module.exports = class {
               : (this.name === "posts" ? { featured: -1, activeAt: -1 } : { score: -1, views: -1, postedAt: -1 });
             break;
         }
-        // perform search here first to limit double querys then sort here than db method
-        // as of now there are 2 queries possibly try aggregating them?
-        // i have no idea how to do it, and failed on first implementation may be something that dragon can do??
         if (!Number.isSafeInteger(parseInt(length)) && !limitby && !featured && page || randomEntryAction) {
           length = await this.entriesLength(search);
         }
