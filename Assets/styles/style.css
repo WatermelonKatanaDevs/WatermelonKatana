@@ -291,6 +291,7 @@ input[type=checkbox]:checked+.checkbox::after {
 }
 
 .post-panel {
+	overflow: hidden;
 	width: 80vw;
 }
 

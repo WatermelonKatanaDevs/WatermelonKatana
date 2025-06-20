@@ -42,8 +42,8 @@ connectDB();
 */
 const bigPaths = new RegExp(`^/datablock_storage/[^/]+/(${["populate_key_values", "populate_tables"].join("|")})`);
 app.use((req, res, next) => {
-  const maxSize = req.path.match(bigPaths) !== null ? "10mb": "100kb";
-  express.json({limit: maxSize})(req, res, next);
+  const maxSize = req.path.match(bigPaths) !== null ? "10mb" : "100kb";
+  express.json({ limit: maxSize })(req, res, next);
 }); // Parse JSON request bodies
 app.use(cookieParser()); // Parse cookies attached to the Client request
 
@@ -123,22 +123,24 @@ app.get("/project/:id", checkAuth, makeFormToken, async (req, res) => {
   if (!proj) return res.status(404).sendFile(cldir + "/404.html");
   var tok = res.locals.userToken;
   var user = await Users.findOne({ _id: tok.id });
-  if (proj.mature && (!tok || !user || !user.mature)) return res.status(403).sendFile(__dirname+"/Middleware/403.html");
-  if (tok && !proj.viewers.includes(tok.id)) proj.viewers.push(tok.id);
-  proj.views++;
-  sendFileReplace(res, "./Pages/projects/project.html", (s) => s.replace("<!--og:meta-->",`
+  if (proj.mature && (!tok || !user || !user.mature)) return res.status(403).sendFile(__dirname + "/Middleware/403.html");
+  if (tok && !proj.viewers.includes(tok.id)) {
+    proj.viewers.push(tok.id);
+    proj.views++;
+  }
+  sendFileReplace(res, "./Pages/projects/project.html", (s) => s.replace("<!--og:meta-->", `
     <meta property="og:title" content="${makeLiteralChars(proj.title)}"/>
     <meta property="og:type" content="website"/>
     <meta property="og:image" content="${proj.thumbnail}"/>
     <meta property="og:description" content="${makeLiteralChars(proj.content)} \n By: ${proj.poster} \n Score: ${proj.score} Views: ${proj.views}"/>
-  `).replace("<!--content-->",`
+  `).replace("<!--content-->", `
     ${makeLiteralChars(proj.title)}<br>
     By: ${proj.poster}<br>
     ${makeLiteralChars(proj.content)}<br>
     <a href="${proj.link}">${proj.link}</a><br>
-    ${proj.tags.map(v=>"#"+v).join(", ")}<br>
+    ${proj.tags.map(v => "#" + v).join(", ")}<br>
     Score: ${proj.score} Views: ${proj.views} Platform: ${proj.platform} Featured: ${proj.featured}
-  `).replace("<!--title-->",`
+  `).replace("<!--title-->", `
     <title>${makeLiteralChars(proj.title)} | WatermelonKatana</title>
   `));
   await proj.save();
@@ -146,8 +148,8 @@ app.get("/project/:id", checkAuth, makeFormToken, async (req, res) => {
 app.get("/project/:id/edit", userAuth, async (req, res) => {
   const project = await Projects.findOne({ _id: req.params.id });
   const tok = res.locals.userToken;
-  if (!tok || (project.posterId !== tok.id && tok.role !== "Admin")) 
-    return res.status(403).sendFile(__dirname+"/Middleware/403.html");
+  if (!tok || (project.posterId !== tok.id && tok.role !== "Admin"))
+    return res.status(403).sendFile(__dirname + "/Middleware/403.html");
   res.sendFile(cldir + "/projects/edit.html");
 }); // Edit project page, users only
 app.get("/project/:id/delete", userAuth, (req, res) => res.redirect("/api/project/delete/" + req.params.id)); // Delete project route, users only
@@ -164,20 +166,22 @@ app.get("/forum/discussion/:id", checkAuth, makeFormToken, async (req, res) => {
   if (!post) return res.status(404).sendFile(cldir + "/404.html");
   var tok = res.locals.userToken;
   var user = await Users.findOne({ _id: tok.id });
-  if (post.mature && (!tok || !user || !user.mature)) return res.status(403).sendFile(__dirname+"/Middleware/403.html");
-  if (tok && !post.viewers.includes(tok.id)) post.viewers.push(tok.id);
-  post.views++;
-  sendFileReplace(res, "./Pages/forum/discussion.html", (s) => s.replace("<!--og:meta-->",`
+  if (post.mature && (!tok || !user || !user.mature)) return res.status(403).sendFile(__dirname + "/Middleware/403.html");
+  if (tok && !post.viewers.includes(tok.id)) {
+    post.viewers.push(tok.id);
+    post.views++;
+  }
+  sendFileReplace(res, "./Pages/forum/discussion.html", (s) => s.replace("<!--og:meta-->", `
     <meta property="og:title" content="${makeLiteralChars(post.title)}"/>
     <meta property="og:type" content="website"/>
     <meta property="og:description" content="${makeLiteralChars(post.content)} \n By: ${post.poster} \n Views: ${post.views}"/>
-  `).replace("<!--content-->",`
+  `).replace("<!--content-->", `
     ${makeLiteralChars(post.title)}<br>
     By: ${post.poster}<br>
     ${makeLiteralChars(post.content)}<br>
-    ${post.tags.map(v=>"#"+v).join(", ")}<br>
+    ${post.tags.map(v => "#" + v).join(", ")}<br>
     Views: ${post.views} Featured: ${post.featured}
-  `).replace("<!--title-->",`
+  `).replace("<!--title-->", `
     <title>${makeLiteralChars(post.title)} | WatermelonKatana Forum</title>
   `));
   await post.save();
@@ -185,8 +189,8 @@ app.get("/forum/discussion/:id", checkAuth, makeFormToken, async (req, res) => {
 app.get("/forum/discussion/:id/edit", userAuth, async (req, res) => {
   const post = await Posts.findOne({ _id: req.params.id });
   const tok = res.locals.userToken;
-  if (!tok || (post.posterId !== tok.id && tok.role !== "Admin")) 
-    return res.status(403).sendFile(__dirname+"/Middleware/403.html");
+  if (!tok || (post.posterId !== tok.id && tok.role !== "Admin"))
+    return res.status(403).sendFile(__dirname + "/Middleware/403.html");
   res.sendFile(cldir + "/forum/edit.html");
 }); // Edit post page, users only
 app.get("/forum/discussion/:id/delete", userAuth, (req, res) => res.redirect("/api/forum/delete/" + req.params.id)); // Delete post route, users only
@@ -198,17 +202,17 @@ app.get("/user/:name", async (req, res) => {
     res.status(404).sendFile(cldir + "/404.html");
     return;
   }
-  sendFileReplace(res, "./Pages/users/user.html", (s) => s.replace("<!--og:meta-->",`
+  sendFileReplace(res, "./Pages/users/user.html", (s) => s.replace("<!--og:meta-->", `
     <meta property="og:title" content="@${user.username} on WatermelonKatana"/>
     <meta property="og:type" content="website"/>
     <meta property="og:image" content="${user.avatar}"/>
     <meta property="og:description" content="${makeLiteralChars(user.biography)}"/>
-  `).replace("<!--content-->",`
+  `).replace("<!--content-->", `
     ${user.username}<br>
     ${makeLiteralChars(user.biography)}<br>
     ${user.badges.join(", ")}<br>
     Role: ${user.role}
-  `).replace("<!--title-->",`
+  `).replace("<!--title-->", `
     <title>${user.username} | WatermelonKatana</title>
   `));
 });
@@ -263,7 +267,7 @@ app.get('/sitemap.xml', async (req, res) => {
 
 // API Pages
 app.get("/api", (req, res) => res.sendFile(cldir + "/api.txt"));
-app.use("/api", (req, res) => res.status(404).json({ error:"Error: API Not Found", message:"404 Error. This API does not exist, check /api for a list of supported APIs" }));
+app.use("/api", (req, res) => res.status(404).json({ error: "Error: API Not Found", message: "404 Error. This API does not exist, check /api for a list of supported APIs" }));
 
 /**
  * Start the server and listen on the specified port
