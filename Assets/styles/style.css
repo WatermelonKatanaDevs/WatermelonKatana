@@ -113,6 +113,7 @@ option,
 .button {
 	width: var(--button-width, auto);
 	height: var(--button-height, auto);
+	display: inline-flex;
 	background-color: rgba(0, 0, 0, 0.5);
 	background-image: url("/images/button.png");
 	background-blend-mode: darken;
