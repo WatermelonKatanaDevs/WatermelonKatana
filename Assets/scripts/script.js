@@ -78,9 +78,9 @@ function convertMarkdown(string) {
   }
   string = string.replace(/\b\*\*([^*\n]+)\*\*/g,"<b>$1</b>"); // **bold**
   string = string.replace(/\b\*([^*\n]+)\*/g,"<i>$1</i>"); // *italics*
-  string = string.replace(/\b__([^__\n]+)__/g,"<u>$1</u>"); // __underline__
+  string = string.replace(/\b__([^_\n]+)__/g,"<u>$1</u>"); // __underline__
   string = string.replace(/\b_([^_\n]+)_/g,"<i>$1</i>"); // _italics_
-  string = string.replace(/\b~~([^~~\n]+)~~/g,"<s>$1</s>"); // ~~strikethrough~~
+  string = string.replace(/\b~~([^~\n]+)~~/g,"<s>$1</s>"); // ~~strikethrough~~
   string = string.replace(/^-# ([^\n]+)$/gm,"<sub>$1</sub>"); // -# subtext
   string = string.replace(/^# ([^\n]+)$/gm,"<h1>$1</h1>"); // # header 1
   string = string.replace(/^## ([^\n]+)$/gm,"<h2>$1</h2>"); // # header 2
