@@ -24,7 +24,7 @@
         "jsdom": "^26.0.0",
         "jsonwebtoken": "^9.0.2",
         "mongoose": "^8.9.5",
-        "nodemailer": "^6.9.16",
+        "nodemailer": "^7.0.4",
         "nodemon": "^3.1.9",
         "picocolors": "^1.1.1",
         "profane-words": "^1.6.0",
