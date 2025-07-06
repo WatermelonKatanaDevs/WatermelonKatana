@@ -1,7 +1,7 @@
 
 function markdownTextbox(sel,nobr) {
   var markbox = document.querySelector(sel);
-  markbox.classList.push("mk-textbox");
+  markbox.classList.add("mk-textbox");
   if (markbox.parentElement.innerHTML.includes('title="Pick Emoji"')) return;
   markbox.insertAdjacentHTML("afterend", `
     ${nobr?"":"<br>"}
