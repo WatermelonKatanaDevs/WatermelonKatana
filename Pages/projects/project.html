@@ -245,6 +245,14 @@
         }
       }
 
+      (function(){
+        const viewed = localStorage.getItem("recently-viewed-projects") || [];
+        var index = viewed.indexOf(pid);
+        if (index !== -1) viewed.splice(index,1);
+        viewed.push(pid);
+        localStorage.setItem("recently-viewed-projects",viewed)
+      })();
+
       setInterval(function exchangeCookie() { fetch(location.href) }, 84e4);
     </script>
   </body>

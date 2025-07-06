@@ -191,8 +191,8 @@
           const publishedProjects = await fetch("/api/project/list?poster=" + name + 
           (isMature ? `&showMature=${isMature}`: "") + 
           (isOwnProfile ? `&showHidden=${isOwnProfile}`: ""));
-          const publishedPorjectData = await publishedProjects.json();
-          publishedPorjectData.projects.map(projHTML(list));
+          const publishedProjectData = await publishedProjects.json();
+          publishedProjectData.projects.map(projHTML(list));
 
           await Promise.all(
             userData.favorites.map(async (pid) => {

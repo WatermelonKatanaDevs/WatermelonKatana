@@ -307,6 +307,7 @@
       <a class="nav-btn" href="/chat">Chat</a>
       <a class="nav-btn" href="/search">Project Gallery</a>
       <a class="nav-btn" href="/forum">Forum</a>
+      <a class="nav-btn" href="/dashboard">Dashboard</a>
       ${window.location.pathname.startsWith("/project") ? `
       <a class="nav-btn" onclick="l=document.getElementById('game'); l.src=l.src"> 
       Replay
