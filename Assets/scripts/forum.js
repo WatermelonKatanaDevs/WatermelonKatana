@@ -1,3 +1,4 @@
+
 async function createPost(post,data,txt,name,reload) {
   var u = await getUser(data.posterId);
   post.innerHTML = `
@@ -40,7 +41,7 @@ async function createPost(post,data,txt,name,reload) {
     </button>-->
   </div>`;
   markdownTextbox("#reply-textbox",true);
-  if (tok.user.role === "Admin") { 
+  if (tok.user.role === "Admin") {
     display.innerHTML += `
     <label for="featured-btn">Featured:
       <input

@@ -1,6 +1,7 @@
 
 function markdownTextbox(sel,nobr) {
   var markbox = document.querySelector(sel);
+  markbox.classList.push("mk-textbox");
   if (markbox.parentElement.innerHTML.includes('title="Pick Emoji"')) return;
   markbox.insertAdjacentHTML("afterend", `
     ${nobr?"":"<br>"}
@@ -39,13 +40,23 @@ function markdownTextbox(sel,nobr) {
         <path stroke-linejoin="round" stroke-linecap="round" stroke-width="2.5" stroke="#707277" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"></path>
       </svg>
     </button>
-    <button type="button" title="Pick Emoji" onclick="replaceSelectedText(document.querySelector('${sel}'),()=>'\u{1F480}')">
+    <button type="emojiPicker" class="emojiPicker" type="button" title="Pick Emoji">
       <svg fill="none" viewBox="0 0 24 24" height="16" width="16" xmlns="http://www.w3.org/2000/svg">
 <circle stroke-linejoin="round" stroke-linecap="round" stroke-width="2.5" stroke="#707277" r="10" cy="12" cx="12"></circle>
 <path stroke-linejoin="round" stroke-linecap="round" stroke-width="2.5" stroke="#707277" d="M8 15C8.91212 16.2144 10.3643 17 12 17C13.6357 17 15.0879 16.2144 16 15"></path>
       <path stroke-linejoin="round" stroke-linecap="round" stroke-width="3" stroke="#707277" d="M8.00897 9L8 9M16 9L15.991 9"></path>
       </svg>
     </button>`);
+  var picker = new EmojiPicker({
+    trigger: [
+        {
+          selector: '.emojiPicker',
+          insertInto: ['.mk-textbox']
+        },
+    ],
+    closeOnSelect: true,
+    closeButton: true,
+  });
 }
 
 function getInputSelection(el) {
