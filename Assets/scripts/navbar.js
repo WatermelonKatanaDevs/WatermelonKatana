@@ -308,13 +308,6 @@
       <a class="nav-btn" href="/search">Project Gallery</a>
       <a class="nav-btn" href="/forum">Forum</a>
       <a class="nav-btn" href="/dashboard">Dashboard</a>
-      ${window.location.pathname.startsWith("/project") ? `
-      <a class="nav-btn" onclick="l=document.getElementById('game'); l.src=l.src"> 
-      Replay
-      </a>
-      <a class="nav-btn" onclick="game.fullscreen()">
-      Fullscreen
-      </a>`: ""}
     </div>
     <div class="navbar-right">
     </div>

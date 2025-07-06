@@ -22,23 +22,26 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2363534162574113"
     crossorigin="anonymous"></script>
   <script src="/scripts/HtmlSanitizer.js"></script>
-  <script src="/scripts/navbar.js"></script>
   <script src="/scripts/script.js"></script>
 </head>
-
 <body>
+  <script src="/scripts/navbar.js"></script>
   <div class="container">
     <header class="main-header">
       <h1>Welcome to <strong class="logo-text">WatermelonKatana</strong></h1>
       <h2 id="username" style="color: #777777"></h2>
       <nav id="header" class="main-nav">
-        <a href="/chat">Chat</a>
-        <a href="/search">Project Gallery</a>
         <a href="/api/project/list?randomEntryAction=redirect"> Random Project </a>
-        <a href="/forum">Forum</a>
         <a href="/faq">FAQ</a>
       </nav>
     </header>
+    <div id="controls">
+      <form style="font-size: 25px">
+        <input type="text" id="searchBar" placeholder="Search Project Gallery" style="font-size: inherit">
+        <input type="submit" value="Discover" style="font-size: inherit">
+        <a class="button" href="/publish">Publish</a>
+      </form>
+    </div>
     <section class="featured-projects">
       <h2>Recently Viewed Projects</h2>
       <div id="viewedList" class="project-list"></div>
@@ -47,18 +50,26 @@
       <h2>Favorite Projects</h2>
       <div id="favoriteList" class="project-list"></div>
     </section>
-    <section class="featured-projects">
+    <!--<section class="featured-projects">
       <h2>Followed Forum Posts</h2>
       <div id="followedList" class="post-list"></div>
-    </section>
+    </section>-->
   </div>
 
   <script>
     const viewedList = document.querySelector('#viewedList');
     const favoriteList = document.querySelector('#favoriteList');
-    const followedList = document.querySelector('#followedList'); // followed posts, add later
+    //const followedList = document.querySelector('#followedList'); // followed posts, add later
     const header = document.querySelector('#header');
     const user = document.getElementById('username');
+    JSON.safeParse = function(str,backup) {
+      if (str === null || str === undefined) return backup;
+      try {
+        return JSON.parse(str);
+      } catch(e) {
+        return backup;
+      }
+    };
     getAuth().then(async tok => {
       if (!tok.auth) return;
 
@@ -71,7 +82,8 @@
         }),
       );
 
-      var recentlyViewed = localStorage.getItem("recently-viewed-projects") || [];
+      var recentlyViewed = JSON.safeParse(localStorage.getItem("recently-viewed-projects"),[]);
+      recentlyViewed = recentlyViewed.slice(0,5);
 
       await Promise.all(
         recentlyViewed.map(async (pid) => {
@@ -98,26 +110,33 @@
           </a>`
       }
       user.innerHTML = `
-        <p style="margin-bottom: 0px"> Signed in as
-          <a class="profile" href="/user/${tok.user.username}">
-            <img src="${tok.user.avatar}">
-            <strong class="logo-text">${tok.user.username}</strong>
-          </a>
-        </p>
         <div style="border-style: groove; margin: 5px; width: 50%; max-height: 30vh; transform: translateX(50%); overflow-y: scroll; scrollbar-width: none;">
           ${notifs.join('') || `No Notifications`}
         </div>
         `;
       header.innerHTML = `
-          <a href="/publish">Publish</a>
-          <a href="/chat">Chat</a>
-          <a href="/search">Project Gallery</a>
           <a href="/api/project/list?randomEntryAction=redirect"> Random Project </a>
-          <a href="/forum">Forum</a>
           <a href="/faq">FAQ</a>
           <a href="/userlist">User List</a>
           ${(tok.user.role === "Admin" ? `<a href="/admin">Admin List</a>` : "")}
         `;
+    });
+
+    const form = document.querySelector('form');
+    const searchBar = document.querySelector('#searchBar');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const query = searchBar.value;
+        const params = {};
+        if (query) {
+          params.query = query;
+        }
+        location.href = window.location.origin + "/search?" + new URLSearchParams(params).toString();
+      } catch (err) {
+        alert('An error occurred: ' + err.message);
+        console.error(err.message);
+      }
     });
   </script>
 </body>

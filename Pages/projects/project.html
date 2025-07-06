@@ -60,6 +60,8 @@
       </div>
     </label>
     <!---->
+    <a onclick="var g=document.getElementById('game'); g.src=g.src;">Replay</a>
+    <a onclick="game.fullscreen()">Fullscreen</a>
     <div id="post">
       <!--content-->
     </div>
@@ -245,12 +247,21 @@
         }
       }
 
+      JSON.safeParse = function(str,backup) {
+        if (str === null || str === undefined) return backup;
+        try {
+          return JSON.parse(str);
+        } catch(e) {
+          return backup;
+        }
+      };
+
       (function(){
-        const viewed = localStorage.getItem("recently-viewed-projects") || [];
-        var index = viewed.indexOf(pid);
+        const viewed = JSON.safeParse(localStorage.getItem("recently-viewed-projects"),[]);
+        const index = viewed.indexOf(pid);
         if (index !== -1) viewed.splice(index,1);
         viewed.push(pid);
-        localStorage.setItem("recently-viewed-projects",viewed)
+        localStorage.setItem("recently-viewed-projects",JSON.stringify(viewed));
       })();
 
       setInterval(function exchangeCookie() { fetch(location.href) }, 84e4);
