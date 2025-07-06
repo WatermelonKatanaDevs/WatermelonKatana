@@ -84,10 +84,19 @@
       }
     });
 
-    if (!params.get("query") && !params.get("sort")) {
-      params.set("sort", "score");
-      history.replaceState({}, "", buildUrl(params));
-    }
+    (function() {
+      const query = params.get("query");
+      const sort = params.get("sort");
+      if (!query && !sort) {
+        params.set("sort", "score");
+        history.replaceState({}, "", buildUrl(params));
+      }
+      if (query) {
+        searchBar.value = query;
+      } else if (sort) {
+        sortOptions.value = sort;
+      }
+    })();
 
     // Initial search when the page loads
     searchIndex();
