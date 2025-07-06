@@ -26,6 +26,11 @@
     ></iframe>
     <br />
     <!-- https://uiverse.io/barisdogansutcu/fresh-gecko-10 -->
+     <div id="gameOptions">
+      <a class="button" onclick="var g=document.getElementById('game'); g.contentWindow.location.reload();">Replay</a>
+      <a class="button" onclick="game.fullscreen()">Fullscreen</a>
+    </div>
+    <br>
     <link
       rel="stylesheet"
       type="text/css"
@@ -61,8 +66,6 @@
       </div>
     </label>
     <!---->
-    <a class="button" onclick="var g=document.getElementById('game'); g.src=g.src;">Replay</a>
-    <a class="button" onclick="game.fullscreen()">Fullscreen</a>
     <div id="post">
       <!--content-->
     </div>

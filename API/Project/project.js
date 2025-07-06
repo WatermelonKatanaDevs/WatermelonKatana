@@ -10,7 +10,7 @@ processLink(link,thumbnail) {
   const iscdo = link.match(/^https?:\/\/studio\.code\.org\/projects\/(applab|gamelab)\/([^/]+)/);
   const isscratch = link.match(/^https?:\/\/scratch\.mit\.edu\/projects\/(\d+)/) || link.match(/^https?:\/\/turbowarp\.org\/(\d+)/);
   const iskhan = link.match(/^https?:\/\/www\.khanacademy\.org\/computer-programming\/([^/]+\/\d+)/);
-  const iswk = link.match(/^https?:\/\/[^\s]*\.wk$/);
+  const iswk = link.match(/^https?:\/\/raw\.githubusercontent\.com\/WatermelonKatanaDevs\/symmetrical-telegram\/refs\/heads\/main\/js-games\/[^\s]*\.wk$/);
   const isswf = link.match(/^https?:\/\/[^\s]*\.swf$/);
   if (!thumbnail && iscdo) thumbnail = `https://studio.code.org/v3/files/${iscdo[2]}/.metadata/thumbnail.png`;
   if (!thumbnail && isscratch) thumbnail = `https://uploads.scratch.mit.edu/get_image/project/${isscratch[1]}_432x288.png`;
