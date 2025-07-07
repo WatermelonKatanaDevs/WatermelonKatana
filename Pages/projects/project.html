@@ -264,7 +264,7 @@
         const viewed = JSON.safeParse(localStorage.getItem("recently-viewed-projects"),[]);
         const index = viewed.indexOf(pid);
         if (index !== -1) viewed.splice(index,1);
-        viewed.push(pid);
+        viewed.unshift(pid);
         localStorage.setItem("recently-viewed-projects",JSON.stringify(viewed));
       })();
 
