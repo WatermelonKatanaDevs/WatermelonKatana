@@ -107,15 +107,12 @@
 
     var recentlyViewed = JSON.safeParse(localStorage.getItem("recently-viewed-projects"), []);
     recentlyViewed = recentlyViewed.slice(0, 5);
-
-    await Promise.all(
-      recentlyViewed.map(async (pid) => {
-        const res = await fetch("/api/project/data/" + pid);
-        const proj = await res.json();
-        if (proj.mature && !tok.user.mature) { return }
-        projHTML(viewedList)(proj);
-      }),
-    );
+    recentlyViewed.map(async (pid) => {
+      const res = await fetch("/api/project/data/" + pid);
+      const proj = await res.json();
+      if (proj.mature && !tok.user.mature) { return }
+      projHTML(viewedList)(proj);
+    });
 
     const form = document.querySelector('form');
     form.style.textAlign = "center";
@@ -134,7 +131,7 @@
         console.error(err.message);
       }
     });
-    
+
     JSON.safeParse = function (str, backup) {
       if (str === null || str === undefined) return backup;
       try {
