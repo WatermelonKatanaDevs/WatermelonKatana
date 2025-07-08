@@ -105,6 +105,15 @@
         `;
     });
 
+    JSON.safeParse = function (str, backup) {
+      if (str === null || str === undefined) return backup;
+      try {
+        return JSON.parse(str);
+      } catch (e) {
+        return backup;
+      }
+    };
+    
     var recentlyViewed = JSON.safeParse(localStorage.getItem("recently-viewed-projects"), []);
     recentlyViewed = recentlyViewed.slice(0, 5);
     recentlyViewed.map(async (pid) => {
@@ -131,15 +140,6 @@
         console.error(err.message);
       }
     });
-
-    JSON.safeParse = function (str, backup) {
-      if (str === null || str === undefined) return backup;
-      try {
-        return JSON.parse(str);
-      } catch (e) {
-        return backup;
-      }
-    };
   </script>
 </body>
 
