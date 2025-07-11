@@ -2,7 +2,7 @@ const EmojiPicker = function (options) {
 
   this.options = options;
   this.trigger = this.options.trigger.map(item => item.selector);
-  this.insertInto = "body";
+  this.insertInto = "#reply";
   let emojiesHTML = '';
   let categoriesHTML = '';
   let emojiList = undefined;
@@ -7718,7 +7718,7 @@ const EmojiPicker = function (options) {
       emojiList = undefined;
 
       const index = this.options.trigger.findIndex(item => item.selector === attr);
-      // this.insertInto = this.options.trigger[index].insertInto;
+      this.insertInto = this.options.trigger[index].insertInto;
 
       const position = functions.position(e);
 
