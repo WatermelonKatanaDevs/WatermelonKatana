@@ -29,7 +29,6 @@
   <script src="/scripts/navbar.js"></script>
   <div class="container">
     <header class="main-header">
-      <h2 id="username" style="color: #777777"></h2>
       <nav id="header" class="main-nav">
         <a href="/api/project/list?randomEntryAction=redirect"> Random Project </a>
         <a href="/faq">FAQ</a>
@@ -61,12 +60,9 @@
     const favoriteList = document.querySelector('#favoriteList');
     //const followedList = document.querySelector('#followedList'); // followed posts, add later
     const header = document.querySelector('#header');
-    const user = document.getElementById('username');
 
     getAuth().then(async tok => {
       if (!tok.auth) return;
-
-      user.innerText = tok.username;
 
       await Promise.all(
         tok.user.favorites.map(async (pid) => {
@@ -113,7 +109,7 @@
         return backup;
       }
     };
-    
+
     var recentlyViewed = JSON.safeParse(localStorage.getItem("recently-viewed-projects"), []);
     recentlyViewed = recentlyViewed.slice(0, 5);
     recentlyViewed.map(async (pid) => {
