@@ -9,8 +9,8 @@
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
 
 :root {
-    --background-grey: #222222;
-    --background-light-grey: #2d2d2d;
+    --background: #222222;
+    --background-light: #2d2d2d;
     --element-green: #c1ff72;
     --element-red: #f8413c;
     --sidebar-width: 250px;
@@ -20,6 +20,14 @@
     --border-width: 2px;
 }
 
+@media(prefers-color-scheme: light) {
+    :root {
+        --background: #d2d2d2;
+        --background-light: #dddddd;
+        --border-color: #a8a8a8;
+    }
+}
+
 body {
     margin: 0;
     padding: 0;
@@ -27,7 +35,7 @@ body {
     display: flex;
     flex-direction: column;
     height: 100vh;
-    background-color: var(--background-grey);
+    background-color: var(--background);
 }
 
 .main_content {
@@ -42,7 +50,7 @@ body {
     left: -250px;
     width: var(--sidebar-width);
     height: 100vh;
-    background-color: var(--background-grey);
+    background-color: var(--background);
     color: white;
     padding: 20px;
     box-sizing: border-box;
@@ -207,7 +215,7 @@ body {
     position: sticky;
     bottom: 0;
     width: 100%;
-    background-color: var(--background-light-grey);
+    background-color: var(--background-light);
     display: flex;
     justify-content: space-between;  /* Align the items to the sides */
     padding: 15px 30px;

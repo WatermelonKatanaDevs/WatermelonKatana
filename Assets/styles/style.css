@@ -24,11 +24,11 @@
 	--palette-link: #ff9c9c;
 	--palette-link-hover: #39ff14;
 
-	--palette-white: #ffffff;
-	--palette-background-grey: #151515;
-	--palette-foreground-grey: #272727;
-	--palette-subground-grey: #3d3d3d;
-	--palette-subforeground-grey: #4d4d4d;
+	--palette-textcolor: #ffffff;
+	--palette-background: #151515;
+	--palette-foreground: #272727;
+	--palette-subground: #3d3d3d;
+	--palette-subforeground: #4d4d4d;
 
 	--palette-user-status-online: #43b581;
 	--palette-user-status-idle: #faa61a;
@@ -56,9 +56,19 @@
 	--body-font-size: 1em;
 }
 
+@media(prefers-color-scheme: light) {
+	:root {
+		--palette-background: #eaeaea;
+		--palette-foreground: #d8d8d8;
+		--palette-subground: #c2c2c2;
+		--palette-subforeground: #b2b2b2;
+		--palette-textcolor: #000000;
+	}
+}
+
 body {
-	background-color: var(--palette-background-grey);
-	color: var(--palette-white);
+	background-color: var(--palette-background);
+	color: var(--palette-textcolor);
 	cursor: url("/images/cursor.png"), default !important;
 	font-family: var(--body-font), serif;
 	margin: 0;
@@ -117,7 +127,7 @@ option,
 	background-color: rgba(0, 0, 0, 0.5);
 	background-image: url("/images/button.png");
 	background-blend-mode: darken;
-	color: var(--palette-white);
+	color: var(--palette-textcolor);
 	cursor: url("/images/pointer.png"), pointer !important;
 	border: none;
 	border-radius: 50px;
@@ -134,7 +144,7 @@ input[type=submit]:hover,
 button:hover,
 .button:hover {
 	background-color: rgba(0, 0, 0, 0.3);
-	color: var(--palette-white);
+	color: var(--palette-textcolor);
 }
 
 .notifDismiss {
@@ -160,12 +170,12 @@ button:hover,
 
 .pink-button {
 	background-color: var(--palette-primary);
-	color: var(--palette-white);
+	color: var(--palette-textcolor);
 }
 
 .pink-button:hover {
 	background-color: var(--palette-primary-hover);
-	color: var(--palette-white);
+	color: var(--palette-textcolor);
 }
 
 input[type=text],
@@ -178,8 +188,8 @@ textarea,
 	box-sizing: border-box;
 	border: 2px solid var(--palette-primary);
 	border-radius: 5px;
-	background-color: var(--palette-foreground-grey);
-	color: var(--palette-white);
+	background-color: var(--palette-foreground);
+	color: var(--palette-textcolor);
 	font-family: var(--body-font), serif;
 	font-size: 1em;
 	transition: border-color 0.2s;
@@ -190,7 +200,7 @@ input[type=password]:focus,
 textarea:focus,
 .uploadbutton:hover {
 	border-color: var(--palette-primary-hover);
-	background-color: var(--palette-foreground-grey);
+	background-color: var(--palette-foreground);
 	outline: none;
 }
 
@@ -235,8 +245,8 @@ input[type=checkbox]:checked+.checkbox::after {
 }
 
 .card {
-	background-color: var(--palette-subground-grey);
-	color: var(--palette-white);
+	background-color: var(--palette-subground);
+	color: var(--palette-textcolor);
 	padding: 20px;
 	margin: 20px 0;
 	border-radius: 10px;
