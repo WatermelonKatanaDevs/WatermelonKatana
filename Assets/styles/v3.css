@@ -314,7 +314,7 @@ body {
 }
 
 .footer-info a {
-    color: var(--element-green);
+    color: var(--palette-link);
     text-decoration: none;
 }
 
