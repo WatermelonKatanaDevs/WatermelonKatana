@@ -1,7 +1,7 @@
 body {
 	font-family: Tahoma, sans-serif;
 	background-color: #121212;
-	color: #e0e0e0;
+	color: var(--palette-textcolor);
 	margin: 0;
 	padding: 0;
 	display: flex;
@@ -15,7 +15,7 @@ body {
 	scrollbar-width: none;
 	padding: 20px;
 	margin: 2.5em auto auto;
-	background: #202020;
+	background: var(--palette-container-background);
 	border-radius: 10px;
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
@@ -27,7 +27,7 @@ body {
 
 .main-header h1 {
 	font-size: 36px;
-	color: #e0e0e0;
+	color: var(--palette-textcolor);
 }
 
 .main-nav {
@@ -39,7 +39,7 @@ body {
 }
 
 .main-nav a {
-	color: #e0e0e0;
+	color: var(--palette-textcolor);
 	background-color: rgba(0, 0, 0, 0.5);
 	background-image: url("/images/button.png");
 	background-blend-mode: darken;
@@ -80,7 +80,7 @@ body {
 
 .intro p {
 	font-size: 18px;
-	color: #e0e0e0;
+	color: var(--palette-textcolor);
 }
 
 .featured-projects {
@@ -89,7 +89,7 @@ body {
 
 .featured-projects h2 {
 	font-size: 24px;
-	color: #e0e0e0;
+	color: var(--palette-container-background);
 	text-align: center;
 	margin-bottom: 20px;
 }
@@ -99,6 +99,6 @@ body {
 	margin-top: 20px;
 	padding: 10px 0;
 	background-color: #444;
-	color: #fff;
+	color: var(--palette-textcolor);
 	border-radius: 0 0 10px 10px;
 }
