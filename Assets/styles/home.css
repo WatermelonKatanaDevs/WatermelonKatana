@@ -89,7 +89,7 @@ body {
 
 .featured-projects h2 {
 	font-size: 24px;
-	color: var(--palette-container-background);
+	color: var(--palette-textcolor);
 	text-align: center;
 	margin-bottom: 20px;
 }
