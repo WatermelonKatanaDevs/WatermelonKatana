@@ -154,7 +154,6 @@ input[type=submit]:hover,
 button:hover,
 .button:hover {
 	background-color: rgba(0, 0, 0, 0.3);
-	color: #FFFFFF;
 }
 
 .notifDismiss {
@@ -199,7 +198,8 @@ textarea,
 	border: 2px solid var(--palette-primary);
 	border-radius: 5px;
 	background-color: var(--palette-foreground);
-	color: #fff;
+	color: var(--palette-textcolor);
+	background-image: none;
 	font-family: var(--body-font), serif;
 	font-size: 1em;
 	transition: border-color 0.2s;
