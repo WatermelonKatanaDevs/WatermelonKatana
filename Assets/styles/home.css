@@ -39,7 +39,7 @@ body {
 }
 
 .main-nav a {
-	color: var(--palette-textcolor);
+	color: #e0e0e0;
 	background-color: rgba(0, 0, 0, 0.5);
 	background-image: url("/images/button.png");
 	background-blend-mode: darken;
@@ -98,7 +98,7 @@ body {
 	text-align: center;
 	margin-top: 20px;
 	padding: 10px 0;
-	background-color: #444;
+	background-color: var(--palette-background-item);
 	color: var(--palette-textcolor);
 	border-radius: 0 0 10px 10px;
 }

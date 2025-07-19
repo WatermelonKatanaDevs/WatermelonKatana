@@ -26,10 +26,12 @@
 
 	--palette-textcolor: #e0e0e0;
 	--palette-background: #151515;
+	--palette-background-card: #333;
+	--palette-background-item: #444;
+	--palette-container-background: #202020;
 	--palette-foreground: #272727;
 	--palette-subground: #3d3d3d;
 	--palette-subforeground: #4d4d4d;
-	--palette-container-background: #202020;
 
 	--palette-user-status-online: #43b581;
 	--palette-user-status-idle: #faa61a;
@@ -59,14 +61,14 @@
 
 @media(prefers-color-scheme: light) {
 	:root {
+		--palette-textcolor: #1f1f1f;
 		--palette-background: #eaeaea;
+		--palette-background-card: #cccccc;
+		--palette-background-item: #bbb;
+		--palette-container-background: #dfdfdf;
 		--palette-foreground: #d8d8d8;
 		--palette-subground: #c2c2c2;
 		--palette-subforeground: #b2b2b2;
-		--palette-container-background: #dfdfdf;
-		--palette-textcolor: #1f1f1f;
-		--palette-link: #ff0000;
-		--palette-link-hover: #1dbb00;
 	}
 }
 
@@ -153,7 +155,7 @@ button:hover,
 
 .notifDismiss {
 	background-image: none;
-	background-color: #4444;
+	background-color: var(--palette-background-item);
 }
 
 .notifDismiss:hover {
@@ -273,8 +275,8 @@ input[type=checkbox]:checked+.checkbox::after {
 .project-panel,
 .post-panel,
 .user-panel {
-	color: #e0e0e0;
-	background-color: #333333;
+	color: var(--palette-textcolor);
+	background-color: var(--palette-background-card);
 	border-radius: 10px;
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 	transition: transform 0.2s, box-shadow 0.2s;
@@ -291,7 +293,7 @@ input[type=checkbox]:checked+.checkbox::after {
 	transform: translateY(-5px);
 	box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
 	text-decoration: none;
-	color: #e0e0e0;
+	color: var(--palette-textcolor);
 }
 
 .project-panel:hover .project-tags {
@@ -330,9 +332,9 @@ input[type=checkbox]:checked+.checkbox::after {
 
 .project-tags p,
 .forum-tags p {
-	background-color: #444;
+	background-color: var(--palette-background-item);
 	font-size: 15px;
-	color: #e0e0e0;
+	color: var(--palette-textcolor);
 }
 
 .user-panel {
