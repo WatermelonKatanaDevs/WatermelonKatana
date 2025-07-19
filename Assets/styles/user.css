@@ -1,7 +1,7 @@
 body {
   font-family: Arial, sans-serif;
-  background-color: #121212;
-  color: #e0e0e0;
+  background-color: var(--palette-background);
+  color: var(--palette-textcolor);
   margin: 0;
   padding: 0;
 }
@@ -11,7 +11,7 @@ body {
   margin: auto;
   overflow: hidden;
   padding: 20px;
-  background: #333333;
+  background: var(--palette-textcolor);
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
@@ -47,7 +47,7 @@ body {
 
 .avatar {
   border-radius: 50%;
-  border: 5px solid #333333;
+  border: 5px solid var(--palette-background-card);
   width: 100px;
   height: 100px;
   margin-right: 20px;
@@ -69,8 +69,8 @@ body {
 }
 
 .projects-container h2 {
-  background-color: #444;
-  color: #fff;
+  background-color: var(--palette-background-item);
+  color: var(--palette-textcolor);
   padding: 10px;
   border-radius: 5px;
 }
@@ -81,7 +81,7 @@ body {
 }
 
 .project-list li {
-  background: #333333;
+  background: var(--palette-background-card);
   margin: 10px 0;
   padding: 15px;
   border-left: 5px solid #77aaff;
@@ -89,7 +89,7 @@ body {
 }
 
 .project-list li:hover {
-  background: #222222;
+  background: var(--palette-background-container);
 }
 
 .uidtext {
