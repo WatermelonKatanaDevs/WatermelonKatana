@@ -32,6 +32,7 @@
 	--palette-foreground: #272727;
 	--palette-subground: #3d3d3d;
 	--palette-subforeground: #4d4d4d;
+	--palette-text-viewed: #b0b0b0;
 
 	--palette-user-status-online: #43b581;
 	--palette-user-status-idle: #faa61a;
@@ -69,6 +70,7 @@
 		--palette-foreground: #d8d8d8;
 		--palette-subground: #c2c2c2;
 		--palette-subforeground: #b2b2b2;
+		--palette-text-viewed: #8f8f8f;
 		--palette-link: #ff0000;
 		--palette-link-hover: #00bb00;
 	}
