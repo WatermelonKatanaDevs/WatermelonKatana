@@ -26,10 +26,9 @@
 
 	--palette-textcolor: #e0e0e0;
 	--palette-background: #151515;
-	--palette-background-dark: #222;
+	--palette-background-container: #222;
 	--palette-background-card: #333;
 	--palette-background-item: #444;
-	--palette-container-background: #202020;
 	--palette-foreground: #272727;
 	--palette-subground: #3d3d3d;
 	--palette-subforeground: #4d4d4d;
@@ -65,10 +64,9 @@
 	:root {
 		--palette-textcolor: #1f1f1f;
 		--palette-background: #eaeaea;
-		--palette-background-dark: #ddd;
+		--palette-container-background: #dfdfdf;
 		--palette-background-card: #ccc;
 		--palette-background-item: #bbb;
-		--palette-container-background: #dfdfdf;
 		--palette-foreground: #d8d8d8;
 		--palette-subground: #c2c2c2;
 		--palette-subforeground: #b2b2b2;

@@ -68,7 +68,7 @@
   width: calc(100% - 10px);
   outline: none;
   resize: none;
-  background: var(--palette-background-dark);
+  background: var(--palette-background-container);
   color: var(--palette-textcolor);
 }
 
