@@ -20,7 +20,7 @@
 .comment-top a {
   display: inline-flex;
   text-decoration: none;
-  color: #ccc;
+  color: var(--palette-textcolor);
 }
 
 .comment-content {
@@ -30,10 +30,10 @@
 }
 
 .comment {
-  color: #ccc;
-  background-color: #333;
+  color: var(--palette-textcolor);
+  background-color: var(--palette-background-card);
   display: block;
-  border: 1px solid #444;
+  border: 1px solid var(--palette-background-item);
   border-radius: 10px;
   margin: 0 0 5px 0;
   width: 100%;
@@ -41,24 +41,22 @@
 }
 
 #reply-btn {
-  color: #aaa;
-  border-color: #666;
+  color: var(--palette-textcolor);
   background-image: none;
 }
 #reply-btn:hover {
-  color: #ccc;
-  border-color: #888;
-  background-color: #444;
+  color: var(--palette-textcolor);
+  background-color: var(--palette-background-item);
   cursor: pointer;
 }
 
 #reply {
-  background: #333;
+  background: var(--palette-background-card);
   position: fixed;
   z-index: 100;
   display: none;
   bottom: 5px;
-  border: 1px solid #444;
+  border: 1px solid var(--palette-background-item);
   border-radius: 10px;
   transform: translateX(1%);
 }
@@ -70,8 +68,8 @@
   width: calc(100% - 10px);
   outline: none;
   resize: none;
-  background: #222;
-  color: #ccc;
+  background: var(--palette-background-dark);
+  color: var(--palette-textcolor);
 }
 
 .comment-data {
@@ -96,31 +94,31 @@
 }
 
 .comment-menu-img:hover {
-  background-color: #444;
+  background-color: var(--palette-background-item);
 }
 
 .comment-menu:hover .comment-menu-img {
-  background-color: #444;
+  background-color: var(--palette-background-item);
 }
 
 .comment-menu-options {
   position: absolute;
   display: none;
   z-index: 100;
-  background-color: #333;
+  background-color: var(--palette-background-card);
 }
 
 .comment-menu-options input {
   display: block;
-  color: #ccc;
+  color: var(--palette-textcolor);
   border-radius: 0;
   width: 100%;
-  background-color: #333;
+  background-color: var(--palette-background-card);
   background-image: none;
 }
 
 .comment-menu-options input:hover {
-  background-color: #444;
+  background-color: var(--palette-background-item);
 }
 
 .comment-menu:hover .comment-menu-options {
@@ -142,7 +140,7 @@
 
 .post-name {
   text-align: center;
-  color: #ccc;
+  color: var(--palette-textcolor);
 }
 
 .upvote-container, .report-btn {

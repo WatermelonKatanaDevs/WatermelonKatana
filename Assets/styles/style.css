@@ -26,6 +26,7 @@
 
 	--palette-textcolor: #e0e0e0;
 	--palette-background: #151515;
+	--palette-background-dark: #222;
 	--palette-background-card: #333;
 	--palette-background-item: #444;
 	--palette-container-background: #202020;
@@ -64,7 +65,8 @@
 	:root {
 		--palette-textcolor: #1f1f1f;
 		--palette-background: #eaeaea;
-		--palette-background-card: #cccccc;
+		--palette-background-dark: #ddd;
+		--palette-background-card: #ccc;
 		--palette-background-item: #bbb;
 		--palette-container-background: #dfdfdf;
 		--palette-foreground: #d8d8d8;
