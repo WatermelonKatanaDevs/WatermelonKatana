@@ -69,7 +69,7 @@ body {
 }
 
 .profile:hover {
-	background: #333;
+	background: var(--palette-background-card);
 	border-color: var(--spill-color1);
 }
 
