@@ -58,7 +58,9 @@ body {
   font-weight: bold;
 }
 
-.biography, .role, .uidtext {
+.biography,
+.role,
+.uidtext {
   margin: 10px 0;
   font-size: 16px;
 }
@@ -107,4 +109,75 @@ body {
 
 .profile.user .role {
   color: #55ff55;
+}
+
+.hidden {
+  display: none;
+}
+
+.popup {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background-color: var(--palette-background-card);
+  color: var(--palette-textcolor);
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.popup-content {
+  position: relative;
+}
+
+.close-popup {
+  position: fixed;
+  right: 10px;
+  top: 10px;
+  cursor: pointer;
+}
+
+.follower-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-right: 10px;
+  vertical-align: middle;
+}
+
+.avatar-basicBorder {
+  border-color: grey;
+}
+
+.avatar-adminBorder {
+  border-color: #ff5555;
+}
+
+.avatar-modBorder {
+  border-color: #55ff55;
+}
+
+#follower-list li {
+  margin: 10px 0;
+}
+
+.profile-container {
+  margin-bottom: 20px;
+}
+
+.profile-settings {
+  margin-top: 20px;
+}
+
+.profile-settings a {
+  display: block;
+  margin: 5px 0;
+  color: #007bff;
+  text-decoration: none;
+}
+
+.profile-settings a:hover {
+  text-decoration: underline;
 }
