@@ -44,12 +44,11 @@ const EmojiPicker = function (options) {
       on(event, callback, classList = undefined) {
         if (!classList) {
           this.el().forEach(item => {
-            item.addEventListener(event, (e) => {e.preventDefault(); callback.bind(item) })
+            item.addEventListener(event, callback.bind(item))
           })
         } else {
           this.el().forEach(item => {
             item.addEventListener(event, (e) => {
-              e.preventDefault();
               if (e.target.closest(classList)) {
 
                 let attr = undefined;
@@ -7715,7 +7714,8 @@ const EmojiPicker = function (options) {
 
 
     render: (e, attr) => {
-
+      e.preventDefault();
+      
       emojiList = undefined;
 
       const index = this.options.trigger.findIndex(item => item.selector === attr);
