@@ -25,9 +25,9 @@ footer.innerHTML = `
     </a>
 </div>
 <div class="footer-info">
-    <p>Email: <a href="mailto:admin@watermelonkatana.com">admin@watermelonkatana.com</a></p>
+    <p>Email: <a class="link" href="mailto:admin@watermelonkatana.com">admin@watermelonkatana.com</a></p>
     <p>&copy; 2024 - 2025 WatermelonKatana. All rights reserved.</p>
-    <p>Stay updated with our <a href="/faq">FAQ</a>!</p>
+    <p>Stay updated with our <a class="link" href="/faq">FAQ</a>!</p>
 </div>
 `;
 document.body.appendChild(footer);

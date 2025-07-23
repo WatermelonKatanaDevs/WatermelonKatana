@@ -251,6 +251,7 @@ body {
 
 .social-btn:hover {
     background-color: var(--element-red);
+    color: white;
 }
 
 /* Specific color for each social button */
@@ -288,11 +289,12 @@ body {
 
 .coffee-btn {
     background-color: #fd0d;
-    color: #000000;
+    color: #000;
 }
 
 .coffee-btn:hover {
     background-color: #776700;
+    color: #000;
 }
 
 .patreon-btn {

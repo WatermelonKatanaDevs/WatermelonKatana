@@ -152,7 +152,8 @@ option,
 input[type=button]:hover,
 input[type=submit]:hover,
 button:hover,
-.button:hover {
+.button:hover,
+.solid-button:hover {
 	color: #fff;
 	background-color: rgba(0, 0, 0, 0.3);
 }
