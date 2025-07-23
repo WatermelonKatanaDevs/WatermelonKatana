@@ -158,10 +158,11 @@ body {
 .boxed-text {
     border: var(--border-width) solid var(--border-color);
     padding: var(--box-padding);
-    background-color: rgba(0, 0, 0, 0.3); /* Semi-transparent background */
+    background-color: rgba(0, 0, 0, 0.3);
+    /* Semi-transparent background */
     border-radius: 8px;
     width: fit-content;
-    max-width: 39%;  
+    max-width: 39%;
     margin-bottom: 20px;
     color: white;
 }
@@ -175,7 +176,8 @@ body {
 }
 
 .boxed-text h1 {
-    font-size: 36px; /* Adjust size for h1 inside boxed text */
+    font-size: 36px;
+    /* Adjust size for h1 inside boxed text */
     margin-bottom: 10px;
 }
 
@@ -217,7 +219,8 @@ body {
     width: 100%;
     background-color: var(--background-light);
     display: flex;
-    justify-content: space-between;  /* Align the items to the sides */
+    justify-content: space-between;
+    /* Align the items to the sides */
     padding: 15px 30px;
     z-index: 200;
     box-sizing: border-box;
@@ -246,12 +249,13 @@ body {
 }
 
 .social-btn i {
-    margin-right: 8px; /* Space between icon and text */
+    margin-right: 8px;
+    /* Space between icon and text */
 }
 
 .social-btn:hover {
-    background-color: var(--element-red);
     color: white;
+    opacity: 0.7;
 }
 
 /* Specific color for each social button */
@@ -267,24 +271,8 @@ body {
     background-color: #0077b5;
 }
 
-.discord-btn:hover {
-    background-color: #5d6c8e;
-}
-
-.github-btn:hover {
-    background-color: #444;
-}
-
-.linkedin-btn:hover {
-    background-color: #005582;
-}
-
 .twitter-btn {
     background-color: #1da1f2;
-}
-
-.twitter-btn:hover {
-    background-color: #0b7bc1;
 }
 
 .coffee-btn {
@@ -293,16 +281,11 @@ body {
 }
 
 .coffee-btn:hover {
-    background-color: #776700;
     color: #000;
 }
 
 .patreon-btn {
     background-color: #FF424D;
-}
-
-.patreon-btn:hover {
-    background-color: #ff424bcc;
 }
 
 /* Footer Info Styling (Email and Copyright) */
@@ -311,7 +294,8 @@ body {
     font-size: 14px;
     display: flex;
     flex-direction: column;
-    align-items: center;  /* Align in center can push it right later */
+    align-items: center;
+    /* Align in center can push it right later */
     justify-content: center;
 }
 
