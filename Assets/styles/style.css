@@ -213,6 +213,7 @@ textarea:focus,
 .uploadbutton:hover {
 	border-color: var(--palette-primary-hover);
 	background-color: var(--palette-foreground);
+	color: var(--palette-textcolor);
 	outline: none;
 }
 
