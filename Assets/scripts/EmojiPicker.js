@@ -7715,7 +7715,7 @@ const EmojiPicker = function (options) {
 
     render: (e, attr) => {
       e.preventDefault();
-      
+
       emojiList = undefined;
 
       const index = this.options.trigger.findIndex(item => item.selector === attr);
@@ -7884,7 +7884,8 @@ const EmojiPicker = function (options) {
       this.lib('.fg-emoji-nav li').removeClass('emoji-picker-nav-active');
       link.closest('li').classList.add('emoji-picker-nav-active');
 
-      destination.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" })
+      emojiBody.scrollTop = parseInt((emojiBody.scrollTop + destination.getBoundingClientRect().y) - emojiBody.getBoundingClientRect().y)
+      
     },
 
 
