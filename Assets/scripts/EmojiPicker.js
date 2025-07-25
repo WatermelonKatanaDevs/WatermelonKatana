@@ -7528,7 +7528,7 @@ const EmojiPicker = function (options) {
             height: ${pickerHeight}px;
             border-radius: 5px;
             box-shadow: 0px 3px 20px 0px rgba(0, 0, 0, 0.62);
-            background-color: white;
+            background-color: var(--palette-background-container);
             overflow: hidden;
             z-index: 9999;
           }
@@ -7649,13 +7649,13 @@ const EmojiPicker = function (options) {
             justify-content: center;
             align-items: center;
             font-size: 23px;
-            background-color: #ffffff;
+            background-color: var(--palette-background-card);
             border-radius: 3px;
             transition: all .3s ease;
           }
           
           .fg-emoji-list li a:hover {
-            background-color: #ebebeb;
+            background-color: var(--palette-background-item);
           }
 
           .fg-emoji-picker-search {
@@ -7669,7 +7669,7 @@ const EmojiPicker = function (options) {
             width: calc(100% - 30px);
             display: block;
             padding: 10px 15px;
-            background-color: #f3f3f3;
+            background-color: var(--palette-foreground);
           }
 
           .fg-emoji-picker-search .fg-emoji-picker-search-icon {
