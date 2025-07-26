@@ -1,6 +1,6 @@
 
 #fav-container {
-  background-color: rgb(36, 36, 36);
+  background-color: var(--palette-background-container);
   display: flex;
   align-items: center;
   gap: 14px;
@@ -8,8 +8,8 @@
   cursor: pointer;
   user-select: none;
   border-radius: 10px;
-  box-shadow: rgba(46, 46, 46, 0.2) 0px 8px 24px;
-  color: rgb(255, 255, 255);
+  box-shadow: #2e2e2e33 0px 8px 24px;
+  color: var(--palette-textcolor);
   width: 200px;
 }
 
@@ -18,8 +18,8 @@
 }
 
 #favorite-btn:checked + #fav-container svg {
-  fill: hsl(0deg 100% 50%);
-  stroke: hsl(0deg 100% 50%);
+  fill: #ff0000;
+  stroke: #ff0000;
   animation: heartButton 1s;
 }
 
