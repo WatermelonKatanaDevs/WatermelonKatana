@@ -7525,7 +7525,7 @@ const EmojiPicker = function (options) {
             top: 0;
             left: 0;
             width: ${pickerWidth}px;
-            height:  auto <!-- ${pickerHeight}px; causes cutoff at bottom -->
+            height:  auto; <!-- ${pickerHeight}px; causes cutoff at bottom -->
             border-radius: 5px;
             box-shadow: 0px 3px 20px 0px rgba(0, 0, 0, 0.62);
             background-color: var(--palette-background-container);
