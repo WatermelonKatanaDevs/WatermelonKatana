@@ -1,5 +1,5 @@
 
-(async function() {
+(async function () {
   const style = document.createElement("style");
   style.textContent = `
     @import url('https://fonts.googleapis.com/css2?family=Fugaz+One&display=swap');
@@ -322,7 +322,7 @@
 
 })();
 
-document.addEventListener("DOMContentLoaded", async ()=>{
+document.addEventListener("DOMContentLoaded", async () => {
 
   var nhtml = "";
 
@@ -332,7 +332,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       const res = await fetch("/api/admin/reports/list");
       const data = await res.json();
       const reportCount = data.report.length;
-      var reports = await Promise.all(data.report.sort((a,b)=>b.postedAt-a.postedAt).map(reportHTML));
+      var reports = await Promise.all(data.report.sort((a, b) => b.postedAt - a.postedAt).map(reportHTML));
       nhtml += `
       <div id="report-icon" class="dropdown-icon" data-count="${reportCount}" onclick="openreportbtnclick()">
         <svg viewBox="0 0 448 512" id="flagsvg" class="iconsvg">
@@ -340,12 +340,27 @@ document.addEventListener("DOMContentLoaded", async ()=>{
         </svg>
       </div>
       <div id="report-dropdown" class="dropdown">
-        ${reports.join('')||`<p class="none-dropdown">No Reports</p>`}
+        ${reports.join('') || `<p class="none-dropdown">No Reports</p>`}
       </div>
         `;
     }
     const notificationCount = auth.user.notifications.length;
-    var notifs = await Promise.all(auth.user.notifications.sort((a,b)=>b.createdAt-a.createdAt).map(notificationHTML));
+    var notifs = await Promise.all(auth.user.notifications.sort((a, b) => b.createdAt - a.createdAt).map(notificationHTML));
+    async function notificationHTML(notif, index) {
+      var user = await getUser(notif.posterId);
+      return `<a class="user-panel" href="/notification/${notificationCount-index-1}">
+        <div class="comment-top">
+        <img class="comment-avatar" src="${user.avatar || "/images/blank_project.png"}">
+        <div class="comment-username">${notif.title}</div>
+        </div>
+        <div style="display: flex">
+          <span>${notif.content}<br>${new Date(notif.createdAt).toUTCString().replace(/\d\d:[^]+$/, "")}</span>
+          <button class="notifDismiss" onclick="event.preventDefault(); container = document.getElementById('notification-dropdown'), link = event.srcElement.closest('.user-panel'); fetch(link.href); link.remove(); notifs = container.children; document.getElementById('notification-icon').dataset.count = notifs.length; if(notifs.length<1){container.textContent='No Notifications'}else{for(i=0;i<notifs.length;i++){notifs[i].href='/notification/'+(notifs.length-i-1)}}" style="position: absolute;right: 1vmin;">
+            <svg xmlns="http://www.w3.org/2000/svg" class="iconsvg" viewBox="0 0 640 512" style="width: 2em;"><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7l-90.2-70.7c.2-.4 .4-.9 .6-1.3c5.2-11.5 3.1-25-5.3-34.4l-7.4-8.3C497.3 319.2 480 273.9 480 226.8l0-18.8c0-77.4-55-142-128-156.8L352 32c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 19.2c-42.6 8.6-79 34.2-102 69.3L38.8 5.1zM406.2 416L160 222.1l0 4.8c0 47-17.3 92.4-48.5 127.6l-7.4 8.3c-8.4 9.4-10.4 22.9-5.3 34.4S115.4 416 128 416l278.2 0zm-40.9 77.3c12-12 18.7-28.3 18.7-45.3l-64 0-64 0c0 17 6.7 33.3 18.7 45.3s28.3 18.7 45.3 18.7s33.3-6.7 45.3-18.7z"></path></svg>
+          </button>
+        </div>
+      </a>`;
+    }
     nhtml += `
     <div id="notification-icon" class="dropdown-icon" data-count="${notificationCount}" onclick="notificationbtnclick()">
       <svg viewBox="0 0 448 512" id="bellsvg" class="iconsvg">
@@ -353,7 +368,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       </svg>
     </div>
     <div id="notification-dropdown" class="dropdown">
-      ${notifs.join('')||`<p class="none-dropdown">No Notifications</p>`}
+      ${notifs.join('') || `<p class="none-dropdown">No Notifications</p>`}
     </div>
     <a class="signedin" href="/user/${auth.user.username}">
       <img class="signedin-avatar" src="${auth.user.avatar}">
@@ -368,25 +383,9 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   }
 
   const navbarright = document.querySelector(".navbar-right")
-  navbarright.insertAdjacentHTML("afterbegin",nhtml);
+  navbarright.insertAdjacentHTML("afterbegin", nhtml);
 
 });
-
-async function notificationHTML(notif,index) {
-  var user = await getUser(notif.posterId);
-  return `<a class="user-panel" href="/notification/${index}">
-    <div class="comment-top">
-    <img class="comment-avatar" src="${user.avatar || "/images/blank_project.png"}">
-    <div class="comment-username">${notif.title}</div>
-    </div>
-    <div style="display: flex">
-      <span>${notif.content}<br>${new Date(notif.createdAt).toUTCString().replace(/\d\d:[^]+$/,"")}</span>
-      <button class="notifDismiss" onclick="event.preventDefault(); container = document.getElementById('notification-dropdown'), link = event.srcElement.closest('.user-panel'); fetch(link.href); link.remove(); notifs = container.children; document.getElementById('notification-icon').dataset.count = notifs.length; if(notifs.length<1){container.textContent='No Notifications'}else{for(i=0;i<notifs.length;i++){notifs[i].href='/notification/'+(notifs.length-i-1)}}" style="position: absolute;right: 1vmin;">
-        <svg xmlns="http://www.w3.org/2000/svg" class="iconsvg" viewBox="0 0 640 512" style="width: 2em;"><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7l-90.2-70.7c.2-.4 .4-.9 .6-1.3c5.2-11.5 3.1-25-5.3-34.4l-7.4-8.3C497.3 319.2 480 273.9 480 226.8l0-18.8c0-77.4-55-142-128-156.8L352 32c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 19.2c-42.6 8.6-79 34.2-102 69.3L38.8 5.1zM406.2 416L160 222.1l0 4.8c0 47-17.3 92.4-48.5 127.6l-7.4 8.3c-8.4 9.4-10.4 22.9-5.3 34.4S115.4 416 128 416l278.2 0zm-40.9 77.3c12-12 18.7-28.3 18.7-45.3l-64 0-64 0c0 17 6.7 33.3 18.7 45.3s28.3 18.7 45.3 18.7s33.3-6.7 45.3-18.7z"></path></svg>
-      </button>
-    </div>
-  </a>`;
-}
 
 async function reportHTML(report) {
   var user = await getUser(report.posterId);
@@ -396,7 +395,7 @@ async function reportHTML(report) {
     <div class="comment-username">New Report</div>
     </div>
     ${user.username} reported ${report.link} because ${report.content}
-    <div>${new Date(report.postedAt).toUTCString().replace(/\d\d:[^]+$/,"")}</div>
+    <div>${new Date(report.postedAt).toUTCString().replace(/\d\d:[^]+$/, "")}</div>
   </a>`;
 }
 
@@ -410,14 +409,14 @@ function openreportbtnclick() {
   dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
 }
 
-document.addEventListener("DOMContentLoaded", ()=>{
-  window.addEventListener("click", function(e) {
+document.addEventListener("DOMContentLoaded", () => {
+  window.addEventListener("click", function (e) {
     const navbarRight = document.querySelector(".navbar-right");
     const notificationIcon = document.querySelector("#notification-icon");
     const notificationDropdown = document.querySelector("#notification-dropdown");
     const reportIcon = document.querySelector("#report-icon");
     const reportDropdown = document.querySelector("#report-dropdown");
-    if(e.target === navbarRight || e.target.closest(".notifDismiss")) { return }
+    if (e.target === navbarRight || e.target.closest(".notifDismiss")) { return }
     if (notificationIcon && !notificationIcon.contains(e.target) && !notificationDropdown.contains(e.target)) {
       notificationDropdown.style.display = "none";
     }
