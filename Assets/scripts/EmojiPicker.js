@@ -7618,8 +7618,9 @@ const EmojiPicker = function (options) {
             list-style: none;
             margin: 0;
             padding: 0;
-            overflow-y: scroll;
             overflow-x: hidden;
+            overflow-y: scroll;
+            scrollbar-width: none;
             height: 323px;
           }
 

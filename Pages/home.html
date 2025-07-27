@@ -111,7 +111,7 @@
             <div class="comment-top" style="display: flex">
               <img class="comment-avatar" src="${user.avatar || "/images/blank_project.png"}" style="width: 2em; height: 2em">
               <div class="comment-username" style="font-size: 1em">${notif.title} ${notif.content}</div>
-              <button class="notifDismiss" onclick="event.preventDefault(); container = user.querySelector('div'), link = event.srcElement.closest('.user-panel'); fetch(link.href); link.remove(); notifs = container.children; if(notifs.length<1){container.textContent='No Notifications'}else{for(i=0;i<notifs.length;i++){notifs[i].href='/notification/'+i}}">
+              <button class="notifDismiss" onclick="event.preventDefault(); container = user.querySelector('div'), link = event.srcElement.closest('.user-panel'); fetch(link.href); link.remove(); notifs = container.children; if(notifs.length<1){container.textContent='No Notifications'}else{for(i=0;i<notifs.length;i++){notifs[i].href='/notification/'+(notifs.length-i-1)}}">
                 <i class="fa fa-bell-slash" aria-hidden="true"></i>
               </button>
             </div>
