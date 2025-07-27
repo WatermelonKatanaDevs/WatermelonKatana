@@ -1,3 +1,7 @@
+body {
+  overflow: hidden scroll;
+}
+
 #post {
   width: 99%;
   position: relative;
