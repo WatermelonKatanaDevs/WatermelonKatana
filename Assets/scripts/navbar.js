@@ -22,6 +22,8 @@
       --signedin-hover-bg-color: #ddd;
       --signedin-hover-font-color: black;
       --navbar-font-family: "Fugaz One", sans-serif;
+      --navbar-svgicon-color: white;
+      --navbar-svgicon-hover: #383838;
     }
 
     @media(prefers-color-scheme: light) {
@@ -33,6 +35,8 @@
         --signedin-font-color: #555;
         --signedin-hover-bg-color: #AAA;
         --signedin-hover-font-color: white;
+        --navbar-svgicon-color: black;
+        --navbar-svgicon-hover: #c7c7c7;
       }
     }
 
@@ -242,11 +246,11 @@
     }
 
     .iconsvg path {
-      fill: white;
+      fill: var(--navbar-font-color);
     }
 
     .dropdown-icon:hover {
-      background-color: rgb(56, 56, 56);
+      background-color: var(--navbar-svgicon-hover);
     }
 
     #notification-icon:hover #bellsvg {
