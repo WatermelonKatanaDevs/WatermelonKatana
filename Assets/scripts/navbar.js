@@ -12,16 +12,28 @@
       --spill-color3: #2cf6b3;
       --spill-color4: #00b377;
 
-      --navbar-bg-color: #333;
+      --navbar-bg-color: var(--palette-background-card);
       --navbar-font-color: #f2f2f2;
       --navbar-hover-bg-color: #ddd;
       --navbar-hover-font-color: black;
-      --signedin-bg-color: #333;
+      --signedin-bg-color: var(--palette-background-card);
       --signedin-border-color: #ddd;
       --signedin-font-color: #f2f2f2;
       --signedin-hover-bg-color: #ddd;
       --signedin-hover-font-color: black;
       --navbar-font-family: "Fugaz One", sans-serif;
+    }
+
+    @media(prefers-color-scheme: light) {
+      :root {
+        --navbar-font-color: #555;
+        --navbar-hover-bg-color: #AAA;
+        --navbar-hover-font-color: white;
+        --signedin-border-color: #222;
+        --signedin-font-color: #555;
+        --signedin-hover-bg-color: #AAA;
+        --signedin-hover-font-color: white;
+      }
     }
 
     .topnav {
@@ -96,7 +108,7 @@
     }
 
     .navbar-name:hover {
-      background: linear-gradient(90deg, #fff, rgba(255, 255, 255, 0.5), #fff);
+      background: linear-gradient(90deg, var(--palette-textcolor), #777A, var(--palette-textcolor));
       background-size: 200% 200%;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
