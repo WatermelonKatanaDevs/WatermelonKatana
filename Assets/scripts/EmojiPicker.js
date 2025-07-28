@@ -1,6 +1,7 @@
 const EmojiPicker = function (options) {
 
   this.options = options;
+  this.options.closeOnSelect = false
   this.trigger = this.options.trigger.map(item => item.selector);
   this.insertInto = ".mk-textbox";
   let emojiesHTML = '';
