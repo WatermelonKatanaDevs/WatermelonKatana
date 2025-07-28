@@ -194,7 +194,7 @@
       box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
       z-index: 1002;
       border-radius: 5px;
-      overflow: scroll;
+      overflow: hidden scroll;
     }
 
     .dropdown a {
