@@ -161,6 +161,7 @@ button:hover,
 .notifDismiss {
 	background-image: none;
 	background-color: var(--palette-background-item);
+	align-items: center;
 }
 
 .notifDismiss:hover {
