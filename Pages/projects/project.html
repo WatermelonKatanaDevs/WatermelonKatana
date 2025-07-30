@@ -21,7 +21,7 @@
     <iframe
       id="game"
       onmouseenter="document.body.style.overflow = 'hidden'"
-      onmouseleave="if(!document.body.waitForScroll) { document.body.addEventListener('wheel', function() { document.body.style.overflow = '' }); document.body.waitForScroll = true;}"
+      onmouseleave="if(!document.body.waitForScroll) { release = () => { document.body.style.overflow = '' }; document.body.addEventListener('wheel', release); window.addEventListener('touchstart', release); document.body.waitForScroll = true;}"
       style="display: block; margin-left: auto; margin-right: auto"
     ></iframe>
     <br />
