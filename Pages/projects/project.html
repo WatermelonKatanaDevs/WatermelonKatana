@@ -21,6 +21,7 @@
     <iframe
       id="game"
       onmouseenter="document.body.style.overflow = 'hidden'"
+      onmouseleave="if(document.body.style.overflow === 'hidden' && !document.body.waitForScroll) { listener = document.body.addEventListener('wheel', function() { document.body.style.overflow = ''; document.body.removeEventListener(listener); document.body.waitForScroll = false}, true); document.body.waitForScroll = true;}"
       style="display: block; margin-left: auto; margin-right: auto"
     ></iframe>
     <br />
@@ -225,10 +226,6 @@
             return;
           }
           favoritebtn.checked = !!tok.user.favorites.includes(pid);
-          // New behavior requiring user action to unlock the pages scroll functionality
-          document.body.addEventListener("wheel", function() {
-            document.body.style.overflow = "";
-          })
         } catch (e) {
           alert(e);
           console.error(e);
