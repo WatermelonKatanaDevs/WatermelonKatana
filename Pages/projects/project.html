@@ -21,7 +21,6 @@
     <iframe
       id="game"
       onmouseenter="document.body.style.overflow = 'hidden'"
-      onmouseleave="document.body.style.overflow = ''"
       style="display: block; margin-left: auto; margin-right: auto"
     ></iframe>
     <br />
@@ -226,6 +225,10 @@
             return;
           }
           favoritebtn.checked = !!tok.user.favorites.includes(pid);
+          // New behavior requiring user action to unlock the pages scroll functionality
+          document.body.addEventListener("wheel", function() {
+            document.body.style.overflow = "";
+          })
         } catch (e) {
           alert(e);
           console.error(e);
