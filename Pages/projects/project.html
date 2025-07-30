@@ -21,7 +21,7 @@
     <iframe
       id="game"
       onmouseenter="document.body.style.overflow = 'hidden'"
-      onmouseleave="if(document.body.style.overflow === 'hidden' && !document.body.waitForScroll) { listener = document.body.addEventListener('wheel', function() { document.body.style.overflow = ''; document.body.removeEventListener(listener, true); document.body.waitForScroll = false}, true); document.body.waitForScroll = true;}"
+      onmouseleave="if(document.body.style.overflow === 'hidden' && !document.body.waitForScroll) { listener = document.body.addEventListener('wheel', function() { document.body.style.overflow = ''; document.body.removeEventListener('wheel', listener, true); document.body.waitForScroll = false}, true); document.body.waitForScroll = true;}"
       style="display: block; margin-left: auto; margin-right: auto"
     ></iframe>
     <br />
