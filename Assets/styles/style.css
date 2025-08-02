@@ -60,7 +60,7 @@
 	--body-font-size: 1em;
 }
 
-[data-theme="light"] {
+[color-scheme="light"] {
 	:root {
 		--palette-textcolor: #1f1f1f;
 		--palette-background: #eaeaea;

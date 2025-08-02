@@ -20,7 +20,7 @@
     --border-width: 2px;
 }
 
-[data-theme="light"] {
+[color-scheme="light"] {
     :root {
         --background: #d2d2d2;
         --background-light: #dddddd;

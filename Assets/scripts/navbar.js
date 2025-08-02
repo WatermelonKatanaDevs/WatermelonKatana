@@ -26,7 +26,7 @@
       --navbar-svgicon-hover: #383838;
     }
 
-    [data-theme="light"] {
+    [color-scheme="light"] {
       :root {
         --navbar-font-color: #555;
         --navbar-hover-bg-color: #AAA;
