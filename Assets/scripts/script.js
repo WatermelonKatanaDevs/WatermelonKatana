@@ -16,7 +16,7 @@ function getAuth() {
     if (res.status > 206) throw Error(data);
     for (var i = 0; i < _authwaiting.length; i++) _authwaiting[i](data);
     _authCache = data;
-    if (data.user) _userCache[data.user.id] = data.user; updateColorScheme(data.user.color-scheme);
+    if (data.user) _userCache[data.user.id] = data.user; updateColorScheme(data.user["color-scheme"]);
   });
 }
 
