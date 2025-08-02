@@ -1,8 +1,13 @@
 location.path = location.pathname.split("/");
+if (localStorage.getItem("color-scheme") === null) { 
+  localStorage.setItem("color-scheme", window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark": "light");
+}
+updateColorScheme();
 var _authCache = false;
 var _authwaiting = [];
+
 function getAuth() {
-  return new Promise(async(resolve)=>{
+  return new Promise(async (resolve) => {
     if (_authCache) return resolve(_authCache);
     _authwaiting.push(resolve);
     if (_authwaiting.length > 1) return;
@@ -11,17 +16,22 @@ function getAuth() {
     if (res.status > 206) throw Error(data);
     for (var i = 0; i < _authwaiting.length; i++) _authwaiting[i](data);
     _authCache = data;
-    if (data.user) _userCache[data.user.id] = data.user;
+    if (data.user) _userCache[data.user.id] = data.user; updateColorScheme(data.user.color-scheme);
   });
 }
 
 var _userCache = {};
 async function getUser(id) {
   if (_userCache[id]) return _userCache[id];
-  var res = await fetch("/api/auth/userdata?id="+id);
+  var res = await fetch("/api/auth/userdata?id=" + id);
   var u = await res.json();
   _userCache[id] = u;
   return u;
+}
+
+function updateColorScheme(pref) {
+  localStorage.setItem("color-scheme", pref || localStorage.getItem("color-scheme"));
+  document.documentElement.setAttribute("color-scheme", localStorage.getItem("color-scheme"));
 }
 
 function relativeDate(time) {
@@ -61,11 +71,11 @@ function relativeDate(time) {
 }
 
 function makeLiteralChars(string) {
-  string = string.replace(/\&/g,"&amp;");
-  string = string.replace(/</g,"&lt;");
-  string = string.replace(/>/g,"&gt;");
-  string = string.replace(/"/g,"&quot;");
-  string = string.replace(/'/g,"&apos;");
+  string = string.replace(/\&/g, "&amp;");
+  string = string.replace(/</g, "&lt;");
+  string = string.replace(/>/g, "&gt;");
+  string = string.replace(/"/g, "&quot;");
+  string = string.replace(/'/g, "&apos;");
   //string = string.replace(/ /g,"&nbsp;");
   return string;
 }
@@ -74,27 +84,27 @@ function convertMarkdown(string) {
   string = makeLiteralChars(string);
   var escapable = "*_~`()[]\\!#@";
   for (var i = 0; i < escapable.length; i++) {
-    string = string.replaceAll("\\"+escapable[i],"&#"+escapable.charCodeAt(i)+";"); // make certain characters escapable
+    string = string.replaceAll("\\" + escapable[i], "&#" + escapable.charCodeAt(i) + ";"); // make certain characters escapable
   }
-  string = string.replace(/\b\*\*([^*\n]+)\*\*/g,"<b>$1</b>"); // **bold**
-  string = string.replace(/\b\*([^*\n]+)\*/g,"<i>$1</i>"); // *italics*
-  string = string.replace(/\b__([^_\n]+)__/g,"<u>$1</u>"); // __underline__
-  string = string.replace(/\b_([^_\n]+)_/g,"<i>$1</i>"); // _italics_
-  string = string.replace(/\b~~([^~\n]+)~~/g,"<s>$1</s>"); // ~~strikethrough~~
-  string = string.replace(/^-# ([^\n]+)$/gm,"<sub>$1</sub>"); // -# subtext
-  string = string.replace(/^# ([^\n]+)$/gm,"<h1>$1</h1>"); // # header 1
-  string = string.replace(/^## ([^\n]+)$/gm,"<h2>$1</h2>"); // # header 2
-  string = string.replace(/^### ([^\n]+)$/gm,"<h3>$1</h3>"); // # header 3
-  string = string.replace(/!\[([^\]"'>]*)\]\(((?:https?:\/\/|\/api\/media\/)[^\)"]+)\)/g,`<img src="$2" $1>`); // ![width=50 height=50](https://example.com/image)
-  string = string.replace(/\[([^\]\n]+)\]\((https?:\/\/[^\)"\n]+)\)/g,`<a href="$2">$1</a>`); // [link](https://example.com)
-  string = string.replace(/@([^\s]+)/g,`<a href="/user/$1">@$1</a>`); // @Username
-  string = string.replace(/\n/g,"<br>"); // line breaks
+  string = string.replace(/\b\*\*([^*\n]+)\*\*/g, "<b>$1</b>"); // **bold**
+  string = string.replace(/\b\*([^*\n]+)\*/g, "<i>$1</i>"); // *italics*
+  string = string.replace(/\b__([^_\n]+)__/g, "<u>$1</u>"); // __underline__
+  string = string.replace(/\b_([^_\n]+)_/g, "<i>$1</i>"); // _italics_
+  string = string.replace(/\b~~([^~\n]+)~~/g, "<s>$1</s>"); // ~~strikethrough~~
+  string = string.replace(/^-# ([^\n]+)$/gm, "<sub>$1</sub>"); // -# subtext
+  string = string.replace(/^# ([^\n]+)$/gm, "<h1>$1</h1>"); // # header 1
+  string = string.replace(/^## ([^\n]+)$/gm, "<h2>$1</h2>"); // # header 2
+  string = string.replace(/^### ([^\n]+)$/gm, "<h3>$1</h3>"); // # header 3
+  string = string.replace(/!\[([^\]"'>]*)\]\(((?:https?:\/\/|\/api\/media\/)[^\)"]+)\)/g, `<img src="$2" $1>`); // ![width=50 height=50](https://example.com/image)
+  string = string.replace(/\[([^\]\n]+)\]\((https?:\/\/[^\)"\n]+)\)/g, `<a href="$2">$1</a>`); // [link](https://example.com)
+  string = string.replace(/@([^\s]+)/g, `<a href="/user/$1">@$1</a>`); // @Username
+  string = string.replace(/\n/g, "<br>"); // line breaks
   // still need to add: block quotes, lists, code, spoilers
   return string;
 }
 
-function previewContent(str,len) {
-  return makeLiteralChars(str).replace(/\n[^]*$/,"").slice(0,len)+((str.includes("\n")||str.length>len)?"...":"");
+function previewContent(str, len) {
+  return makeLiteralChars(str).replace(/\n[^]*$/, "").slice(0, len) + ((str.includes("\n") || str.length > len) ? "..." : "");
 }
 
 /*
@@ -145,10 +155,10 @@ function userHTML(list) {
 
 */
 
-function projHTML(list,tok) {
+function projHTML(list, tok) {
   return function (proj) {
-    let classes = (proj.featured?" featured":"")+(proj.posterId==tok?.user?.id?" published":"")+(tok?.user?.favorites.includes(proj.id)?" favorited":"");
-    let div = `<a class="project-panel" title="${tagTitle(proj.tags)}" href="/project/${proj.id}" style="${proj.viewers.includes(tok?.user?.id)?`"color: var(--palette-text-viewed);"`:""}">
+    let classes = (proj.featured ? " featured" : "") + (proj.posterId == tok?.user?.id ? " published" : "") + (tok?.user?.favorites.includes(proj.id) ? " favorited" : "");
+    let div = `<a class="project-panel" title="${tagTitle(proj.tags)}" href="/project/${proj.id}" style="${proj.viewers.includes(tok?.user?.id) ? `"color: var(--palette-text-viewed);"` : ""}">
       <div class="thumbnail-border ${classes}"><img class="project-thumbnail" src="${proj.thumbnail || "/images/blank_project.png"}" alt=""></div>
       <div class="project-link">${previewContent(proj.title, 100)}</div>
       <div>By: <object><a href="/user/${proj.poster}"><i>${proj.poster}</i></a></object></div>
@@ -160,12 +170,12 @@ function projHTML(list,tok) {
   };
 }
 
-function forumHTML(list,tok) {
+function forumHTML(list, tok) {
   return function (post) {
-    let div = `<a class="post-panel" title="${tagTitle(post.tags)}" href="/forum/discussion/${post.id}" ${post.viewers.includes(tok?.user?.id)?`style="color: var(--palette-text-viewed);"`:""}>
+    let div = `<a class="post-panel" title="${tagTitle(post.tags)}" href="/forum/discussion/${post.id}" ${post.viewers.includes(tok?.user?.id) ? `style="color: var(--palette-text-viewed);"` : ""}>
       <div class="post-top">
         <h2>${previewContent(post.title, 100)}</h2> 
-        <p style="display: inline;">${previewContent(post.content,100)}
+        <p style="display: inline;">${previewContent(post.content, 100)}
         <br>
       By: <object><a href="/user/${post.poster}"><i>${post.poster}</i></a></object> | Views: ${post.views} | Active ${relativeDate(post.activeAt)}</p>
       <div class="forum-tags">${tagHTML(post.tags)}</div>
@@ -182,8 +192,8 @@ function userHTML(list) {
       <img class="comment-avatar" src="${user.avatar || "/images/blank_project.png"}">
       <div class="comment-username">${user.username}</div>
       </div>
-      ${previewContent(user.biography,100)}
-      <div>Joined on ${new Date(user.joinedAt).toUTCString().replace(/\d\d:[^]+$/,"")} | ${user.role} </div>
+      ${previewContent(user.biography, 100)}
+      <div>Joined on ${new Date(user.joinedAt).toUTCString().replace(/\d\d:[^]+$/, "")} | ${user.role} </div>
     </a>`;
     list.innerHTML += div;
   };
@@ -192,19 +202,19 @@ function userHTML(list) {
 // this will probably only be for the edit button tbh it's dynamic just in case we want other stuff tho
 async function createActionButton(action, properties, permCheck) {
   return await fetch(`${location.href}/${permCheck || action}`)
-  .then(response => {
-    if(response.status === 200) {
-      return `<button ${properties}> ${action.slice(0,1).toUpperCase() + action.slice(1)} </button>`;
-    } else {
-      return "";
-    }
-  })
-  .then(data => {
-    return data;
-  })
-  .catch(error => {
-    return error;
-  })
+    .then(response => {
+      if (response.status === 200) {
+        return `<button ${properties}> ${action.slice(0, 1).toUpperCase() + action.slice(1)} </button>`;
+      } else {
+        return "";
+      }
+    })
+    .then(data => {
+      return data;
+    })
+    .catch(error => {
+      return error;
+    })
 }
 
 // streamline the delete button in the edit & direct delete registry
@@ -215,14 +225,14 @@ async function createDeleteButton(topic, backpath) {
       body: JSON.stringify({pid}),\
       headers: {'Content-Type': 'application/json'}\
     });\
-    location.assign('/${backpath||topic}');\
+    location.assign('/${backpath || topic}');\
   })()"`, "edit")
 }
 
 // checks if link is valid for storage population
 let cdoPattern = /^https:\/\/studio.code.org\/projects\/(applab|gamelab)\/([^\/]+)/;
 function isCDOStorage(url) {
-  return typeof url !== "string" ? false: url.match(cdoPattern) !== null;
+  return typeof url !== "string" ? false : url.match(cdoPattern) !== null;
 }
 
 // global function allowing /update & /publish pages to run this
@@ -231,7 +241,7 @@ async function populateCDOStorage(url, data, rewrite) {
   let cdoStorage = data;
   if (cdoStorage.length > 0 && cdoType !== null) {
     const cdoId = cdoType[2];
-    if ( rewrite ) { await fetch(`/datablock_storage/${cdoId}/clear_all_data`, {method: "DELETE"}) }
+    if (rewrite) { await fetch(`/datablock_storage/${cdoId}/clear_all_data`, { method: "DELETE" }) }
     cdoStorage = JSON.parse(cdoStorage);
     switch (cdoType[1]) {
       case "applab":
@@ -268,17 +278,17 @@ async function populateCDOStorage(url, data, rewrite) {
 // allow users to modify/update project data instead of having to republish
 async function getCDOStorage(url) {
   const cdoType = url.match(cdoPattern);
-  let cdoStorage = {keys: {}, tables: {}};
+  let cdoStorage = { keys: {}, tables: {} };
   if (cdoType !== null) {
     const cdoId = cdoType[2];
     const path = `/datablock_storage/${cdoId}/`
     switch (cdoType[1]) {
       case "applab":
         let tableNames = (await (await fetch(path + "get_table_names")).json())
-        for(let name of tableNames) {
+        for (let name of tableNames) {
           try {
             cdoStorage.tables[name] = (await (await fetch(path + "read_records?table_name=" + name)).json())
-          } catch(err) {
+          } catch (err) {
             throw `unable to append table "${name}" with code: ${err}`
           }
         }
@@ -297,9 +307,9 @@ async function getCDOStorage(url) {
 }
 
 function tagTitle(tags) {
-  return tags.map(e=>(e.length > 0 ? "#"+e: "")).join(" ");
+  return tags.map(e => (e.length > 0 ? "#" + e : "")).join(" ");
 }
 
 function tagHTML(tags) {
-  return tags.map(e=>(e.length > 0 ? "<p>#"+e+"</p>": "")).join(" ");
+  return tags.map(e => (e.length > 0 ? "<p>#" + e + "</p>" : "")).join(" ");
 }
