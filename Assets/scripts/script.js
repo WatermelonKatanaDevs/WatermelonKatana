@@ -32,6 +32,7 @@ async function getUser(id) {
   return u;
 }
 
+// Answer is reversed because base color schemes are swapped https://mybyways.com/blog/forcing-dark-mode-with-prefs-color-scheme-media-query
 function updateColorScheme(pref) {
   pref = pref || localStorage.getItem("color-scheme");
   localStorage.setItem("color-scheme", pref);
