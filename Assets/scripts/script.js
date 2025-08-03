@@ -52,11 +52,6 @@ function updateColorScheme(pref) {
             if (rule.media.mediaText.includes("light")) rule.media.deleteMedium("(prefers-color-scheme: light)");
             if (rule.media.mediaText.includes("dark")) rule.media.deleteMedium("(prefers-color-scheme: dark)");
             break;
-          default:
-            rule.media.appendMedium("(prefers-color-scheme: dark)");
-            if (rule.media.mediaText.includes("light")) rule.media.deleteMedium("(prefers-color-scheme: light)");
-            if (rule.media.mediaText.includes("original")) rule.media.deleteMedium("original-prefers-color-scheme");
-            break;
         }
       }
     }
