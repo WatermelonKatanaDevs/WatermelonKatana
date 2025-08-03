@@ -2,7 +2,7 @@ location.path = location.pathname.split("/");
 if (localStorage.getItem("color-scheme") === null) {
   localStorage.setItem("color-scheme", window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 }
-updateColorScheme();
+document.addEventListener("DOMContentLoaded", updateColorScheme);
 var _authCache = false;
 var _authwaiting = [];
 
