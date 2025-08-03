@@ -20,7 +20,7 @@
     --border-width: 2px;
 }
 
-[color-scheme="light"] {
+@media(prefers-color-scheme: light) {
     :root {
         --background: #d2d2d2;
         --background-light: #dddddd;

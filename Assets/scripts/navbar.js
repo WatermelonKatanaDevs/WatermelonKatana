@@ -26,7 +26,7 @@
       --navbar-svgicon-hover: #383838;
     }
 
-    [color-scheme="light"] {
+    @media(prefers-color-scheme: light) {
       :root {
         --navbar-font-color: #555;
         --navbar-hover-bg-color: #AAA;
