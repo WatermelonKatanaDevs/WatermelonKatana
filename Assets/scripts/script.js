@@ -110,8 +110,8 @@ function convertMarkdown(string) {
   for (var i = 0; i < escapable.length; i++) {
     string = string.replaceAll("\\" + escapable[i], "&#" + escapable.charCodeAt(i) + ";"); // make certain characters escapable
   }
-  string = string.replace(/\b\*\*([^*\n]+)\*\*/g, "<b>$1</b>"); // **bold**
-  string = string.replace(/\b\*([^*\n]+)\*/g, "<i>$1</i>"); // *italics*
+  string = string.replace(/(?:^|(?<!\[[^\]]+))\*\*([^*\n]+)\*\*/g, "<b>$1</b>"); // **bold**
+  string = string.replace(/(?:^|(?<!\[[^\]]+))\*([^*\n]+)\*/g, "<i>$1</i>"); // *italics*
   string = string.replace(/\b__([^_\n]+)__/g, "<u>$1</u>"); // __underline__
   string = string.replace(/\b_([^_\n]+)_/g, "<i>$1</i>"); // _italics_
   string = string.replace(/\b~~([^~\n]+)~~/g, "<s>$1</s>"); // ~~strikethrough~~
