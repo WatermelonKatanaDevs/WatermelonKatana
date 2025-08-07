@@ -18,7 +18,10 @@ function getAuth() {
     _authCache = data;
     if (data.user) {
       _userCache[data.user.id] = data.user;
-      updateColorScheme(data.user["color-scheme"]);
+      let schema = data.user["color-scheme"]
+      if (typeof schema === "string" && schema !== localStorage.getItem("color-scheme")) {
+        updateColorScheme(schema);
+      }
     }
   });
 }
