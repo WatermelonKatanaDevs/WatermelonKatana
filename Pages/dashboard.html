@@ -31,7 +31,7 @@
     <header class="main-header">
       <nav id="header" class="main-nav">
         <a href="/api/project/list?randomEntryAction=redirect"> Random Project </a>
-        <a href="/faq">FAQ</a>
+        <a href="/preferences">Preferences</a>
       </nav>
     </header>
     <div id="controls">
@@ -109,7 +109,7 @@
       );
       header.innerHTML = `
           <a href="/api/project/list?randomEntryAction=redirect"> Random Project </a>
-          <a href="/faq">FAQ</a>
+          <a href="/preferences">Preferences</a>
           <a href="/userlist">User List</a>
           ${(tok.user.role === "Admin" ? `<a href="/admin">Admin List</a>` : "")}
         `;

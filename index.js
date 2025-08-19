@@ -81,6 +81,7 @@ const cldir = __dirname + "/Pages";
  */
 app.get("/", (req, res) => res.sendFile(cldir + "/home.html")); // Home page
 app.get("/dashboard", (req, res) => res.sendFile(cldir + "/dashboard.html")); // Dashboard page
+app.get("/preferences", (req, res) => res.sendFile(cldir + "/preferences.html")); // Preferences page
 app.get("/register", makeFormToken, (req, res) => res.sendFile(cldir + "/users/auth/register.html")); // Registration page
 app.get("/login", (req, res) => res.sendFile(cldir + "/users/auth/login.html")); // Login page
 
