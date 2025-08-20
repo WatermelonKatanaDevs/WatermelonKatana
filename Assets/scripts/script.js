@@ -188,13 +188,13 @@ function projHTML(list, tok) {
     let div = `<a class="project-panel" href="/project/${proj.id}" style="${proj.viewers.includes(tok?.user?.id) ? `"color: var(--palette-text-viewed);"` : ""}">
 <div class="thumbnail-border ${classes}">
 <div class="panel-overlay">
-<div>By: <object><a href="/user/${proj.poster}"><i>${proj.poster}</i></a></object></div>
 <div>Score: ${proj.score} Views: ${proj.views}</div>
-<div>${proj.tags}</div>
+<div>${proj.tags.split(",").map(e=>`#${e}`).join(", ")}</div>
 </div>
 <img class="project-thumbnail" src="${proj.thumbnail || "/images/blank_project.png"}" alt="">
 </div>
 <div class="project-link">${previewContent(proj.title, 100)}</div>
+<div>By: <object><a href="/user/${proj.poster}"><i>${proj.poster}</i></a></object></div>
 </a>`;
     list.innerHTML += div;
     let lastThumbnail = list.children[list.children.length - 1].querySelector(".project-thumbnail");
