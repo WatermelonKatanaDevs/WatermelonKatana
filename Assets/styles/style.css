@@ -487,7 +487,3 @@ input[type=checkbox]:checked+.checkbox::after {
 	opacity: 1;
 	display: block;
 }
-
-a {
-	color: pink
-}

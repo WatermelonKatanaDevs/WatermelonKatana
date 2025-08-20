@@ -194,7 +194,7 @@ function projHTML(list, tok) {
         <img class="project-thumbnail" src="${proj.thumbnail || "/images/blank_project.png"}" alt="">
       </div>
       <div class="project-link">${previewContent(proj.title, 100)}</div>
-      <div>By: <object><a class="link" href="/user/${proj.poster}"><i>${proj.poster}</i></a></object></div>
+      <div>By: <object><a href="/user/${proj.poster}"><i>${proj.poster}</i></a></object></div>
     </a>`;
     list.innerHTML += div;
     let lastThumbnail = list.children[list.children.length - 1].querySelector(".project-thumbnail");
@@ -209,7 +209,7 @@ function forumHTML(list, tok) {
         <h2>${previewContent(post.title, 100)}</h2> 
         <p style="display: inline;">${previewContent(post.content, 100)}
         <br>
-      By: <object><a class="link" href="/user/${post.poster}"><i>${post.poster}</i></a></object> | Views: ${post.views} | Active ${relativeDate(post.activeAt)}</p>
+      By: <object><a href="/user/${post.poster}"><i>${post.poster}</i></a></object> | Views: ${post.views} | Active ${relativeDate(post.activeAt)}</p>
       <div class="forum-tags">${tagHTML(post.tags)}</div>
       </div>
     </a>`;
