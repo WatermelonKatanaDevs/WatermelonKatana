@@ -204,7 +204,7 @@ function projHTML(list, tok) {
 
 function forumHTML(list, tok) {
   return function (post) {
-    let div = `<a class="post-panel" title="${tagTitle(post.tags)}" href="/forum/discussion/${post.id}" ${post.viewers.includes(tok?.user?.id) ? `style="color: var(--palette-text-viewed);"` : ""}>
+    let div = `<a class="post-panel" href="/forum/discussion/${post.id}" ${post.viewers.includes(tok?.user?.id) ? `style="color: var(--palette-text-viewed);"` : ""}>
       <div class="post-top">
         <h2>${previewContent(post.title, 100)}</h2> 
         <p style="display: inline;">${previewContent(post.content, 100)}
