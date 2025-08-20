@@ -189,7 +189,7 @@ function projHTML(list, tok) {
 <div class="thumbnail-border ${classes}">
 <div class="panel-overlay">
 <div>Score: ${proj.score} Views: ${proj.views}</div>
-<div>${proj.tags.split(",").map(e=>`#${e}`).join(", ")}</div>
+<div>${proj.tags.map(e=>`#${e}`).join(", ")}</div>
 </div>
 <img class="project-thumbnail" src="${proj.thumbnail || "/images/blank_project.png"}" alt="">
 </div>
