@@ -467,7 +467,8 @@ input[type=checkbox]:checked+.checkbox::after {
 
 .panel-overlay {
 	text-wrap: wrap;
-	position: fixed;
+	position: absolute;
+	top: 0px;
 	align-content: center;
 	text-align: center;
 	overflow: hidden;
