@@ -23,7 +23,10 @@
 	--palette-discord: #7289da;
 	--palette-link: #ff9c9c;
 	--palette-link-hover: #39ff14;
-	--button-background-image: url("/images/button.png");
+	--palette-button-background-image: url("/images/button.png");
+	--palette-button-text: var(--palette-textcolor);
+	--palette-button-tint: #00000080;
+	--palette-button-tint-hover: #0000004d;
 
 	--palette-textcolor: #e0e0e0;
 	--palette-background: #151515;
@@ -74,7 +77,10 @@
 		--palette-text-viewed: #8f8f8f;
 		--palette-link: #ff0000;
 		--palette-link-hover: #00bb00;
-		--button-background-image: url("/images/buttonLight.png");
+		--palette-button-background-image: url("/images/buttonLight.png");
+		--palette-button-text: var(--palette-textcolor);
+		--palette-button-tint: #0000004d;
+		--palette-button-tint-hover: #00000080;
 	}
 }
 
@@ -136,10 +142,10 @@ option,
 	width: var(--button-width, auto);
 	height: var(--button-height, auto);
 	display: inline-flex;
-	background-color: rgba(0, 0, 0, 0.5);
+	background-color: var(--palette-button-tint);
 	background-image: var(--button-background-image);
 	background-blend-mode: darken;
-	color: #FFFFFF;
+	color: var(--palette-button-text);
 	cursor: url("/images/pointer.png"), pointer !important;
 	border: none;
 	border-radius: 50px;
@@ -156,8 +162,8 @@ input[type=submit]:hover,
 button:hover,
 .button:hover,
 .solid-button:hover {
-	color: #fff;
-	background-color: rgba(0, 0, 0, 0.3);
+	color: var(--palette-button-text);
+	background-color: var(--palette-button-tint-hover);
 }
 
 .notifDismiss {
@@ -475,8 +481,8 @@ input[type=checkbox]:checked+.checkbox::after {
 	overflow: hidden;
 	width: 200px;
 	height: 200px;
-	background-color: rgb(0,0,0,0);
-	color: rgb(255,255,255,0);
+	background-color: rgb(0, 0, 0, 0);
+	color: rgb(255, 255, 255, 0);
 	border-radius: 5px;
 	opacity: 0;
 	transition: 0.2s;
@@ -484,8 +490,8 @@ input[type=checkbox]:checked+.checkbox::after {
 }
 
 .project-panel:hover .panel-overlay {
-	color: rgb(255,255,255,1);
-	background-color: rgb(0,0,0,0.6);
+	color: rgb(255, 255, 255, 1);
+	background-color: rgb(0, 0, 0, 0.6);
 	opacity: 1;
 	display: block;
 }
