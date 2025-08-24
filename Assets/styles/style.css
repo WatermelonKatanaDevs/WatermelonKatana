@@ -23,6 +23,7 @@
 	--palette-discord: #7289da;
 	--palette-link: #ff9c9c;
 	--palette-link-hover: #39ff14;
+	--button-background-image: url("/images/button.png");
 
 	--palette-textcolor: #e0e0e0;
 	--palette-background: #151515;
@@ -73,6 +74,7 @@
 		--palette-text-viewed: #8f8f8f;
 		--palette-link: #ff0000;
 		--palette-link-hover: #00bb00;
+		--button-background-image: url("/images/buttonLight.png");
 	}
 }
 
@@ -135,7 +137,7 @@ option,
 	height: var(--button-height, auto);
 	display: inline-flex;
 	background-color: rgba(0, 0, 0, 0.5);
-	background-image: url("/images/button.png");
+	background-image: var(--button-background-image);
 	background-blend-mode: darken;
 	color: #FFFFFF;
 	cursor: url("/images/pointer.png"), pointer !important;
