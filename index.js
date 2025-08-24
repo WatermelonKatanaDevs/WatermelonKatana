@@ -10,6 +10,7 @@ const RateLimit = require("express-rate-limit");
 */
 const makeLiteralChars = require('./util/js/makeLiteralChars');
 const { logInfo, logDebug, logError, logWarn } = require('./util/js/logger');
+const createPlaceholder = require('./util/js/createPlaceholder');
 
 const connectDB = require("./Database/connect");
 const { adminAuth, userAuth, checkAuth, makeFormToken } = require("./Middleware/auth");
@@ -84,6 +85,25 @@ app.get("/dashboard", (req, res) => res.sendFile(cldir + "/dashboard.html")); //
 app.get("/preferences", (req, res) => res.sendFile(cldir + "/preferences.html")); // Preferences page
 app.get("/register", makeFormToken, (req, res) => res.sendFile(cldir + "/users/auth/register.html")); // Registration page
 app.get("/login", (req, res) => res.sendFile(cldir + "/users/auth/login.html")); // Login page
+
+/**
+ * Placeholder Images
+ */
+app.get('/placeholder/:size', (req, res) => {
+  const sizeMatch = req.params.size.match(/^(\d+)x(\d+)$/);
+  if (!sizeMatch) {
+    return res.status(400).send('Invalid size format. Use WIDTHxHEIGHT, e.g., 300x200.');
+  }
+  const width = parseInt(sizeMatch[1], 10);
+  const height = parseInt(sizeMatch[2], 10);
+  if (isNaN(width) || isNaN(height) || width <= 0 || height <= 0 || width > 5000 || height > 5000) {
+    return res.status(400).send('Width and height must be positive integers less than or equal to 5000.');
+  }
+  const imgBuffer = createPlaceholder(width, height);
+  res.set('Content-Type', 'image/png');
+  res.send(imgBuffer);
+});
+
 
 /**
  * WatermelonKatana open-source libraries
