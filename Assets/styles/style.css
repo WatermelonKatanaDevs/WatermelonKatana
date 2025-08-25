@@ -80,7 +80,7 @@
 		--palette-button-background-image: url("/images/buttonLight.png");
 		--palette-button-textcolor: #e0e0e0;
 		--palette-button-tint: #fff;
-		--palette-button-tint-hover: #0000003d;
+		--palette-button-tint-hover: #0000002d;
 	}
 }
 
@@ -143,7 +143,7 @@ option,
 	height: var(--button-height, auto);
 	display: inline-flex;
 	background-color: var(--palette-button-tint);
-	background-image: var(--button-background-image);
+	background-image: var(--palette-button-background-image);
 	background-blend-mode: darken;
 	color: var(--palette-button-textcolor);
 	cursor: url("/images/pointer.png"), pointer !important;
