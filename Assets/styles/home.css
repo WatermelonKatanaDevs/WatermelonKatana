@@ -39,7 +39,7 @@ body {
 }
 
 .main-nav a {
-	color: #e0e0e0;
+	color: var(--palette-button-textcolor);
 	background-color: var(--palette-button-tint);
 	background-image: var(--palette-button-background-image);
 	background-blend-mode: darken;

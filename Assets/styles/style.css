@@ -24,7 +24,7 @@
 	--palette-link: #ff9c9c;
 	--palette-link-hover: #39ff14;
 	--palette-button-background-image: url("/images/button.png");
-	--palette-button-text: var(--palette-textcolor);
+	--palette-button-textcolor: var(--palette-textcolor);
 	--palette-button-tint: #00000080;
 	--palette-button-tint-hover: #0000004d;
 
@@ -78,9 +78,9 @@
 		--palette-link: #ff0000;
 		--palette-link-hover: #00bb00;
 		--palette-button-background-image: url("/images/buttonLight.png");
-		--palette-button-text: var(--palette-textcolor);
-		--palette-button-tint: #0000004d;
-		--palette-button-tint-hover: #00000080;
+		--palette-button-textcolor: #e0e0e0;
+		--palette-button-tint: #fff;
+		--palette-button-tint-hover: #0000003d;
 	}
 }
 
@@ -145,7 +145,7 @@ option,
 	background-color: var(--palette-button-tint);
 	background-image: var(--button-background-image);
 	background-blend-mode: darken;
-	color: var(--palette-button-text);
+	color: var(--palette-button-textcolor);
 	cursor: url("/images/pointer.png"), pointer !important;
 	border: none;
 	border-radius: 50px;
@@ -162,7 +162,7 @@ input[type=submit]:hover,
 button:hover,
 .button:hover,
 .solid-button:hover {
-	color: var(--palette-button-text);
+	color: var(--palette-button-textcolor);
 	background-color: var(--palette-button-tint-hover);
 }
 
