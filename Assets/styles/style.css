@@ -27,6 +27,8 @@
 	--palette-button-textcolor: var(--palette-textcolor);
 	--palette-button-tint: #00000080;
 	--palette-button-tint-hover: #0000004d;
+	--palette-profile-button-hover: #fc0082cc;
+	--palette-delete-button: #ff0000cc;
 
 	--palette-textcolor: #e0e0e0;
 	--palette-background: #151515;
@@ -81,6 +83,8 @@
 		--palette-button-textcolor: #e0e0e0;
 		--palette-button-tint: #fff;
 		--palette-button-tint-hover: #0000002d;
+		--palette-profile-button-hover: #70008d;
+		--palette-delete-button: #0058ff80;
 	}
 }
 
@@ -179,7 +183,7 @@ button:hover,
 #deletebtn,
 #discardbtn,
 .delete {
-	background-color: rgb(255, 0, 0, 0.8);
+	background-color: var(--palette-delete-button);
 }
 
 #deletebtn:hover,
