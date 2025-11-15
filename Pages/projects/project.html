@@ -251,15 +251,6 @@
         }
       }
 
-      JSON.safeParse = function(str,backup) {
-        if (str === null || str === undefined) return backup;
-        try {
-          return JSON.parse(str);
-        } catch(e) {
-          return backup;
-        }
-      };
-
       (function(){
         const viewed = JSON.safeParse(localStorage.getItem("recently-viewed-projects"),[]);
         const index = viewed.indexOf(pid);

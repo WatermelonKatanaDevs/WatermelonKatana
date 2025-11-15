@@ -1,57 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!--title-->
-    <!--og:meta-->
-    <link rel="stylesheet" type="text/css" href="/styles/style.css">
-    <link rel="stylesheet" type="text/css" href="/styles/forum.css">
-    <script src="/scripts/HtmlSanitizer.js"></script>
-    <script src="/scripts/script.js"></script>
-    <script src="/scripts/EmojiPicker.js"></script>
-    <script src="/scripts/markdowntextbox.js"></script>
-    <script src="/scripts/forum.js"></script>
-  </head>
-  <body>
-    <script src="/scripts/mediaupload.js"></script>
-    <script src="/scripts/navbar.js"></script>
-    <div id="post">
-      <!--content-->
-    </div>
-    <script>
-      const pid = location.path[3];
-      (async function load() {
-        try {
-          const postdiv = document.querySelector('#post');
-          const res = await fetch('/api/forum/data/'+pid);
-          const data = await res.json();
-          await createPost(postdiv,data,`<div>
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!--title-->
+  <!--og:meta-->
+  <link rel="stylesheet" type="text/css" href="/styles/style.css">
+  <link rel="stylesheet" type="text/css" href="/styles/forum.css">
+  <script src="/scripts/HtmlSanitizer.js"></script>
+  <script src="/scripts/script.js"></script>
+  <script src="/scripts/EmojiPicker.js"></script>
+  <script src="/scripts/markdowntextbox.js"></script>
+  <script src="/scripts/forum.js"></script>
+</head>
+
+<body>
+  <script src="/scripts/mediaupload.js"></script>
+  <script src="/scripts/navbar.js"></script>
+  <div id="post">
+    <!--content-->
+  </div>
+  <script>
+    const pid = location.path[3];
+    (async function load() {
+      try {
+        const postdiv = document.querySelector('#post');
+        const res = await fetch('/api/forum/data/' + pid);
+        const data = await res.json();
+        await createPost(postdiv, data, `<div>
           <b>Views:</b> <span id="views">${data.views}</span>
           ${await createActionButton("edit", `onclick="window.location.href += '/edit'"`)}
           ${await createDeleteButton("forum")}
           </div>
           <br>
-          `,"forum",()=>{
-            postdiv.innerHTML = `Loading...`;
-            load();
-          });
-        } catch(e) {
-          alert(e);
-          console.error(e);
-        }
-      })();
-      
-      async function featurebtnclick(feature) {
-        if (feature) {
-          await fetch("/api/forum/feature/"+pid);
-        } else {
-          await fetch("/api/forum/unfeature/"+pid);
-        }
-      };
+          `, "forum", () => {
+          postdiv.innerHTML = `Loading...`;
+          load();
+        });
+      } catch (e) {
+        alert(e);
+        console.error(e);
+      }
+    })();
 
-      setInterval(function exchangeCookie() { fetch(location.href) }, 84e4);
-    </script>
-  </body>
+    async function featurebtnclick(feature) {
+      if (feature) {
+        await fetch("/api/forum/feature/" + pid);
+      } else {
+        await fetch("/api/forum/unfeature/" + pid);
+      }
+    };
+
+    (function () {
+      const viewed = JSON.safeParse(localStorage.getItem("recently-viewed-posts"), []);
+      const index = viewed.indexOf(pid);
+      if (index !== -1) viewed.splice(index, 1);
+      viewed.unshift(pid);
+      localStorage.setItem("recently-viewed-posts", JSON.stringify(viewed));
+    })();
+
+    setInterval(function exchangeCookie() { fetch(location.href) }, 84e4);
+  </script>
+</body>
+
 </html>

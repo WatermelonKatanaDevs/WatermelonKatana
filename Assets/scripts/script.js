@@ -189,7 +189,7 @@ function projHTML(list, tok) {
       <div class="thumbnail-border ${classes}">
         <div class="panel-overlay">
           <div>Score: ${proj.score} Views: ${proj.views}</div>
-          <div>${proj.tags.map(e=>`#${e}`).join(", ")}</div>
+          <div>${proj.tags.map(e => `#${e}`).join(", ")}</div>
         </div>
         <img class="project-thumbnail" src="${proj.thumbnail || "/images/blank_project.png"}" alt="">
       </div>
@@ -345,3 +345,12 @@ function tagTitle(tags) {
 function tagHTML(tags) {
   return tags.map(e => (e.length > 0 ? "<p>#" + e + "</p>" : "")).join(" ");
 }
+
+JSON.safeParse = function (str, backup) {
+  if (str === null || str === undefined) return backup;
+  try {
+    return JSON.parse(str);
+  } catch (e) {
+    return backup;
+  }
+};

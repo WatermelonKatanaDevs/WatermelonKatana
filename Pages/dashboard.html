@@ -46,6 +46,10 @@
       <div id="viewedList" class="project-list"></div>
     </section>
     <section class="featured-projects">
+      <h2>Recently Viewed Posts</h2>
+      <div id="viewedPost" class="project-list"></div>
+    </section>
+    <section class="featured-projects">
       <h2>Favorite Projects</h2>
       <div id="favoriteList" class="project-list"></div>
     </section>
@@ -57,6 +61,7 @@
 
   <script>
     const viewedList = document.querySelector('#viewedList');
+    const viewedPost = document.querySelector('#viewedPost');
     const favoriteList = document.querySelector('#favoriteList');
     //const followedList = document.querySelector('#followedList'); // followed posts, add later
     const header = document.querySelector('#header');
@@ -78,23 +83,18 @@
       }
     });
 
-    JSON.safeParse = function (str, backup) {
-      if (str === null || str === undefined) return backup;
-      try {
-        return JSON.parse(str);
-      } catch (e) {
-        return backup;
-      }
-    };
-
-    var recentlyViewed = JSON.safeParse(localStorage.getItem("recently-viewed-projects"), []);
-    recentlyViewed = recentlyViewed.slice(0, 5);
-    recentlyViewed.map(async (pid) => {
-      const res = await fetch("/api/project/data/" + pid);
-      const proj = await res.json();
-      if (proj.mature && !tok.user.mature) { return }
-      projHTML(viewedList)(proj);
-    });
+    // merge both recently viewed projects and forum posts
+    (function getHistory(obj) {
+      var recentlyViewed = JSON.safeParse(localStorage.getItem(`recently-viewed-${obj.type}`), []);
+      recentlyViewed = recentlyViewed.slice(0, 5);
+      recentlyViewed.map(async (pid) => {
+        const res = await fetch(`/api/${obj.path}/data/` + pid);
+        const entry = await res.json();
+        if (entry.mature && !tok.user.mature) { return }
+        obj.parser(obj.elm)(entry);
+      });
+      if(obj.type === "projects") { getHistory({ type: "posts", path: "forum", elm: viewedPost, parser: forumHTML }) }
+    })({ type: "projects", path: "project", elm: viewedList, parser: projHTML });
 
     getAuth().then(async tok => {
       if (!tok.auth) return;
