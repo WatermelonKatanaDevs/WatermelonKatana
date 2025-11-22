@@ -104,7 +104,7 @@ exports.openReport = async (req, res, next) => {
     });
     var link = report.link;
     // await report.remove();
-    await Reports.deleteOne({ _id: pid });
+    await Reports.deleteOne({ _id: rid });
     console.log("deleted " + rid);
     res.redirect(link);
   } catch (error) {
