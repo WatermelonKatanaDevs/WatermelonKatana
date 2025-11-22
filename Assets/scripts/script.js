@@ -134,54 +134,6 @@ function previewContent(str, len) {
   return makeLiteralChars(str).replace(/\n[^]*$/, "").slice(0, len) + ((str.includes("\n") || str.length > len) ? "..." : "");
 }
 
-/*
-
-function projHTML(list,tok) {
-  return function (proj) {
-    let div = `<a class="project-panel" href="/project/${proj.id}" ${proj.viewers.includes(tok?.user?.id)?`style="color: #b0b0b0;"`:""}>
-      <div class="thumbnail-border"><img class="project-thumbnail" src="${proj.thumbnail || "/images/blank_project.png"}" alt=""></div>
-      <div class="project-link">${previewContent(proj.title, 100)}</div>
-      <div>By: <object><a href="/user/${proj.poster}"><i>${proj.poster}</i></a></object></div>
-      <div>Score: ${proj.score} Views: ${proj.views}</div>
-      <div class="project-tags">${tagHTML(proj.tags)}</div>
-    </a>`;
-    list.innerHTML += div;
-    let lastThumbnail = list.children[list.children.length - 1].querySelector(".project-thumbnail");
-    if (!lastThumbnail.getAttribute("src")) lastThumbnail.src = "/images/blank_project.png";
-  };
-}
-
-function forumHTML(list,tok) {
-  return function (post) {
-    let div = `<a class="post-panel" href="/forum/discussion/${post.id}" ${post.viewers.includes(tok?.user?.id)?`style="color: #b0b0b0;"`:""}>
-      <div class="post-top">
-        <h2>${previewContent(post.title, 100)}</h2> 
-        <p style="display: inline;">${previewContent(post.content,100)}
-        <br>
-      By: <object><a href="/user/${post.poster}"><i>${post.poster}</i></a></object> | Views: ${post.views} | Active ${relativeDate(post.activeAt)}</p>
-      <div class="forum-tags">${tagHTML(post.tags)}</div>
-      </div>
-    </a>`;
-    list.innerHTML += div;
-  };
-}
-
-function userHTML(list) {
-  return function (user) {
-    let div = `<a class="user-panel" href="/user/${user.username}">
-      <div class="comment-top">
-      <img class="comment-avatar" src="${user.avatar || "/images/blank_project.png"}">
-      <div class="comment-username">${user.username}</div>
-      </div>
-      ${previewContent(user.biography,100)}
-      <div>Joined on ${new Date(user.joinedAt).toUTCString().replace(/\d\d:[^]+$/,"")} | ${user.role} </div>
-    </a>`;
-    list.innerHTML += div;
-  };
-}
-
-*/
-
 function projHTML(list, tok) {
   return function (proj) {
     let classes = (proj.featured ? " featured" : "") + (proj.posterId == tok?.user?.id ? " published" : "") + (tok?.user?.favorites.includes(proj.id) ? " favorited" : "");

@@ -6,7 +6,7 @@ const Projects = require("../../Database/model/Projects");
 const Posts = require("../../Database/model/Posts");
 const Reports = require("../../Database/model/Reports");
 
-exports.transferProject = async (req,res) => {
+exports.transferProject = async (req, res) => {
   const { uid, project, post } = req.query;
   try {
     const user = await Users.findOne({ _id: uid });
@@ -27,7 +27,7 @@ exports.transferProject = async (req,res) => {
     res.status(200).json({
       message: "Transfer successful",
     });
-  } catch(error) {
+  } catch (error) {
     res.status(400).json({
       message: "Transfer not successful",
       error: error.message,
@@ -35,14 +35,14 @@ exports.transferProject = async (req,res) => {
     console.log(error.message);
   }
 };
-exports.resetPassword = async (req,res)=>{
+exports.resetPassword = async (req, res) => {
   /*
     ~ 1/7/25 - I implemented swapping to req.body instead of req.query, hopefully more secure
   */
   const uid = req.body.uid;
   const password = req.body.password;
   try {
-    var hash = await bcrypt.hash(password||"password", 10);
+    var hash = await bcrypt.hash(password || "password", 10);
     const user = await Users.findOne({ _id: uid });
     if (!user) return res.status(404).json({
       message: "Transfer not successful",
@@ -55,7 +55,7 @@ exports.resetPassword = async (req,res)=>{
       user: user._id,
       role: user.role,
     });
-  } catch(error) {
+  } catch (error) {
     res.status(400).json({
       message: "Password not successfully reset",
       error: error.message,
@@ -64,7 +64,7 @@ exports.resetPassword = async (req,res)=>{
 };
 exports.createReport = async (req, res, next) => {
   var { content, link } = req.body;
-  console.log(content,link);
+  console.log(content, link);
   try {
     const uid = res.locals.userToken.id;
     const user = await Users.findOne({ _id: uid });
@@ -86,7 +86,7 @@ exports.createReport = async (req, res, next) => {
       link: post.link,
     });
     console.log("done!");
-  } catch(error) {
+  } catch (error) {
     res.status(400).json({
       message: "Report not successfully created",
       error: error.message,
@@ -103,28 +103,29 @@ exports.openReport = async (req, res, next) => {
       error: "Report not found",
     });
     var link = report.link;
-    await report.remove();
-    console.log("deleted "+rid);
+    // await report.remove();
+    await Reports.deleteOne({ _id: pid });
+    console.log("deleted " + rid);
     res.redirect(link);
-  } catch(error) {
+  } catch (error) {
     res.status(400).json({
       message: "Report not successfully deleted",
       error: error.message,
     });
     console.log(error.message);
   }
-}; 
+};
 exports.listReports = async (req, res, next) => {
   try {
     var search = {};
     const { customQuery } = req.query;
     if (customQuery) search = JSON.parse(customQuery);
     var list = await Reports.find(search);
-    list = list.map(e=>e.pack());
+    list = list.map(e => e.pack());
     var data = {};
     data.report = list;
     res.status(200).json(data);
-  } catch(err) {
+  } catch (err) {
     res.status(401).json({ message: "Not successful", error: err.message });
     console.log(err.message);
   }
