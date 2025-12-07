@@ -10,7 +10,6 @@ const censorText = (text) => {
 };
 
 const isProfane = (text) => {
-    testPattern.lastIndex = 0;
     return text.test(testPattern);
 }
 
