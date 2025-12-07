@@ -7,25 +7,11 @@ const testPattern = new RegExp(pattern, "i");
 const censorText = (text) => {
     censorPattern.lastIndex = 0;
     return text.replace(censorPattern, '****');
-    // let censoredText = text;
-    // censoredText = censoredText.replace(new RegExp(pattern, 'gi'), '****');
-    // words.forEach((word) => {
-    //     const regex = new RegExp(`\\b${word}\\b`, 'gi');
-    //     censoredText = censoredText.replace(regex, '****');
-    //     //console.log(logWarn(`Censoring word: ${word}`));
-    // });
-    // return censoredText;
 };
 
 const isProfane = (text) => {
+    testPattern.lastIndex = 0;
     return text.test(testPattern);
-    // for (let word of words) {
-    //     const regex = new RegExp(`\\b${word}\\b`, 'i');
-    //     if (regex.test(text)) {
-    //         return true;
-    //     }
-    // }
-    // return false;
 }
 
 module.exports = { isProfane, censorText };
