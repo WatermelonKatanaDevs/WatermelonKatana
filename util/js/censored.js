@@ -5,6 +5,7 @@ const testPattern = new RegExp(pattern, "i");
 // const { LOG_LEVELS, logInfo, logWarn, logError, logDebug } = require('./logger');
 
 const censorText = (text) => {
+    censorPattern.lastIndex = 0;
     return text.replace(censorPattern, '****');
     // let censoredText = text;
     // censoredText = censoredText.replace(new RegExp(pattern, 'gi'), '****');
