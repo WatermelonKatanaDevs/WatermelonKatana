@@ -9,10 +9,10 @@ const jwt = require("jsonwebtoken");
 const jwtSecret = process.env["JWT_SECRET"];
 exports.register = async (req, res, next) => {
   const { username, password } = req.body;
-  if (!username.match(/^[\w\d_-]+$/)) return res.status(400).json({ message: "Username can only contain letters, numbers, and underscores" });
-  if (password.length < 6) return res.status(400).json({ message: "Password must be at least 6 characters" });
-  if (Profanity.isProfane(username)) { return res.status(400).json({ message: "Oh no! This violates our TOS, please try another name" }) }
   try {
+    if (!username.match(/^[\w\d_-]+$/)) throw ({ message: "Username can only contain letters, numbers, and underscores" });
+    if (password.length < 6) throw ({ message: "Password must be at least 6 characters" });
+    if (Profanity.isProfane(username)) { throw ({ message: "Oh no! This violates our TOS, please try another name" }) }
     var hash = await bcrypt.hash(password, 10);
     const user = await Users.create({
       username,
@@ -37,11 +37,11 @@ exports.register = async (req, res, next) => {
       user: user._id,
       role: user.role,
     });
-  } catch(error) {
+  } catch (error) {
     res.locals.clearCookie();
     res.status(400).json({
       message: "User not successful created",
-      error: error.message.includes("E11000") ? "as there is an account already with this name": error.message,
+      error: error.message.includes("E11000") ? "as there is an account already with this name" : error.message,
     });
   }
 };
@@ -123,9 +123,9 @@ exports.update = async (req, res, next) => {
     await user.save();
     res.status(201).json({
       message: "Update successful",
-      user 
+      user
     });
-  } catch(error) {
+  } catch (error) {
     res.status(400).json({
       message: "An error occurred",
       error: error.message
@@ -159,7 +159,7 @@ async function cleanDeleteUser(res, user) {
     }
   }
 
-  await Users.deleteOne({_id: user._id});
+  await Users.deleteOne({ _id: user._id });
   //await user.remove();
   res.status(200).json({ message: 'User successfully deleted', user });
 }
@@ -167,21 +167,21 @@ async function cleanDeleteUser(res, user) {
 exports.deleteSelf = async (req, res, next) => {
   const { confirmationPswd } = req.body;
   const userId = res.locals.userToken?.id;
-  
+
   try {
     const user = await Users.findById(userId);
     if (!user) return res.status(404).json({
       message: "User not found",
     });
-  
+
     const isMatch = await bcrypt.compare(confirmationPswd, user.password);
     if (!isMatch) return res.status(400).json({
       message: "Confirmation password is incorrect",
     });
-    
+
     res.cookie("jwt", "", { maxAge: "1" });
-    await cleanDeleteUser(res,user);
-  } catch(error) {
+    await cleanDeleteUser(res, user);
+  } catch (error) {
     res.status(400).json({ message: "An error occurred", error: error.message })
   }
 };
@@ -206,16 +206,16 @@ exports.listUsers = async (req, res, next) => {
     if (req.query.role) search.role = req.query.role;
     if (req.query.customQuery) search = req.query.customQuery;
     var users = await Users.find(search);
-    const list = users.map(e=>e.pack());
+    const list = users.map(e => e.pack());
     res.status(200).json({ user: list });
-  } catch(err) {
+  } catch (err) {
     res.status(401).json({ message: "Not successful", error: err.message });
   }
 };
 
 exports.check = async (req, res, next) => {
   try {
-    if (!res.locals.userToken) return res.status(200).json({auth:false});
+    if (!res.locals.userToken) return res.status(200).json({ auth: false });
     const uid = res.locals.userToken.id;
     var user = await Users.findOne({ _id: uid });
     if (!user) return res.status(404).json({
@@ -223,8 +223,8 @@ exports.check = async (req, res, next) => {
       error: "User not found",
     });
     user = user.pack();
-    res.status(200).json({auth:true,user});
-  } catch(err) {
+    res.status(200).json({ auth: true, user });
+  } catch (err) {
     res.status(401).json({ message: "Not successful", error: err.message });
     console.log(err.message);
   }
@@ -251,7 +251,7 @@ exports.userdata = async (req, res, next) => {
     });
     user = user.pack();
     res.status(200).json(user);
-  } catch(err) {
+  } catch (err) {
     res.status(401).json({ message: "Not successful", error: err.message });
     console.log(err.message);
   }
@@ -260,7 +260,7 @@ exports.userdata = async (req, res, next) => {
 exports.changePassword = async (req, res, next) => {
   const { currentPassword, newPassword } = req.body;
   const userId = res.locals.userToken?.id;
-  
+
   if (!userId || !currentPassword || !newPassword) return res.status(400).json({
     message: "User ID, current password, and new password are required",
   });
@@ -321,13 +321,13 @@ exports.follow = async (req, res, next) => {
     });
     if (!uinc) user.followers.push(sid);
     if (!sinc) self.following.push(uid);
-    user.notify(self.username+" started following you!","","/user/"+self.username,sid,self.username);
-    await Promise.all([user.save(),self.save()]);
+    user.notify(self.username + " started following you!", "", "/user/" + self.username, sid, self.username);
+    await Promise.all([user.save(), self.save()]);
     res.status(201).json({
       message: "Follow successful",
       user: self
     });
-  } catch(error) {
+  } catch (error) {
     res.status(400).json({
       message: "An error occurred",
       error: error.message
@@ -355,14 +355,14 @@ exports.unfollow = async (req, res, next) => {
       message: "Invalid",
       error: "Not following user",
     });
-    if (uindex !== -1) user.followers.splice(uindex,1);
-    if (sindex !== -1) self.following.splice(sindex,1);
-    await Promise.all([user.save(),self.save()]);
+    if (uindex !== -1) user.followers.splice(uindex, 1);
+    if (sindex !== -1) self.following.splice(sindex, 1);
+    await Promise.all([user.save(), self.save()]);
     res.status(201).json({
       message: "Unfollow successful",
       user: self
     });
-  } catch(error) {
+  } catch (error) {
     res.status(400).json({
       message: "An error occurred",
       error: error.message
@@ -384,10 +384,10 @@ exports.openNotification = async (req, res) => {
       message: "Not successful",
       error: "Notification not found",
     });
-    user.notifications.splice(index,1);
+    user.notifications.splice(index, 1);
     await user.save();
     res.redirect(notif.link);
-  } catch(err) {
+  } catch (err) {
     res.status(401).json({ message: "Not successful", error: err.message });
     console.log(err.message);
   }
