@@ -10,7 +10,7 @@ const censorText = (text) => {
 };
 
 const isProfane = (text) => {
-    return text.test(testPattern);
+    return testPattern.test(text);
 }
 
 module.exports = { isProfane, censorText };
