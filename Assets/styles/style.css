@@ -348,6 +348,7 @@ input[type=checkbox]:checked+.checkbox::after {
 	flex-wrap: wrap;
 	line-height: 0;
 	gap: 0 8px;
+	margin: 1em 0 1em 0;
 }
 
 .project-tags p,

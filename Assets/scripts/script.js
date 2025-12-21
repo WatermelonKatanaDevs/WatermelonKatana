@@ -141,7 +141,7 @@ function projHTML(list, tok) {
       <div class="thumbnail-border ${classes}">
         <div class="panel-overlay">
           <div>Score: ${proj.score} Views: ${proj.views}</div>
-          <div>${proj.tags.map(e => `#${e}`).join(", ")}</div>
+          <div>${tagHTML(proj.tags)}</div>
         </div>
         <img class="project-thumbnail" src="${proj.thumbnail || "/images/blank_project.png"}" alt="">
       </div>
@@ -214,7 +214,7 @@ async function createDeleteButton(topic, backpath) {
 }
 
 // checks if link is valid for storage population
-let cdoPattern = /^https:\/\/studio.code.org\/projects\/(applab|gamelab)\/([^\/]+)/;
+let cdoPattern = /^https:\/\/studio\.code\.org\/projects\/(applab|gamelab)\/([^\/]+)/;
 function isCDOStorage(url) {
   return typeof url !== "string" ? false : url.match(cdoPattern) !== null;
 }
@@ -295,7 +295,7 @@ function tagTitle(tags) {
 }
 
 function tagHTML(tags) {
-  return tags.map(e => (e.length > 0 ? "<p>#" + e + "</p>" : "")).join(" ");
+  return tags.map(e => `#${e}`).join(", ");
 }
 
 JSON.safeParse = function (str, backup) {
