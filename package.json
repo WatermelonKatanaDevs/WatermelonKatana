@@ -13,7 +13,7 @@
     "license": "MIT",
     "dependencies": {
         "bcryptjs": "^2.4.3",
-        "canvas": "^3.0.1",
+        "canvas": "^3.2.0",
         "cookie-parser": "^1.4.7",
         "cors": "^2.8.5",
         "cross-fetch": "^4.1.0",
