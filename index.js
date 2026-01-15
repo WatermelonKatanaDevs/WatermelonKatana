@@ -175,6 +175,8 @@ app.get("/forum/discussion/:id", checkAuth, makeFormToken, async (req, res) => {
     post.viewers.push(tok.id);
     post.views++;
   }
+  // keep this in until all posts and projects are at the correct number of views
+  post.views = post.viewers.length;
   sendFileReplace(res, "./Pages/forum/discussion.html", (s) => s.replace("<!--og:meta-->", `
     <meta property="og:title" content="${makeLiteralChars(post.title)}"/>
     <meta property="og:type" content="website"/>
