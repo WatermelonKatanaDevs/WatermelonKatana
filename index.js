@@ -129,9 +129,9 @@ app.get("/project/:id", checkAuth, makeFormToken, async (req, res) => {
   if (tok && !proj.viewers.includes(tok.id)) {
     proj.viewers.push(tok.id);
     proj.views++;
-  } else { // keep this in until all posts and projects are at the correct number of views
-    proj.views = proj.viewers.length;
-  }
+  } 
+  // keep this in until all posts and projects are at the correct number of views
+  proj.views = proj.viewers.length;
   sendFileReplace(res, "./Pages/projects/project.html", (s) => s.replace("<!--og:meta-->", `
     <meta property="og:title" content="${makeLiteralChars(proj.title)}"/>
     <meta property="og:type" content="website"/>
