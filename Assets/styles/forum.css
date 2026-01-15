@@ -6,6 +6,49 @@ body {
   width: 99%;
   position: relative;
   left: 1%;
+  overflow-wrap: break-word;
+}
+
+.post-upvote {
+  margin-bottom: 5px;
+}
+
+.post-name {
+  text-align: center;
+  color: var(--palette-textcolor);
+}
+
+#reply {
+  background: var(--palette-background-card);
+  position: fixed;
+  z-index: 100;
+  display: none;
+  bottom: 5px;
+  border: 1px solid var(--palette-background-item);
+  border-radius: 10px;
+  transform: translateX(1%);
+}
+
+#reply-btn {
+  color: var(--palette-textcolor);
+  background-image: none;
+}
+
+#reply-btn:hover {
+  color: var(--palette-textcolor);
+  background-color: var(--palette-background-item);
+  cursor: pointer;
+}
+
+#reply-textbox {
+  margin: 0;
+  padding: 5px;
+  display: block;
+  width: calc(100% - 10px);
+  outline: none;
+  resize: none;
+  background: var(--palette-background-container);
+  color: var(--palette-textcolor);
 }
 
 #comments {
@@ -28,7 +71,6 @@ body {
 }
 
 .comment-content {
-  overflow-wrap: break-word;
   margin: 0;
   padding: 5px;
   display: block;
@@ -43,38 +85,6 @@ body {
   margin: 0 0 5px 0;
   width: 100%;
   position: relative;
-}
-
-#reply-btn {
-  color: var(--palette-textcolor);
-  background-image: none;
-}
-#reply-btn:hover {
-  color: var(--palette-textcolor);
-  background-color: var(--palette-background-item);
-  cursor: pointer;
-}
-
-#reply {
-  background: var(--palette-background-card);
-  position: fixed;
-  z-index: 100;
-  display: none;
-  bottom: 5px;
-  border: 1px solid var(--palette-background-item);
-  border-radius: 10px;
-  transform: translateX(1%);
-}
-
-#reply-textbox {
-  margin: 0;
-  padding: 5px;
-  display: block;
-  width: calc(100% - 10px);
-  outline: none;
-  resize: none;
-  background: var(--palette-background-container);
-  color: var(--palette-textcolor);
 }
 
 .comment-data {
@@ -137,15 +147,6 @@ body {
   bottom: 2px;
   right: 2px;
   z-index: 99;
-}
-
-.post-upvote {
-  margin-bottom: 5px;
-}
-
-.post-name {
-  text-align: center;
-  color: var(--palette-textcolor);
 }
 
 .upvote-container, .report-btn {

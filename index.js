@@ -10,7 +10,6 @@ const RateLimit = require("express-rate-limit");
 */
 const makeLiteralChars = require('./util/js/makeLiteralChars');
 const { logInfo, logDebug, logError, logWarn } = require('./util/js/logger');
-const createPlaceholder = require('./util/js/createPlaceholder');
 
 const connectDB = require("./Database/connect");
 const { adminAuth, userAuth, checkAuth, makeFormToken } = require("./Middleware/auth");
@@ -87,25 +86,6 @@ app.get("/register", makeFormToken, (req, res) => res.sendFile(cldir + "/users/a
 app.get("/login", (req, res) => res.sendFile(cldir + "/users/auth/login.html")); // Login page
 
 /**
- * Placeholder Images
- */
-app.get('/placeholder/:size', (req, res) => {
-  const sizeMatch = req.params.size.match(/^(\d+)x(\d+)$/);
-  if (!sizeMatch) {
-    return res.status(400).send('Invalid size format. Use WIDTHxHEIGHT, e.g., 300x200.');
-  }
-  const width = parseInt(sizeMatch[1], 10);
-  const height = parseInt(sizeMatch[2], 10);
-  if (isNaN(width) || isNaN(height) || width <= 0 || height <= 0 || width > 5000 || height > 5000) {
-    return res.status(400).send('Width and height must be positive integers less than or equal to 5000.');
-  }
-  const imgBuffer = createPlaceholder(width, height);
-  res.set('Content-Type', 'image/png');
-  res.send(imgBuffer);
-});
-
-
-/**
  * WatermelonKatana open-source libraries
  */
 app.get("/lib/meloncanvas.js", (req, res) => res.sendFile(__dirname + "/lib/meloncanvas.js")); // MelonCanvas library
@@ -149,6 +129,8 @@ app.get("/project/:id", checkAuth, makeFormToken, async (req, res) => {
   if (tok && !proj.viewers.includes(tok.id)) {
     proj.viewers.push(tok.id);
     proj.views++;
+  } else { // keep this in until all posts and projects are at the correct number of views
+    proj.views = proj.viewers.length;
   }
   sendFileReplace(res, "./Pages/projects/project.html", (s) => s.replace("<!--og:meta-->", `
     <meta property="og:title" content="${makeLiteralChars(proj.title)}"/>

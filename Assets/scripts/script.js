@@ -290,10 +290,6 @@ async function getCDOStorage(url) {
   }
 }
 
-function tagTitle(tags) {
-  return tags.map(e => (e.length > 0 ? "#" + e : "")).join(" ");
-}
-
 function tagHTML(tags) {
   return tags.map(e => `#${e}`).join(", ");
 }

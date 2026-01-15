@@ -38,9 +38,9 @@ Project API
         /api/project/delete/<id:project id> User
         /api/project/comment/<id:project id>/delete User { index: <int> }
     [GET]
-        /api/project/list ?(poster)=<string>&(platform)=<string>&(postedBefore)=<int>&(postedAfter)=<int>&(includeTags)=[<string>]&(excludeTags)=[<string>]&(featured)=<bool>&(showMature)=<bool>&(showHidden)=<bool>&(recipient)=<string>&(customQuery)=<mongodb query object>
+        /api/project/list ?(poster)=<string>&(platform)=<string>&(postedBefore)=<int>&(postedAfter)=<int>&(includeTags)=[<string>]&(excludeTags)=[<string>]&(featured)=<bool>&(randomEntryAction)=<string>&(page)=<int>&(sort)=<active|latest|oldest|score|views>&(showMature)=<bool>&(showHidden)=<bool>&(showRecent)=<int>&(recipient)=<string>&(customQuery)=<mongodb query object>
         /api/project/search ?query=<string>&(showMature)=<bool>&(showHidden)=<bool>
-        /api/project/data/<id:project id> this.data.bind(this));
+        /api/project/data/<id:project id> User
         /api/project/delete/<id:project id> User
         /api/project/favorite/<id:project id> User
         /api/project/unfavorite/<id:project id> User
@@ -60,7 +60,7 @@ Forum API
         /api/forum/delete/<id:post id> User
         /api/forum/comment/<id:post id>/delete User { index: <int> }
     [GET]
-        /api/forum/list None ?(poster)=<string>&(platform)=<string>&(postedBefore)=<int>&(postedAfter)=<int>&(includeTags)=[<string>]&(excludeTags)=[<string>]&(featured)=<bool>&(showMature)=<bool>&(showHidden)=<bool>&(recipient)=<string>&(customQuery)=<mongodb query object>
+        /api/forum/list None ?(poster)=<string>&(platform)=<string>&(postedBefore)=<int>&(postedAfter)=<int>&(includeTags)=[<string>]&(excludeTags)=[<string>]&(featured)=<bool>&(randomEntryAction)=<string>&(page)=<int>&(sort)=<active|latest|oldest|score|views>&(showMature)=<bool>&(showHidden)=<bool>&(showRecent)=<int>&(recipient)=<string>&(customQuery)=<mongodb query object>
         /api/forum/search ?query=<string>&(showMature)=<bool>&(showHidden)=<bool>
         /api/forum/data/<id:post id> None
         /api/forum/delete/<id:post id> User
