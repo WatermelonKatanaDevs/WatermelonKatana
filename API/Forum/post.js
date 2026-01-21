@@ -111,7 +111,7 @@ module.exports = class {
       post.hidden = hidden;
       post.privateRecipients = privateRecipients;
       post.activeAt = Date.now();
-      post.viewers = [];
+      // post.viewers = [];
       await post.save();
       res.status(201).json({
         message: "Post successfully updated",
@@ -362,7 +362,7 @@ module.exports = class {
         error: "User not found",
       });
       post.activeAt = Date.now();
-      post.viewers = [];
+      // post.viewers = [];
       post.comments.push({
         content,
         rating: 0,
@@ -456,7 +456,7 @@ module.exports = class {
         error: "User does not own comment",
       });
       post.activeAt = Date.now();
-      post.viewers = [];
+      // post.viewers = [];
       comment.content = content;
       await post.save();
       res.status(201).json({
