@@ -10,8 +10,8 @@ var Users =  require("./Database/model/Users");
   var ulist = await Users.find({ });
   for (var u of ulist) {
     // Check if the user has a default avatar and banner
-    if (u.avatar == "https://fakeimg.pl/300x300") u.avatar = "https://watermelonkatana.com/images/default_pfp.png";
-    if (u.banner == "https://fakeimg.pl/720x360") u.banner = "https://watermelonkatana.com/images/default_banner.png";
+    if (u.avatar === "https://fakeimg.pl/300x300") u.avatar = "https://watermelonkatana.com/images/default_pfp.png";
+    if (u.banner === "https://fakeimg.pl/720x360") u.banner = "https://watermelonkatana.com/images/default_banner.png";
 
 
     //u.avatar = "https://fakeimg.pl/300x300";
@@ -25,7 +25,7 @@ var Users =  require("./Database/model/Users");
   
   //Projects.updateMany({ },{views:0,thumbnail:""}).then(console.log);
 
-  //* Run when converting to ref
+  /* Run when converting to ref
   
   var list = await Projects.find({ });
   for (var p of list) {
