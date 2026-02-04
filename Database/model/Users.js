@@ -50,13 +50,13 @@ const UserSchema = new Mongoose.Schema({
   },
   avatar: {
     type: String,
-    default: "https://watermelonkatana.com/images/default_pfp.png",
-    maxlength: 500
+    default: "/images/default_pfp.png",
+    maxlength: 1000
   },
   banner: {
     type: String,
-    default: "https://watermelonkatana.com/images/default_banner.png",
-    maxlength: 500
+    default: "/images/default_banner.png",
+    maxlength: 1000
   },
   biography: {
     type: String,
