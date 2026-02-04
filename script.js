@@ -10,8 +10,10 @@ var Users =  require("./Database/model/Users");
   var ulist = await Users.find({ });
   for (var u of ulist) {
     // Check if the user has a default avatar and banner
-    u.avatar = u.avatar.replace("^https:\/\/watermelonkatana\.com","");
-    u.banner = u.banner.replace("^https:\/\/watermelonkatana\.com","");
+    //u.avatar = u.avatar.replace("^https:\/\/watermelonkatana\.com","");
+    //u.banner = u.banner.replace("^https:\/\/watermelonkatana\.com","");
+    if (u.avatar === "https://watermelonkatana.com/images/default_pfp.png") u.avatar = "/images/default_pfp.png";
+    if (u.banner === "https://watermelonkatana.com/images/default_banner.png") u.banner = "/images/default_banner.png";
     //if (u.avatar === "https://fakeimg.pl/300x300") u.avatar = "https://watermelonkatana.com/images/default_pfp.png";
     //if (u.banner === "https://fakeimg.pl/720x360") u.banner = "https://watermelonkatana.com/images/default_banner.png";
 
