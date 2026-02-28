@@ -18,6 +18,8 @@
     --box-padding: 20px;
     --border-color: #575757;
     --border-width: 2px;
+    --text-visible: none;
+    --text-margin: 0px;
 }
 
 @media(prefers-color-scheme: light) {
@@ -210,6 +212,11 @@ body {
     .boxed-text {
         width: 100%;
     }
+
+    :root {
+        --text-visible: inherit;
+        --text-margin: 8px;
+    }
 }
 
 /* Footer Styling */
@@ -241,7 +248,7 @@ body {
     color: white;
     text-decoration: none;
     padding: 12px 20px;
-    margin: 0 10px;
+    margin: 0 var(--text-margin);
     border-radius: 5px;
     font-size: 18px;
     transition: background-color 0.3s;
@@ -249,8 +256,12 @@ body {
 }
 
 .social-btn i {
-    margin-right: 8px;
+    margin-right: var(--text-margin);
     /* Space between icon and text */
+}
+
+.social-btn span {
+    display: var(--text-visible)
 }
 
 .social-btn:hover {

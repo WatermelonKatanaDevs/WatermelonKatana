@@ -6,22 +6,28 @@ footer.innerHTML = `
     X 
     </button>
     <a href="https://discord.gg/S8XTzKEz5f" target="_blank" class="social-btn discord-btn">
-        <i class="fab fa-discord"></i> Discord
+        <i class="fab fa-discord"></i>
+        <span>Discord</span>
     </a>
     <a href="https://github.com/watermelonkatanadevs" target="_blank" class="social-btn github-btn">
-        <i class="fab fa-github"></i> GitHub
+        <i class="fab fa-github"></i>
+        <span>GitHub</span>
     </a>
     <a href="https://www.linkedin.com/company/watermelonkatana/" target="_blank" class="social-btn linkedin-btn">
-        <i class="fab fa-linkedin"></i> LinkedIn
+        <i class="fab fa-linkedin"></i>
+        <span>LinkedIn</span>
     </a>
     <a href="https://twitter.com/WatermelonKatana" target="_blank" class="social-btn twitter-btn">
-        <i class="fab fa-twitter"></i> Twitter
+        <i class="fab fa-twitter"></i>
+        <span>Twitter</span>
     </a>
     <a href="https://buymeacoffee.com/watermelonkatana" target="_blank" class="social-btn coffee-btn">
-        <i class="fas fa-coffee"></i> BuyMeCoffee
+        <i class="fas fa-coffee"></i>
+        <span>BuyMeCoffee</span>
     </a>
     <a href="https://www.patreon.com/watermelonkatana?utm_medium=unknown&amp;utm_source=join_link&amp;utm_campaign=creatorshare_creator&amp;utm_content=copyLink" target="_blank" class="social-btn patreon-btn">
-        <i class="fab fa-patreon"></i> Patreon  
+        <i class="fab fa-patreon"></i>
+        <span>Patreon</span>
     </a>
 </div>
 <div class="footer-info">
