@@ -71,7 +71,7 @@
 
         if (res.status === 400 || res.status === 401) {
           display.style.padding = "5px";
-          return display.textContent = data.message + '. ' + (data.error ? data.error : '');
+          return display.textContent = data.message + '. ' + (data.error ? data.error : 'Error has not been logged. Please contact us');
         }
 
         // Redirect on successful registration

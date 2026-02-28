@@ -52,7 +52,7 @@
         const data = await res.json();
         if (res.status >= 400) {
           display.style.padding = "5px";
-          return display.textContent = `${data.message}. ${data.error ? data.error : ''}`
+          return display.textContent = `${data.message}. ${data.error ? data.error : 'Error has not been logged. Please contact us'}`
         }
         var redirect = params.get("redir") || "/";
         location.assign(redirect);
