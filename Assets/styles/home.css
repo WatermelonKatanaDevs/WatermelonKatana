@@ -11,7 +11,7 @@ body {
 
 .container {
 	width: 90%;
-	overflow: scroll;
+	overflow: hidden scroll;
 	scrollbar-width: none;
 	padding: 20px;
 	margin: 2.5em auto auto;
