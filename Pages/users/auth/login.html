@@ -41,7 +41,8 @@
 
    form.addEventListener('submit', async (e) => {
       e.preventDefault()
-      display.textContent = ''
+      display.textContent = '';
+      display.style.padding = "0px";
       try {
         const res = await fetch('/api/auth/login', {
           method: 'POST',

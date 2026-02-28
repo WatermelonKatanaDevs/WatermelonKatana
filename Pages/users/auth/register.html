@@ -46,7 +46,9 @@
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      display.textContent = ''; // Clear previous errors
+      // Clear previous errors
+      display.textContent = '';
+      display.style.padding = "0px";
 
       // Check if passwords match
       if (password.value !== password2.value) {
