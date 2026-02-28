@@ -3,9 +3,9 @@ body {
 }
 
 #post {
-  width: 99%;
+  width: 98vw;
   position: relative;
-  left: 1%;
+  left: 1vw;
   overflow-wrap: break-word;
 }
 
