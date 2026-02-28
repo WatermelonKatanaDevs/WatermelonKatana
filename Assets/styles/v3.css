@@ -18,8 +18,8 @@
     --box-padding: 20px;
     --border-color: #575757;
     --border-width: 2px;
-    --text-visible: none;
-    --text-margin: 0px;
+    --text-visible: inherit;
+    --text-margin: 8px;
 }
 
 @media(prefers-color-scheme: light) {
@@ -214,8 +214,8 @@ body {
     }
 
     :root {
-        --text-visible: inherit;
-        --text-margin: 8px;
+        --text-visible: none;
+        --text-margin: inherit;
     }
 }
 
