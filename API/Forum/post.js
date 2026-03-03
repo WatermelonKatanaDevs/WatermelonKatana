@@ -43,6 +43,7 @@ module.exports = class {
   notifyUserFollowers(title, user, content, link) {
     return Promise.all(user.followers.map(async function (fid) {
       var follower = await Users.findOne({ _id: fid });
+      if (!follower) return;
       follower.notify(title, content, link, user._id, user.username);
       await follower.save();
     }));
