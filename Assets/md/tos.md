@@ -14,12 +14,12 @@ Welcome to WatermelonKatana! By using our website and services, you agree to com
 
 - **Respectful Behavior**: You agree to use our services in a manner that is respectful to other users. Harassment, hate speech, and discrimination are strictly prohibited.
 - **Legal Use**: You agree not to use our services for any illegal or unauthorized purpose. You agree to comply with all local laws regarding online conduct and acceptable content.
-- **Content Ownership**: You retain ownership of the content you create and upload to our services. However, by uploading content, you grant WatermelonKatana a non-exclusive, royalty-free, worldwide license to use, store, and display your content. WatermelonKatana will never sell your content to third parties.
+- **Content Ownership**: You retain ownership of the content you create and upload to our services. However, by uploading content, you grant WatermelonKatana a non-exclusive, royalty-free, worldwide license to use, store, and display your content. WatermelonKatana will never sell your content to third parties or collect any additional information about you.
 
-### 3. Prohibited Activites
+### 3. Prohibited Activities
 
 - **Spamming**: You agree not to send unsolicited or unauthorized advertising, spam, or any other form of solicitation.
-- **Malware and Hacking**: You agree to not upload or transmit any software viruses, worms, or any other harmful code. You also agree not to engage in hacking, phishing, or any activites aimed at compromising the security of our services or the data of our users.
+- **Malware and Hacking**: You agree to not upload or transmit any software viruses, worms, or any other harmful code. You also agree not to engage in hacking, phishing, or any activities aimed at compromising the security of our services or the data of our users.
 - **Impersonation**: You agree not to impersonate any person or entity, or falsely state or otherwise misrepresent your affiliation with a person or entity.
 
 ### 4. Content and Intellectual Property
@@ -38,7 +38,7 @@ Welcome to WatermelonKatana! By using our website and services, you agree to com
 
 ### 7. Changes to Terms
 
-- **Modification**: We may modify these terms at some point. Any changes will be effective immediately upon posting the updated terms on our website. The best way to be notified of the new terms is the Discord server; Terms have been last updated at *12/03/2024*. Your continued use of our services after any changes constitute your acceptance of the new terms.
+- **Modification**: We may modify these terms at some point. Any changes will be effective immediately upon posting the updated terms on our website. The best way to be notified of the new terms is the Discord server; Terms have been last updated at *03/03/2026*. Your continued use of our services after any changes constitute your acceptance of the new terms.
 
 ### 8. Governing Law
 
