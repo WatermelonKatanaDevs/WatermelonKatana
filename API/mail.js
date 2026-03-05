@@ -1,12 +1,12 @@
 // Email
 const mailer = require('nodemailer');
 const transporter = mailer.createTransport({
-  host: "smtp-mail.outlook.com",
-  port: 587,
-  secure: false,
+  host: "smtp-relay.brevo.com",
+  port: 587,          // or 2525, or 465
+  secure: false,      // true only if you use port 465
   auth: {
-    user: "watermelonkatana@outlook.com",
-    pass: process.env.EMAIL_PASSWORD,
+    user: process.env.BREVO_SMTP_LOGIN, 
+    pass: process.env.BREVO_SMTP_KEY,  
   },
 });
 
