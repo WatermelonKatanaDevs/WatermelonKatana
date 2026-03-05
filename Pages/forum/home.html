@@ -57,23 +57,20 @@
     searchBar.value = params.get("query") || "";
 
     form.addEventListener('submit', async (e) => {
-      e.preventDefault()
+      e.preventDefault();
       try {
-        var query = searchBar.value;
-        const url = new URL(location);
+        const query = searchBar.value;
+        const params = {};
         if (query) {
-          url.searchParams.set("query", query);
-          url.searchParams.delete("sort");
+          params.query = query;
         } else {
-          url.searchParams.set("sort", sortOptions.value);
-          url.searchParams.delete("query");
+          params.sort = sortOptions.value;
         }
-        history.pushState({}, "", url);
-        params = new URLSearchParams(location.search);
-        searchIndex(1);
+        history.pushState({}, "", buildUrl(params));
+        await searchIndex(1);
       } catch (err) {
-        alert(err.message);
-        console.log(err.message)
+        alert('An error occurred: ' + err.message);
+        console.error(err.message);
       }
     });
 
