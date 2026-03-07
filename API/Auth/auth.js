@@ -158,6 +158,17 @@ async function cleanDeleteUser(res, user) {
       await p.save();
     }
   }
+  const socialCircle = new Set(user.followers.concat(user.following)).keys();
+  for (const individual of socialCircle) {
+    const i = await Users.findById(individual);
+    if (i) {
+      let followingIndex = i.following.indexOf(user.id);
+      let followerIndex = i.followers.indexOf(user.id);
+      if (followingIndex > -1) { i.following.splice(followingIndex, 1) }
+      if (followerIndex > -1) { i.followers.splice(followerIndex, 1) }
+      await i.save();
+    }
+  }
 
   await Users.deleteOne({ _id: user._id });
   //await user.remove();
