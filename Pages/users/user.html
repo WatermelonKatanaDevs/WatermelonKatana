@@ -92,6 +92,17 @@
       | <a href="/uploadedmedia?poster=${userData.username}">Uploaded Media</a>
     </div>`;
       }
+      
+      async function followbtnclick(feature) {
+        var count = document.querySelector("#followercount");
+        if (feature) {
+          count.innerHTML = Number(count.innerHTML) + 1;
+          await fetch("/api/auth/follow?username=" + name);
+        } else {
+          count.innerHTML = Number(count.innerHTML) - 1;
+          await fetch("/api/auth/unfollow?username=" + name);
+        }
+      }
 
       (async function () {
         try {
@@ -114,8 +125,6 @@
           const isOwnProfile = isAuthenticated && username === userData.username;
           await renderProfile(userData, isAuthenticated, isOwnProfile);
 
-          // why the hell isn't this within the userData? published: {} or something of the like should be implemented for "/api/auth/userdata?username=:name"
-          // so i'm not stuck using this bullshit, probably why colack disregaurded it as unimportant when fixing stupid! stupid! stupid!
           const publishedProjects = await fetch("/api/project/list?poster=" + name + 
           (isMature ? `&showMature=${isMature}`: "") + 
           (isOwnProfile ? `&showHidden=${isOwnProfile}`: ""));
