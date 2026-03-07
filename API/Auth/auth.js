@@ -159,7 +159,7 @@ async function cleanDeleteUser(res, user) {
     }
   }
   const socialCircle = new Set(user.followers.concat(user.following)).keys();
-  for (const individual of socialCircle) {
+  for (let individual of socialCircle) {
     const i = await Users.findById(individual);
     if (i) {
       let followingIndex = i.following.indexOf(user.id);
