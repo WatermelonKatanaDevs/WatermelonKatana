@@ -31,6 +31,7 @@ async function getUser(id) {
   if (_userCache[id]) return _userCache[id];
   var res = await fetch("/api/auth/userdata?id=" + id);
   var u = await res.json();
+  if (u.error) u = {"username":"Deleted User","verified":false,"avatar":"/images/default_pfp.png","banner":"/images/default_banner.png","biography":"Deleted user.","badges":[],"role":"Basic","favorites":[],"following":[],"followers":[],"joinedAt":0,"mature":false,"notifications":[],"id":id}; 
   _userCache[id] = u;
   return u;
 }
