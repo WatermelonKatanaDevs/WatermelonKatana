@@ -38,9 +38,9 @@ exports.transferProject = async (req, res) => {
 exports.resetPassword = async (req, res) => {
   /*
     ~ 1/7/25 - I implemented swapping to req.body instead of req.query, hopefully more secure
+    ~ 3/8/26 - I changed it back to req.query since it uses a GET request which expects no body, I don't think it's less secure - DragonFireGames
   */
-  const uid = req.body.uid;
-  const password = req.body.password;
+  const { uid, password } = req.query;
   try {
     var hash = await bcrypt.hash(password || "password", 10);
     const user = await Users.findOne({ _id: uid });
