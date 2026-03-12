@@ -8,7 +8,7 @@ Welcome to WatermelonKatana! By using our website and services, you agree to com
 
 - **Eligibility**: You must be at least 13 years old to use our services.
 - **Account Security**: You are responsible for maintaining the security of your account and password. WatermelonKatana cannot and will not be liable for any loss or damage from your failure to comply with this security obligation.
-- **Accuracy of Information**: You agree to provide accurate and complete information during the registration process and to update such information to keep it accurate, current, and complete.
+- **Accuracy of Information**: You agree to provide accurate and complete information during the registration process and to update such information to keep it accurate, current, and complete. Watermelonkatana operates in good faith and will not ask for any invasive information to confirm or identify what you have provided us is true. If you are in a country or state that does not allow this we kindly ask you to discontinue using our services or not create an account at all.
 
 ### 2. User Conduct
 
@@ -36,9 +36,30 @@ Welcome to WatermelonKatana! By using our website and services, you agree to com
 
 - **Termination Rights**: We reserve the right to terminate or suspend your account and access to our services at our sole discretion, without notice or liability, for conduct that we believe violates these terms or is harmful to other users of WatermelonKatana, us, or third parties, or for any other reason.
 
+- **Content Retention**: When your account is removed by *us* or deleted by *you*; Watermelonkatana retains the right to keep the following data that you have provided to this platform
+<table>
+<th> What's Kept </th>
+<th> What's Deleted </th>
+<tr>
+<th>
+Posts,
+Projects,
+Comments,
+User Media (images, custom thumbnails, etc...),
+Project Data (specifically data saved by applab and gamelab)
+</th>
+<th>
+Your entire profile,
+Favorite projects,
+Follow & Following id indicators
+</th>
+</tr>
+</table>
+Watermelonkatana respects your right to remove this content manually on your own! However, doing so may cause major irreparable damage to the platforms archive. We will do our best to completely anonomize your content you have shared with us on this platform.
+
 ### 7. Changes to Terms
 
-- **Modification**: We may modify these terms at some point. Any changes will be effective immediately upon posting the updated terms on our website. The best way to be notified of the new terms is the Discord server; Terms have been last updated at *03/03/2026*. Your continued use of our services after any changes constitute your acceptance of the new terms.
+- **Modification**: We may modify these terms at some point. Any changes will be effective immediately upon posting the updated terms on our website. The best way to be notified of the new terms is the Discord server; Terms have been last updated at *03/12/2026*. Your continued use of our services after any changes constitute your acceptance of the new terms.
 
 ### 8. Governing Law
 
