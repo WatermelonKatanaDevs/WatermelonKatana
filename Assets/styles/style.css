@@ -64,8 +64,8 @@
 	--body-font: Tahoma, sans-serif;
 	--body-font-weight: 400;
 	--body-font-size: 1em;
-	--cursor: "/images/cursor.png";
-	--cursor-pointer: "/images/pointer.png";
+	--cursor: url("/images/cursor.png");
+	--cursor-pointer: url("/images/pointer.png");
 }
 
 @media(prefers-color-scheme: light) {
