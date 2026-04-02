@@ -2,6 +2,9 @@ location.path = location.pathname.split("/");
 if (localStorage.getItem("color-scheme") === null) {
   localStorage.setItem("color-scheme", window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 }
+if (localStorage.getItem("cursor-scheme") === null) {
+  localStorage.setItem("cursor-scheme", "default");
+}
 document.addEventListener("DOMContentLoaded", updateColorScheme.bind(this, null));
 var _authCache = false;
 var _authwaiting = [];
@@ -31,7 +34,7 @@ async function getUser(id) {
   if (_userCache[id]) return _userCache[id];
   var res = await fetch("/api/auth/userdata?id=" + id);
   var u = await res.json();
-  if (u.error) u = {"username":"Deleted User","verified":false,"avatar":"/images/default_pfp.png","banner":"/images/default_banner.png","biography":"Deleted user.","badges":[],"role":"Basic","favorites":[],"following":[],"followers":[],"joinedAt":0,"mature":false,"notifications":[],"id":id}; 
+  if (u.error) u = { "username": "Deleted User", "verified": false, "avatar": "/images/default_pfp.png", "banner": "/images/default_banner.png", "biography": "Deleted user.", "badges": [], "role": "Basic", "favorites": [], "following": [], "followers": [], "joinedAt": 0, "mature": false, "notifications": [], "id": id };
   _userCache[id] = u;
   return u;
 }
@@ -59,6 +62,23 @@ function updateColorScheme(pref) {
         }
       }
     }
+  }
+}
+
+function updateCursorScheme(pref) {
+  pref = pref || localStorage.getItem("cursor-scheme");
+  localStorage.setItem("cursor-scheme", pref);
+  switch (pref) {
+    case "default":
+      stylesheet = document.head.querySelector("#cursorPref");
+      stylesheet?.remove();
+      break;
+    case "none":
+      stylesheet = document.createElement("style");
+      stylesheet.id = "cursorPref"
+      stylesheet.innerText = `:root {--cursor: default; --cursor-pointer: pointer;}`;
+      document.head.appendChild(stylesheet);
+      break;
   }
 }
 
