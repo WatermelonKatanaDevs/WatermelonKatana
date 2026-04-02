@@ -6,6 +6,7 @@ if (localStorage.getItem("cursor-scheme") === null) {
   localStorage.setItem("cursor-scheme", "default");
 }
 document.addEventListener("DOMContentLoaded", updateColorScheme.bind(this, null));
+document.addEventListener("DOMContentLoaded", updateCursorScheme.bind(this, null));
 var _authCache = false;
 var _authwaiting = [];
 
