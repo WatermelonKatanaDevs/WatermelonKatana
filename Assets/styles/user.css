@@ -95,7 +95,7 @@ body {
 }
 
 .uidtext {
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
   color: #999;
 }
 
@@ -136,7 +136,7 @@ body {
   position: fixed;
   right: 10px;
   top: 10px;
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
 }
 
 .follower-avatar {

@@ -5,7 +5,7 @@
   align-items: center;
   gap: 14px;
   padding: 10px 15px 10px 10px;
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
   user-select: none;
   border-radius: 10px;
   box-shadow: #2e2e2e33 0px 8px 24px;

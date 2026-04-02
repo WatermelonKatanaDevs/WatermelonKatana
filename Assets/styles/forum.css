@@ -37,7 +37,7 @@ body {
 #reply-btn:hover {
   color: var(--palette-textcolor);
   background-color: var(--palette-background-item);
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
 }
 
 #reply-textbox {
@@ -154,7 +154,7 @@ body {
   justify-content: center;
   align-items: center;
   position: relative;
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
   font-size: 1em;
   user-select: none;
   fill: #a5a5b0;

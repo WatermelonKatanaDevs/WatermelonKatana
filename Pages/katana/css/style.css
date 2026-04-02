@@ -54,7 +54,7 @@ body {
     border: none;
     border-radius: 8px;
     margin: 5px 0;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     transition: background 0.2s, color 0.2s;
 }
 
@@ -109,7 +109,7 @@ button.hideIfLoggedOut {
     background: none;
     border: 1px solid #565674;
     border-radius: 8px;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     margin: 5px 0;
     transition: all 0.2s;
 }

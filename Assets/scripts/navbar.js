@@ -213,7 +213,7 @@
     .dropdown-icon {
       position: relative;
       margin-right: 5px;
-      cursor: url("/images/pointer.png"), pointer !important;
+      cursor: var(--cursor-pointer);
       width: 2em;
       height: 2em;
       position: relative;
@@ -221,7 +221,6 @@
       align-items: center;
       justify-content: center;
       border-radius: 50%;
-      cursor: pointer;
       transition-duration: .3s;
       box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.13);
       border: none;

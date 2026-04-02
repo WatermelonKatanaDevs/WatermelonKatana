@@ -5,7 +5,7 @@
 .toggle-checkbox {
 	position: absolute;
 	opacity: 0;
-	cursor: pointer;
+	cursor: var(--cursor-pointer);
 	height: 0;
 	width: 0;
 }

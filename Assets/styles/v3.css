@@ -102,7 +102,7 @@ body {
     background-color: transparent;
     border: none;
     color: #ffffff6f;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     z-index: 1000;
 }
 
