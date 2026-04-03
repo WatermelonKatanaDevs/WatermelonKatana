@@ -33,7 +33,7 @@ module.exports = class {
 
 
   notifyUserMentions(message, user, content, link) {
-    return Promise.all([...new Set(message.match(/(?<=@)[^\s]+/g))?.keys()].map(async function (name) {
+    return Promise.all([...new Set(message.match(/(?<=@)[^\s]+/g))].map(async function (name) {
       var mention = await Users.findOne({ username: name });
       mention.notify(user.username + " mentioned you!", content, link, user._id, user.username);
       await mention.save();
