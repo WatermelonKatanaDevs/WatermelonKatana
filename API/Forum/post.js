@@ -35,6 +35,7 @@ module.exports = class {
   notifyUserMentions(message, user, content, link) {
     return Promise.all([...new Set(message.match(/(?<=@)[^\s]+/g))].map(async function (name) {
       var mention = await Users.findOne({ username: name });
+      if(!mention) { return }
       mention.notify(user.username + " mentioned you!", content, link, user._id, user.username);
       await mention.save();
     }));
@@ -43,7 +44,7 @@ module.exports = class {
   notifyUserFollowers(title, user, content, link) {
     return Promise.all(user.followers.map(async function (fid) {
       var follower = await Users.findOne({ _id: fid });
-      if (!follower) return;
+      if(!follower) { return }
       follower.notify(title, content, link, user._id, user.username);
       await follower.save();
     }));
