@@ -178,7 +178,7 @@ module.exports = class {
 
   async list(req, res, next) {
     try {
-      const { poster, platform, postedBefore, postedAfter, includeTags, excludeTags, featured, randomEntryAction, page, total, sort, showMature, showHidden, showRecent, recipient, customQuery, noclient } = req.query;
+      const { poster, platform, postedBefore, postedAfter, includeTags, excludeTags, featured, randomEntryAction, page, total, sort, showMature, showHidden, showRecent, recipient, customQuery, noclient} = req.query;
       var search = { hidden: false };
       let uid = res.locals.userToken?.id;
       if (poster) search.poster = poster;
@@ -238,38 +238,6 @@ module.exports = class {
         [this.name]: list,
         length: length || list.length
       };
-      if (randomEntryAction === 'redirect') {
-        res.redirect("/project/" + data[this.name][0].id);
-      } else {
-        res.status(200).json(data);
-      }
-    } catch (err) {
-      res.status(401).json({ message: "Not successful", error: err.message });
-      console.log(err.message);
-    }
-  };
-
-  async search(req, res, next) {
-    try {
-      const { query, page, total, showMature, showHidden, noclient } = req.query;
-      var search = { hidden: false, $text: { $search: query } };
-      var skipby = 0, length = parseInt(total), uid = res.locals.userToken?.id;
-      if (showMature == "false" || showMature == "0" || !uid || !(await Users.findOne({ _id: uid })).mature) search.mature = false;
-      if (showHidden == "true" || showHidden == "1") delete search.hidden;
-      if (!Number.isSafeInteger(parseInt(length))) {
-        length = await this.entriesLength(search);
-      }
-      skipby = ((page || 1) - 1) * entriesPerPage;
-      var list = await this.model.find(
-        search,
-        { relevance: { $meta: "textScore" } }
-      ).skip(skipby).sort({ relevance: { $meta: "textScore" } }).limit(entriesPerPage);
-      list = list.map(e => {
-        var c = e.pack();
-        c.relevance = e.relevance;
-        return c;
-      });
-      list = await this.censor(list, res);
       if (noclient == "1" || noclient == "true") {
         var content = "";
         for (let entry of list) {
@@ -280,7 +248,7 @@ module.exports = class {
                 <p style="display: inline;">${entry.content}
                 <br>
               By: <object><a href="/user/${entry.poster}"><i>${entry.poster}</i></a></object> | Views: ${entry.views} | Active ${entry.activeAt}</p>
-              <div class="forum-tags">${entry.tags.split(",")}</div>
+              <div class="forum-tags">${entry.tags.join("")}</div>
               </div>
             </a>`;
           } else {
@@ -304,12 +272,42 @@ module.exports = class {
           content += "</details>";
         }
         res.status(200).send(content);
+      } else if (randomEntryAction === 'redirect') {
+        res.redirect("/project/" + data[this.name][0].id);
       } else {
-        res.status(200).json({
-          [this.name]: list,
-          length: length
-        });
+        res.status(200).json(data);
       }
+    } catch (err) {
+      res.status(401).json({ message: "Not successful", error: err.message });
+      console.log(err.message);
+    }
+  };
+
+  async search(req, res, next) {
+    try {
+      const { query, page, total, showMature, showHidden} = req.query;
+      var search = { hidden: false, $text: { $search: query } };
+      var skipby = 0, length = parseInt(total), uid = res.locals.userToken?.id;
+      if (showMature == "false" || showMature == "0" || !uid || !(await Users.findOne({ _id: uid })).mature) search.mature = false;
+      if (showHidden == "true" || showHidden == "1") delete search.hidden;
+      if (!Number.isSafeInteger(parseInt(length))) {
+        length = await this.entriesLength(search);
+      }
+      skipby = ((page || 1) - 1) * entriesPerPage;
+      var list = await this.model.find(
+        search,
+        { relevance: { $meta: "textScore" } }
+      ).skip(skipby).sort({ relevance: { $meta: "textScore" } }).limit(entriesPerPage);
+      list = list.map(e => {
+        var c = e.pack();
+        c.relevance = e.relevance;
+        return c;
+      });
+      list = await this.censor(list, res);
+      res.status(200).json({
+        [this.name]: list,
+        length: length
+      });
     } catch (err) {
       res.status(401).json({ message: "Not successful", error: err.message });
       console.log(err.message);
