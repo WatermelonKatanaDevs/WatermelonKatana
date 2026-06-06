@@ -32,7 +32,7 @@ footer.innerHTML = `
 </div>
 <div class="footer-info">
     <p>Email: <a class="link" href="mailto:admin@watermelonkatana.com">admin@watermelonkatana.com</a></p>
-    <p>&copy; 2024 - 2026 WatermelonKatana. All rights reserved.</p>
+    <p>&copy; 2024 - ${Date().slice(11,15)} WatermelonKatana. All rights reserved.</p>
     <p>Stay updated with our <a class="link" href="/faq">FAQ</a>!</p>
 </div>
 `;
