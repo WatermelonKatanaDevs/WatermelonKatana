@@ -238,23 +238,25 @@ module.exports = class {
         var content = "";
         for (let entry of list) {
           if (this.name === "posts") {
-            content += `<a class="post-panel" href="/forum/discussion/${entry.id}">
-              <div class="entry-top">
-                <h2>${entry.title}</h2> 
-                <p style="display: inline;">${entry.content}
-                <br>
-              By: <object><a href="/user/${entry.poster}"><i>${entry.poster}</i></a></object> | Views: ${entry.views} | Active ${entry.activeAt}</p>
-              <div class="forum-tags">${entry.tags.join(",")}</div>
-              </div>
-            </a>`;
+            content += `<div>
+              <a class="post-panel" href="/forum/discussion/${entry.id}">
+                <div class="entry-top">
+                  <h2>${entry.title}</h2> 
+                  <p style="display: inline;">${entry.content}
+                  <br>
+                By: <object><a href="/user/${entry.poster}"><i>${entry.poster}</i></a></object> | Views: ${entry.views} | Active ${entry.activeAt}</p>
+                <div class="forum-tags">${entry.tags.join(",")}</div>
+                </div>
+              </a>`;
           } else {
-            content += `<a class="project-panel" href="/project/${entry.id}">
+            content += `<div>
+            <a class="project-panel" href="/project/${entry.id}">
               <div class="thumbnail-border">
+              <img class="project-thumbnail" style="max-width: 400px; max-height:420px" src="${entry.thumbnail || "/images/blank_project.png"}" alt="No Image">
                 <div class="panel-overlay">
                   <div>Score: ${entry.score} Views: ${entry.views}</div>
                   <div>${entry.tags.join(",")}</div>
                 </div>
-                <img class="project-thumbnail" src="${entry.thumbnail || "/images/blank_project.png"}" alt="">
               </div>
               <div class="project-link">${entry.title}</div>
               <div>By: <object><a href="/user/${entry.poster}"><i>${entry.poster}</i></a></object></div>
@@ -265,8 +267,9 @@ module.exports = class {
           for (let comment of entry.comments) {
             content += `<p> <b>${comment.poster}</b>: ${comment.content} <upvotes: ${comment.upvotes.length}>`
           }
-          content += "</details>";
+          content += "</details></div>";
         }
+        content += "</body>";
         res.status(200).send(content);
       } else if (randomEntryAction === 'redirect') {
         res.redirect("/project/" + data[this.name][0].id);
