@@ -178,7 +178,7 @@ module.exports = class {
 
   async list(req, res, next) {
     try {
-      const { poster, platform, postedBefore, postedAfter, includeTags, excludeTags, featured, randomEntryAction, page, total, sort, showMature, showHidden, showRecent, recipient, customQuery, noclient} = req.query;
+      const { poster, platform, postedBefore, postedAfter, includeTags, excludeTags, featured, randomEntryAction, page, total, sort, showMature, showHidden, showRecent, recipient, customQuery, noclient } = req.query;
       var search = { hidden: false };
       let uid = res.locals.userToken?.id;
       if (poster) search.poster = poster;
@@ -234,10 +234,6 @@ module.exports = class {
       }
       list = list.map(e => e.pack());
       list = await this.censor(list, res);
-      var data = {
-        [this.name]: list,
-        length: length || list.length
-      };
       if (noclient == "1" || noclient == "true") {
         var content = "";
         for (let entry of list) {
@@ -248,7 +244,7 @@ module.exports = class {
                 <p style="display: inline;">${entry.content}
                 <br>
               By: <object><a href="/user/${entry.poster}"><i>${entry.poster}</i></a></object> | Views: ${entry.views} | Active ${entry.activeAt}</p>
-              <div class="forum-tags">${entry.tags.join("")}</div>
+              <div class="forum-tags">${entry.tags.join(",")}</div>
               </div>
             </a>`;
           } else {
@@ -256,7 +252,7 @@ module.exports = class {
               <div class="thumbnail-border">
                 <div class="panel-overlay">
                   <div>Score: ${entry.score} Views: ${entry.views}</div>
-                  <div>${entry.tags.split(",")}</div>
+                  <div>${entry.tags.join(",")}</div>
                 </div>
                 <img class="project-thumbnail" src="${entry.thumbnail || "/images/blank_project.png"}" alt="">
               </div>
@@ -265,7 +261,7 @@ module.exports = class {
             </a>`
           };
           content += `<details>
-          <summary> Comments: </comments>`;
+          <summary> Comments: </summary>`;
           for (let comment of entry.comments) {
             content += `<p> <b>${comment.poster}</b>: ${comment.content} <upvotes: ${comment.upvotes.length}>`
           }
@@ -275,7 +271,10 @@ module.exports = class {
       } else if (randomEntryAction === 'redirect') {
         res.redirect("/project/" + data[this.name][0].id);
       } else {
-        res.status(200).json(data);
+        res.status(200).json({
+          [this.name]: list,
+          length: length || list.length
+        });
       }
     } catch (err) {
       res.status(401).json({ message: "Not successful", error: err.message });
@@ -285,7 +284,7 @@ module.exports = class {
 
   async search(req, res, next) {
     try {
-      const { query, page, total, showMature, showHidden} = req.query;
+      const { query, page, total, showMature, showHidden } = req.query;
       var search = { hidden: false, $text: { $search: query } };
       var skipby = 0, length = parseInt(total), uid = res.locals.userToken?.id;
       if (showMature == "false" || showMature == "0" || !uid || !(await Users.findOne({ _id: uid })).mature) search.mature = false;
