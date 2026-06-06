@@ -250,22 +250,22 @@ module.exports = class {
               </a>`;
           } else {
             content += `<div>
-            <a class="project-panel" href="/project/${entry.id}">
-              <div class="thumbnail-border">
-              <img class="project-thumbnail" style="max-width: 400px; max-height:420px" src="${entry.thumbnail || "/images/blank_project.png"}" alt="No Image">
-                <div class="panel-overlay">
-                  <div>Score: ${entry.score} Views: ${entry.views}</div>
-                  <div>${entry.tags.join(",")}</div>
+              <a class="project-panel" href="/project/${entry.id}">
+                <div class="thumbnail-border">
+                <img class="project-thumbnail" style="max-width: 400px; max-height:420px" src="${entry.thumbnail || "/images/blank_project.png"}" alt="No Image">
+                  <div class="panel-overlay">
+                    <div>Score: ${entry.score} Views: ${entry.views}</div>
+                    <div>${entry.tags.join(",")}</div>
+                  </div>
                 </div>
-              </div>
-              <div class="project-link">${entry.title}</div>
-              <div>By: <object><a href="/user/${entry.poster}"><i>${entry.poster}</i></a></object></div>
-            </a>`
+                <div class="project-link">${entry.title}</div>
+                <div>By: <object><a href="/user/${entry.poster}"><i>${entry.poster}</i></a></object></div>
+              </a>`
           };
           content += `<details>
           <summary> Comments: </summary>`;
           for (let comment of entry.comments) {
-            content += `<p> <b>${comment.poster}</b>: ${comment.content} <upvotes: ${comment.upvotes.length}>`
+            content += `<p> <b>${comment.poster}</b>: ${comment.content} <upvotes: ${comment.upvotes.length}>`;
           }
           content += "</details></div>";
         }
