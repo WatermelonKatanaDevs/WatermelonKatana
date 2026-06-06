@@ -233,16 +233,16 @@ module.exports = class {
         list = await this.model.find(search);
       }
       list = list.map(e => e.pack());
-      list = await this.censor(list, res)
+      list = await this.censor(list, res);
       var data = {
         [this.name]: list,
         length: length || list.length
       };
       if (interpretBool(noclient)) {
-        var page = "";
+        var content = "";
         for (let entry of list) {
           if (this.name === "posts") {
-            page += `<a class="post-panel" href="/forum/discussion/${entry.id}">
+            content += `<a class="post-panel" href="/forum/discussion/${entry.id}">
               <div class="entry-top">
                 <h2>${entry.title}</h2> 
                 <p style="display: inline;">${entry.content}
@@ -250,9 +250,9 @@ module.exports = class {
               By: <object><a href="/user/${entry.poster}"><i>${entry.poster}</i></a></object> | Views: ${entry.views} | Active ${entry.activeAt}</p>
               <div class="forum-tags">${entry.tags.split(",")}</div>
               </div>
-            </a>`
+            </a>`;
           } else {
-            page += `<a class="project-panel" href="/project/${entry.id}">
+            content += `<a class="project-panel" href="/project/${entry.id}">
               <div class="thumbnail-border">
                 <div class="panel-overlay">
                   <div>Score: ${entry.score} Views: ${entry.views}</div>
@@ -263,15 +263,15 @@ module.exports = class {
               <div class="project-link">${entry.title}</div>
               <div>By: <object><a href="/user/${entry.poster}"><i>${entry.poster}</i></a></object></div>
             </a>`
-          }
-          page += `<details>
-          <summary> Comments: </comments>`
+          };
+          content += `<details>
+          <summary> Comments: </comments>`;
           for(let comment of entry.comments) {
-            page += `<p> <b>${comment.poster}</b>: ${comment.content} <upvotes: ${comment.upvotes.length}>`
+            content += `<p> <b>${comment.poster}</b>: ${comment.content} <upvotes: ${comment.upvotes.length}>`
           }
-          page += "</details>";
+          content += "</details>";
         }
-        res.status(200).send(page);
+        res.status(200).send(content);
       } else if (randomEntryAction === 'redirect') {
         res.redirect("/project/" + data[this.name][0].id);
       } else {
