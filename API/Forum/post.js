@@ -235,44 +235,44 @@ module.exports = class {
       list = list.map(e => e.pack());
       list = await this.censor(list, res);
       if (noclient == "1" || noclient == "true") {
-        var content = "";
+        var content = `<head><link rel="stylesheet" type="text/css" href="/styles/style.css"></head><body>`;
         for (let entry of list) {
           if (this.name === "posts") {
             content += `<div>
-              <a class="post-panel" href="/forum/discussion/${entry.id}">
+              <a class="post-panel" style="width: 98vw" href="/forum/discussion/${entry.id}">
                 <div class="entry-top">
                   <h2>${entry.title}</h2> 
                   <p style="display: inline;">${entry.content}
                   <br>
                 By: <object><a href="/user/${entry.poster}"><i>${entry.poster}</i></a></object> | Views: ${entry.views} | Active ${entry.activeAt}</p>
-                <div class="forum-tags">${entry.tags.join(",")}</div>
+                <div class="forum-tags">${entry.tags.join(", ")}</div>
                 </div>
               </a>`;
           } else {
             content += `<div>
-              <a class="project-panel" href="/project/${entry.id}">
+              <a class="project-panel" style="width: 98vw" href="/project/${entry.id}">
                 <div class="thumbnail-border">
-                <img class="project-thumbnail" style="max-width: 400px; max-height:420px" src="${entry.thumbnail || "/images/blank_project.png"}" alt="No Image">
+                <img class="project-thumbnail" src="${entry.thumbnail || "/images/blank_project.png"}" alt="No Image">
                   <div class="panel-overlay">
                     <div>Score: ${entry.score} Views: ${entry.views}</div>
-                    <div>${entry.tags.join(",")}</div>
+                    <div>${entry.tags.join(", ")}</div>
                   </div>
                 </div>
                 <div class="project-link">${entry.title}</div>
                 <div>By: <object><a href="/user/${entry.poster}"><i>${entry.poster}</i></a></object></div>
               </a>`
           };
-          content += `<details>
+          content += `<br><details style="width: 98vw">
           <summary> Comments: </summary>`;
           for (let comment of entry.comments) {
             content += `<p> <b>${comment.poster}</b>: ${comment.content} <upvotes: ${comment.upvotes.length}>`;
           }
-          content += "</details></div>";
+          content += "</details><br></div>";
         }
         content += "</body>";
         res.status(200).send(content);
       } else if (randomEntryAction === 'redirect') {
-        res.redirect("/project/" + data[this.name][0].id);
+        res.redirect("/project/" + list[0].id);
       } else {
         res.status(200).json({
           [this.name]: list,
