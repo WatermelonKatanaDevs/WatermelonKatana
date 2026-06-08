@@ -238,8 +238,8 @@ module.exports = class {
         var content = `<head><link rel="stylesheet" type="text/css" href="/styles/style.css"></head><body>`;
         for (let entry of list) {
           if (this.name === "posts") {
-            content += `<div style="display: flex; flex-wrap: wrap; width:50vw">
-              <a class="post-panel" style="width: 50vw" href="/forum/discussion/${entry.id}">
+            content += `<div style="display: flex; flex-wrap: wrap; width:100vw">
+              <a class="post-panel" style="width: 48vw" href="/forum/discussion/${entry.id}">
                 <div class="entry-top">
                   <h2>${entry.title}</h2> 
                   <p style="display: inline;">${entry.content}
@@ -249,8 +249,8 @@ module.exports = class {
                 </div>
               </a>`;
           } else {
-            content += `<div>
-              <a class="project-panel" style="width: 50vw" href="/project/${entry.id}">
+            content += `<div style="display: flex; flex-wrap: wrap; width:100vw">
+              <a class="project-panel" style="width: 48vw" href="/project/${entry.id}">
                 <div class="thumbnail-border">
                 <img class="project-thumbnail" src="${entry.thumbnail || "/images/blank_project.png"}" alt="No Image">
                   <div class="panel-overlay">
