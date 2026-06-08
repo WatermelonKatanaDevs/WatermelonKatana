@@ -235,6 +235,7 @@ module.exports = class {
       list = list.map(e => e.pack());
       list = await this.censor(list, res);
       if (noclient == "1" || noclient == "true") {
+        list = JSON.parse(JSON.stringify(list).replace(/\</g, "&lt;").replace(/\>/g, "&gt;"));
         var content = `<head><link rel="stylesheet" type="text/css" href="/styles/style.css"></head><body>`;
         for (let entry of list) {
           if (this.name === "posts") {
