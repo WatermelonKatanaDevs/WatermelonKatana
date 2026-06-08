@@ -238,8 +238,8 @@ module.exports = class {
         var content = `<head><link rel="stylesheet" type="text/css" href="/styles/style.css"></head><body>`;
         for (let entry of list) {
           if (this.name === "posts") {
-            content += `<div>
-              <a class="post-panel" style="width: 98vw" href="/forum/discussion/${entry.id}">
+            content += `<div style="display: flex; flex-wrap: wrap; width:50vw">
+              <a class="post-panel" style="width: 50vw" href="/forum/discussion/${entry.id}">
                 <div class="entry-top">
                   <h2>${entry.title}</h2> 
                   <p style="display: inline;">${entry.content}
@@ -250,7 +250,7 @@ module.exports = class {
               </a>`;
           } else {
             content += `<div>
-              <a class="project-panel" style="width: 98vw" href="/project/${entry.id}">
+              <a class="project-panel" style="width: 50vw" href="/project/${entry.id}">
                 <div class="thumbnail-border">
                 <img class="project-thumbnail" src="${entry.thumbnail || "/images/blank_project.png"}" alt="No Image">
                   <div class="panel-overlay">
@@ -262,12 +262,12 @@ module.exports = class {
                 <div>By: <object><a href="/user/${entry.poster}"><i>${entry.poster}</i></a></object></div>
               </a>`
           };
-          content += `<br><details style="width: 98vw">
+          content += `<details style="width: 48vw">
           <summary> Comments: </summary>`;
           for (let comment of entry.comments) {
             content += `<p> <b>${comment.poster}</b>: ${comment.content} <upvotes: ${comment.upvotes.length}>`;
           }
-          content += "</details><br></div>";
+          content += "</details></div>";
         }
         content += "</body>";
         res.status(200).send(content);
