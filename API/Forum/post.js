@@ -173,13 +173,13 @@ module.exports = class {
       var user = await Users.findOne({ _id: uid });
       if (user && user.mature) return data;
     }
+    var entries = [].concat(data);
     var censoredData = [].concat(JSON.parse(Profanity.censorText(JSON.stringify(data))));
-    data = [].concat(data);
     for(var i = 0; i < censoredData.length; i++) {
-      censoredData[i].link = data[i].link;
-      censoredData[i].thumbnail = data[i].thumbnail;
-      censoredData[i].id = data[i].id;
-      censoredData[i].posterId = data[i].posterId;
+      censoredData[i].link = entries[i].link;
+      censoredData[i].thumbnail = entries[i].thumbnail;
+      censoredData[i].id = entries[i].id;
+      censoredData[i].posterId = entries[i].posterId;
     }
     return Array.isArray(data) ? censoredData: censoredData[0];
   }
