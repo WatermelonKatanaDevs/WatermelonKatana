@@ -173,7 +173,7 @@ module.exports = class {
       var user = await Users.findOne({ _id: uid });
       if (user && user.mature) return data;
     }
-    var sanitized = [...data].map(entry => {
+    var sanitized = [].concat(data).map(entry => {
       var e = JSON.parse(Profanity.censorText(JSON.stringify(entry)));
       e.link = entry.link;
       e.thumbnail = entry.thumbnail;
