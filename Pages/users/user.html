@@ -1,74 +1,76 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Profile | WatermelonKatana</title>
-    <link rel="stylesheet" type="text/css" href="/styles/style.css" />
-    <link rel="stylesheet" type="text/css" href="/styles/user.css" />
-    <script src="/scripts/HtmlSanitizer.js"></script>
-    <script src="/scripts/script.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile | WatermelonKatana</title>
+  <link rel="stylesheet" type="text/css" href="/styles/style.css" />
+  <link rel="stylesheet" type="text/css" href="/styles/user.css" />
+  <script src="/scripts/HtmlSanitizer.js"></script>
+  <script src="/scripts/script.js"></script>
 </head>
+
 <body>
-    <script src="/scripts/navbar.js"></script>
+  <script src="/scripts/navbar.js"></script>
 
-    <div id="display" class="profile-container">
-      <!-- User profile content will be inserted here -->
+  <div id="display" class="profile-container">
+    <!-- User profile content will be inserted here -->
+  </div>
+
+  <div class="projects-container">
+    <h2>Published Projects</h2>
+    <ul id="list" class="project-list"></ul>
+    <h2>Favorites</h2>
+    <ul id="favlist" class="project-list"></ul>
+  </div>
+
+  <div id="followers-popup" class="popup hidden">
+    <div class="popup-content">
+      <span id="followers-x" class="close-popup">&times;</span>
+      <h2>Followers</h2>
+      <ul id="followers-list"></ul>
     </div>
+  </div>
 
-    <div class="projects-container">
-      <h2>Published Projects</h2>
-      <ul id="list" class="project-list"></ul>
-      <h2>Favorites</h2>
-      <ul id="favlist" class="project-list"></ul>
+  <div id="following-popup" class="popup hidden">
+    <div class="popup-content">
+      <span id="following-x" class="close-popup">&times;</span>
+      <h2>Following</h2>
+      <ul id="following-list"></ul>
     </div>
+  </div>
 
-    <div id="followers-popup" class="popup hidden">
-      <div class="popup-content">
-        <span id="followers-x" class="close-popup">&times;</span>
-        <h2>Followers</h2>
-        <ul id="followers-list"></ul>
-      </div>
-    </div>
+  <script>
+    const list = document.querySelector("#list");
+    const favlist = document.querySelector("#favlist");
+    const display = document.querySelector("#display");
+    location.path = location.pathname.split("/");
+    const name = location.path[2];
 
-    <div id="following-popup" class="popup hidden">
-      <div class="popup-content">
-        <span id="following-x" class="close-popup">&times;</span>
-        <h2>Following</h2>
-        <ul id="following-list"></ul>
-      </div>
-    </div>
+    async function renderProfile(userData, isAuthenticated, isOwnProfile) {
+      let roleBorderCSS;
+      let nameCSS;
+      let nameCSSClass;
 
-    <script>
-      const list = document.querySelector("#list");
-      const favlist = document.querySelector("#favlist");
-      const display = document.querySelector("#display");
-      location.path = location.pathname.split("/");
-      const name = location.path[2];
+      switch (userData.role) {
+        case "Moderator":
+          roleBorderCSS = "border-color: #55ff55;";
+          nameCSSClass = "username";
+          nameCSS = "color: #55ff55;";
+          break;
+        case "Admin":
+          roleBorderCSS = "border-color: #ff5555;";
+          nameCSSClass = "logo-text";
+          nameCSS = "font-size: 24px; font-weight: bold;";
+          break;
+        default:
+          roleBorderCSS = "border-color: grey;";
+          nameCSSClass = "username";
+          break;
+      }
 
-      async function renderProfile(userData, isAuthenticated, isOwnProfile) {
-        let roleBorderCSS;
-        let nameCSS;
-        let nameCSSClass;
-
-        switch (userData.role) {
-          case "Moderator":
-            roleBorderCSS = "border-color: #55ff55;";
-            nameCSSClass = "username";
-            nameCSS = "color: #55ff55;";
-            break;
-          case "Admin":
-            roleBorderCSS = "border-color: #ff5555;";
-            nameCSSClass = "logo-text";
-            nameCSS = "font-size: 24px; font-weight: bold;";
-            break;
-          default:
-            roleBorderCSS = "border-color: grey;";
-            nameCSSClass = "username";
-            break;
-        }
-
-        display.innerHTML = `
+      display.innerHTML = `
     <div class="profile ${userData.role.toLowerCase()}">
       <img class="banner" src="${userData.banner}">
       <div class="namecontainer">
@@ -91,93 +93,95 @@
       ${isAuthenticated && !isOwnProfile ? `| <label><input type="checkbox" id="follow-btn" onclick="followbtnclick(this.checked);" ${userData.followers.includes(name) ? "checked" : ""}><span class="checkbox"></span></label> Follow` : ""}
       | <a href="/uploadedmedia?poster=${userData.username}">Uploaded Media</a>
     </div>`;
-      }
-      
-      async function followbtnclick(feature) {
-        var count = document.querySelector("#followercount");
-        if (feature) {
-          count.innerHTML = Number(count.innerHTML) + 1;
-          await fetch("/api/auth/follow?username=" + name);
-        } else {
-          count.innerHTML = Number(count.innerHTML) - 1;
-          await fetch("/api/auth/unfollow?username=" + name);
-        }
-      }
+    }
 
-      (async function () {
+    async function followbtnclick(feature) {
+      var count = document.querySelector("#followercount");
+      if (feature) {
+        count.innerHTML = Number(count.innerHTML) + 1;
+        await fetch("/api/auth/follow?username=" + name);
+      } else {
+        count.innerHTML = Number(count.innerHTML) - 1;
+        await fetch("/api/auth/unfollow?username=" + name);
+      }
+    }
+
+    (async function () {
+      try {
+        let isAuthenticated = false;
+        let isMature = false;
+        let username = null;
+
         try {
-          let isAuthenticated = false;
-          let isMature = false;
-          let username = null;
+          const tok = await getAuth();
+          isAuthenticated = tok.auth;
+          isMature = tok.user.mature;
+          username = tok.user.username;
+        } catch (e) {
+          console.warn("User not authenticated");
+        }
 
-          try {
-            const tok = await getAuth();
-            isAuthenticated = tok.auth;
-            isMature = tok.user.mature;
-            username = tok.user.username;
-          } catch (e) {
-            console.warn("User not authenticated");
-          }
+        const res = await fetch(`/api/auth/userdata?username=${name}`);
+        const userData = await res.json();
 
-          const res = await fetch(`/api/auth/userdata?username=${name}`);
-          const userData = await res.json();
+        const isOwnProfile = isAuthenticated && username === userData.username;
+        await renderProfile(userData, isAuthenticated, isOwnProfile);
 
-          const isOwnProfile = isAuthenticated && username === userData.username;
-          await renderProfile(userData, isAuthenticated, isOwnProfile);
+        const publishedProjects = await fetch("/api/project/list?poster=" + name +
+          (isMature ? `&showMature=${isMature}` : "") +
+          (isOwnProfile ? `&showHidden=${isOwnProfile}` : ""));
+        const publishedProjectData = await publishedProjects.json();
+        publishedProjectData.projects.map(projHTML(list));
 
-          const publishedProjects = await fetch("/api/project/list?poster=" + name + 
-          (isMature ? `&showMature=${isMature}`: "") + 
-          (isOwnProfile ? `&showHidden=${isOwnProfile}`: ""));
-          const publishedProjectData = await publishedProjects.json();
-          publishedProjectData.projects.map(projHTML(list));
+        await Promise.all(
+          userData.favorites.map(async (pid) => {
+            const res = await fetch("/api/project/data/" + pid);
+            const proj = await res.json();
+            if (proj.mature && !isMature) { return }
+            projHTML(favlist)(proj);
+          }),
+        );
 
-          await Promise.all(
-            userData.favorites.map(async (pid) => {
-              const res = await fetch("/api/project/data/" + pid);
-              const proj = await res.json();
-              if(proj.mature && !isMature) { return }
-              projHTML(favlist)(proj);
-            }),
-          );
+        document.getElementById("followercount").addEventListener("click", function (event) {
+          event.preventDefault();
+          document.getElementById("following-x").click();
+          handleFollowPopup("followers");
+        });
 
-          document.getElementById("followercount").addEventListener("click", function (event) {
-            event.preventDefault();
-            document.getElementById("following-x").click();
-            handleFollowPopup("followers");
-          });
+        document.getElementById("followingcount").addEventListener("click", function (event) {
+          event.preventDefault();
+          document.getElementById("followers-x").click();
+          handleFollowPopup("following");
+        })
 
-          document.getElementById("followingcount").addEventListener("click", function (event) {
-            event.preventDefault();
-            document.getElementById("followers-x").click();
-            handleFollowPopup("following");
-          })
-
-          function handleFollowPopup(type) {
-            const followPopup = document.getElementById(type + "-popup");
-            const followList = document.getElementById(type + "-list");
-            const followClose = document.getElementById(type + "-x");
-            followPopup.classList.remove("hidden");
-            if (userData[type]) {
-              followList.innerHTML = "";
-              userData[type].forEach(async (followId) => {
-                const follow = await getUser(followId);
-                followList.innerHTML += `<li>
+        function handleFollowPopup(type) {
+          const followPopup = document.getElementById(type + "-popup");
+          const followList = document.getElementById(type + "-list");
+          const followClose = document.getElementById(type + "-x");
+          if (!followPopup.classList.value.includes("hidden")) { return }
+          followPopup.classList.remove("hidden");
+          if (userData[type]) {
+            followList.innerHTML = "";
+            userData[type].forEach(async (followId) => {
+              const follow = await getUser(followId);
+              followList.innerHTML += `<li>
               <img src="${follow.avatar}" alt="${follow.username}" class="follower-avatar">
               <a href="/user/${follow.username}">${follow.username}</a>
             </li>`;
-              });
-            }
-            if(typeof followClose.onclick !== "function") {
-              followPopup.onclick = followClose.onclick = () => {
-                followPopup.classList.add("hidden");
-              }
+            });
+          }
+          if (typeof followClose.onclick !== "function") {
+            followPopup.onclick = followClose.onclick = () => {
+              followPopup.classList.add("hidden");
             }
           }
-        } catch (e) {
-          alert("Error loading profile");
-          console.error(e);
         }
-      })();
-    </script>
+      } catch (e) {
+        alert("Error loading profile");
+        console.error(e);
+      }
+    })();
+  </script>
 </body>
+
 </html>
