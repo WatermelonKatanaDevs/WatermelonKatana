@@ -50,30 +50,33 @@
     <section class="featured-projects">
       <h2>Featured Projects</h2>
       <div id="featuredList" class="project-list">
-        <noscript><embed style="width:86vw; height:50vh" src="/api/project/list?sort=score&featured=1&noclient=1"></embed></noscript>
+        <noscript><embed style="width:86vw; height:50vh"
+            src="/api/project/list?sort=score&featured=1&noclient=1"></embed></noscript>
       </div>
     </section>
     <section class="featured-projects">
       <h2>Latest Projects</h2>
       <div id="latestList" class="project-list">
-        <noscript><embed style="width:86vw; height:50vh" src="/api/project/list?showRecent=5&noclient=1"></embed></noscript>
+        <noscript><embed style="width:86vw; height:50vh"
+            src="/api/project/list?showRecent=5&noclient=1"></embed></noscript>
       </div>
     </section>
     <section class="featured-projects">
       <h2>Hot Forum Topics</h2>
       <div id="postList" class="post-list">
-        <noscript><embed style="width:86vw; height:50vh" src="/api/forum/list?showRecent=5&noclient=1"></embed></noscript>
+        <noscript><embed style="width:86vw; height:50vh"
+            src="/api/forum/list?showRecent=5&noclient=1"></embed></noscript>
       </div>
     </section>
     <section class="intro">
-      <p>On WatermelonKatana you can publish old code.org projects including gamelab and applab. 
-        You can also publish Khan Academy projects, Scratch projects, and urls to any self-hosted projects. 
-        This site was created as a third-party replacement for code.org's public project section. View our 
-        extensive curated gallery of code.org games and projects! We also have a custom Turbowarp engine for 
+      <p>On WatermelonKatana you can publish old code.org projects including gamelab and applab.
+        You can also publish Khan Academy projects, Scratch projects, and urls to any self-hosted projects.
+        This site was created as a third-party replacement for code.org's public project section. View our
+        extensive curated gallery of code.org games and projects! We also have a custom Turbowarp engine for
         code.org, allowing your projects to run orders of magnitude faster. Our forum is a place for those
         new at programming to recieve help from those experienced at it.</p>
       <br>
-      <p>WatermelonKatana was created by a group of passionate programmers from the code.org community. We are 
+      <p>WatermelonKatana was created by a group of passionate programmers from the code.org community. We are
         dedicated to providing a safe and well-moderated website to allow fledgling developers to share, remix,
         and get feedback on their projects. (PS: If you are code.org staff reading this, we would love to collaborate
         with you to provide a safe way to share code.org projects to the web.)</p>
@@ -110,10 +113,24 @@
 
       if (!tok.auth) return;
       const notificationCount = tok.user.notifications.length;
-      let notifs = await Promise.all(tok.user.notifications.sort((a, b) => b.createdAt - a.createdAt).map(htmlNotifications));
+      user.innerHTML = `
+        <p style="margin-bottom: 0px"> Signed in as
+          <a class="profile" href="/user/${tok.user.username}">
+            <img src="${tok.user.avatar}">
+            <strong class="logo-text">${tok.user.username}</strong>
+          </a>
+        </p>
+        <div id="notificationContainer" style="border-style: groove; margin: 5px; width: 50%; max-height: 30vh; transform: translateX(50%); overflow-y: scroll; scrollbar-width: none;">
+              Loading...
+        </div>
+        `;
+      Promise.all(tok.user.notifications.sort((a, b) => b.createdAt - a.createdAt).map(htmlNotifications)).then(notifs => {
+        const container = document.querySelector("#notificationContainer");
+        container.innerHTML = notifs.join('') || `No Notifications`
+      });
       async function htmlNotifications(notif, index) {
         let user = await getUser(notif.posterId);
-        return `<a class="user-panel" href="/notification/${notificationCount-index-1}" style="width: 98%; text-align: right">
+        return `<a class="user-panel" href="/notification/${notificationCount - index - 1}" style="width: 98%; text-align: right">
             <div class="comment-top" style="display: flex">
               <img class="comment-avatar" src="${user.avatar || "/images/blank_project.png"}" style="width: 2em; height: 2em">
               <div class="comment-username" style="font-size: 1em">${notif.title} ${notif.content}</div>
@@ -124,17 +141,6 @@
             <p style="font-size:0.6em; margin-top: 0px;">${new Date(notif.createdAt).toUTCString().replace(/\d\d:[^]+$/, "")}</p>
           </a>`
       }
-      user.innerHTML = `
-        <p style="margin-bottom: 0px"> Signed in as
-          <a class="profile" href="/user/${tok.user.username}">
-            <img src="${tok.user.avatar}">
-            <strong class="logo-text">${tok.user.username}</strong>
-          </a>
-        </p>
-        <div style="border-style: groove; margin: 5px; width: 50%; max-height: 30vh; transform: translateX(50%); overflow-y: scroll; scrollbar-width: none;">
-              ${notifs.join('') || `No Notifications`}
-        </div>
-        `;
       header.innerHTML = `
           <a href="/publish">Publish</a>
           <a href="/chat">Chat</a>
