@@ -125,8 +125,7 @@
         </div>
         `;
       Promise.all(tok.user.notifications.sort((a, b) => b.createdAt - a.createdAt).map(htmlNotifications)).then(notifs => {
-        const container = document.querySelector("#notificationContainer");
-        container.innerHTML = notifs.join('') || `No Notifications`
+        document.querySelector("#notificationContainer").innerHTML = notifs.join('') || `No Notifications`
       });
       async function htmlNotifications(notif, index) {
         let user = await getUser(notif.posterId);
