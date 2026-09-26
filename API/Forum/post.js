@@ -173,7 +173,15 @@ module.exports = class {
       var user = await Users.findOne({ _id: uid });
       if (user && user.mature) return data;
     }
-    return JSON.parse(Profanity.censorText(JSON.stringify(data)));
+    var sanitized = data.map(entry => {
+      var e = JSON.parse(Profanity.censorText(JSON.stringify(data)));
+      e.link = entry.link;
+      e.thumbnail = entry.thumbnail;
+      e.id = entry.id;
+      e.posterId = entry.posterId;
+      return e;
+    })
+    return sanitized;
   }
 
   async list(req, res, next) {
