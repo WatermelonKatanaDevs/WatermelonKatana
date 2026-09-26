@@ -174,7 +174,7 @@ module.exports = class {
       if (user && user.mature) return data;
     }
     var sanitized = data.map(entry => {
-      var e = JSON.parse(Profanity.censorText(JSON.stringify(data)));
+      var e = JSON.parse(Profanity.censorText(JSON.stringify(entry)));
       e.link = entry.link;
       e.thumbnail = entry.thumbnail;
       e.id = entry.id;
