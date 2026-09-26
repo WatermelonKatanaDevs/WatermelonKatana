@@ -181,7 +181,7 @@ module.exports = class {
       e.posterId = entry.posterId;
       return e;
     })
-    return sanitized;
+    return Array.isArray(data) ? sanitized: sanitized[0];
   }
 
   async list(req, res, next) {
