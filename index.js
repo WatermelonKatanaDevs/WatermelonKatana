@@ -52,6 +52,20 @@ app.use(cookieParser()); // Parse cookies attached to the Client request
  */
 app.use(limiter);
 
+app.use((req, res, next) => {
+  if (!req.path.startsWith("/api/")) return next();
+  if (req.path.startsWith("/api/media/get/")) return next();
+  const site = req.headers["sec-fetch-site"];
+  const dest = req.headers["sec-fetch-dest"];
+  if (site && site !== "same-origin" && site !== "none") {
+    return res.status(403).json({ message: "Cross-site request blocked" });
+  }
+  if (dest && dest !== "empty" && dest !== "document") {
+    return res.status(403).json({ message: "Invalid request context" });
+  }
+  next();
+});
+
 /**
  * Serve static files from the Client directory
  */
@@ -135,14 +149,14 @@ app.get("/project/:id", checkAuth, makeFormToken, async (req, res) => {
   sendFileReplace(res, "./Pages/projects/project.html", (s) => s.replace("<!--og:meta-->", `
     <meta property="og:title" content="${makeLiteralChars(proj.title)}"/>
     <meta property="og:type" content="website"/>
-    <meta property="og:image" content="${proj.thumbnail}"/>
+    <meta property="og:image" content="${makeLiteralChars(proj.thumbnail)}"/>
     <meta property="og:description" content="${makeLiteralChars(proj.content)} \n By: ${proj.poster} \n Score: ${proj.score} Views: ${proj.views}"/>
   `).replace("<!--content-->", `
     ${makeLiteralChars(proj.title)}<br>
     By: ${proj.poster}<br>
     ${makeLiteralChars(proj.content)}<br>
-    <a href="${proj.link}">${proj.link}</a><br>
-    ${proj.tags.map(v => "#" + v).join(", ")}<br>
+    <a href="${makeLiteralChars(proj.link)}">${makeLiteralChars(proj.link)}</a><br>
+    ${proj.tags.map(v => "#" + makeLiteralChars(v)).join(", ")}<br>
     Score: ${proj.score} Views: ${proj.views} Platform: ${proj.platform} Featured: ${proj.featured}
   `).replace("<!--title-->", `
     <title>${makeLiteralChars(proj.title)} | WatermelonKatana</title>
@@ -211,7 +225,7 @@ app.get("/user/:name", async (req, res) => {
   sendFileReplace(res, "./Pages/users/user.html", (s) => s.replace("<!--og:meta-->", `
     <meta property="og:title" content="@${user.username} on WatermelonKatana"/>
     <meta property="og:type" content="website"/>
-    <meta property="og:image" content="${user.avatar}"/>
+    <meta property="og:image" content="${makeLiteralChars(user.avatar)}"/>
     <meta property="og:description" content="${makeLiteralChars(user.biography)}"/>
   `).replace("<!--content-->", `
     ${user.username}<br>

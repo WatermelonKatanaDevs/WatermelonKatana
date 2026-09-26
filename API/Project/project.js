@@ -49,7 +49,7 @@ async publish(req, res, next) {
       message: "Project not successfully published",
       error: "User not found",
     });
-    if (!link.match(/^https?:\/\/[^\s]*$/)) return res.status(400).json({
+    if (!link.match(/^https?:\/\/[^\s"'<>]+$/)) return res.status(400).json({
       message: "Project not successfully published",
       error: "Link is not a valid url",
     });
@@ -102,6 +102,10 @@ async update(req, res, next) {
     const user = res.locals.userToken;
     if (project.posterId !== user.id && user.role !== "Admin") return res.status(403).json({
       message: "Not Authorized. You do not own this project",
+    });
+    if (!link.match(/^https?:\/\/[^\s"'<>]+$/)) return res.status(400).json({
+      message: "Project not successfully updated",
+      error: "Link is not a valid url",
     });
     var e = this.processLink(link,thumbnail);
     project.title = title;
