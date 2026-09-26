@@ -173,15 +173,15 @@ module.exports = class {
       var user = await Users.findOne({ _id: uid });
       if (user && user.mature) return data;
     }
-    var sanitized = [].concat(data).map(entry => {
-      var e = JSON.parse(Profanity.censorText(JSON.stringify(entry)));
-      e.link = entry.link;
-      e.thumbnail = entry.thumbnail;
-      e.id = entry.id;
-      e.posterId = entry.posterId;
-      return e;
-    })
-    return Array.isArray(data) ? sanitized: sanitized[0];
+    var censoredData = [].concat(JSON.parse(Profanity.censorText(JSON.stringify(data))));
+    data = [].concat(data);
+    for(var i = 0; i < censoredData.length; i++) {
+      censoredData[i].link = data[i].link;
+      censoredData[i].thumbnail = data[i].thumbnail;
+      censoredData[i].id = data[i].id;
+      censoredData[i].posterId = data[i].posterId;
+    }
+    return Array.isArray(data) ? censoredData: censoredData[0];
   }
 
   async list(req, res, next) {
