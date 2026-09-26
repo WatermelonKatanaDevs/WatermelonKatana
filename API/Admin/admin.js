@@ -42,7 +42,11 @@ exports.resetPassword = async (req, res) => {
   */
   const { uid, password } = req.query;
   try {
-    var hash = await bcrypt.hash(password || "password", 10);
+    if (!password) return res.status(400).json({
+      message: "Password not successfully reset",
+      error: "Password not present",
+    });
+    var hash = await bcrypt.hash(password, 10);
     const user = await Users.findOne({ _id: uid });
     if (!user) return res.status(404).json({
       message: "Transfer not successful",

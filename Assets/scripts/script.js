@@ -144,7 +144,17 @@ function convertMarkdown(string) {
   string = string.replace(/^# ([^\n]+)$/gm, "<h1>$1</h1>"); // # header 1
   string = string.replace(/^## ([^\n]+)$/gm, "<h2>$1</h2>"); // # header 2
   string = string.replace(/^### ([^\n]+)$/gm, "<h3>$1</h3>"); // # header 3
-  string = string.replace(/!\[([^\]"'>]*)\]\(((?:https?:\/\/|\/api\/media\/)[^\)"]+)\)/g, `<img src="$2" $1>`); // ![width=50 height=50](https://example.com/image)
+  string = string.replace(/!\[([^\]"'>]*)\]\(((?:https?:\/\/|\/api\/media\/)[^\)"]+)\)/g, function (match, alt, url) {
+    var attrs = "";
+    var dims = alt.match(/(?:width|height)\s*=\s*\d+/g);
+    if (dims) {
+      for (var i = 0; i < dims.length; i++) {
+        var pair = dims[i].split("=");
+        attrs += " " + pair[0].trim() + '="' + parseInt(pair[1], 10) + '"';
+      }
+    }
+    return '<img src="' + makeLiteralChars(url) + '"' + attrs + '>';
+  }); // ![width=50 height=50](https://example.com/image)
   string = string.replace(/\[([^\]\n]+)\]\((https?:\/\/[^\)"\n]+)\)/g, `<a href="$2">$1</a>`); // [link](https://example.com)
   string = string.replace(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g, `<a href="mailto:$1">$1</a>`); // user@example.com
   string = string.replace(/(?<![^\s])@([^\s]+)/g, `<a href="/user/$1">@$1</a>`); // @Username
