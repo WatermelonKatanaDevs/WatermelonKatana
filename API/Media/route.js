@@ -11,7 +11,6 @@ router.route("/upload").post(userAuth, express.urlencoded({ extended:false, limi
     params.set("key",process.env.IMGBB_API_KEY);
     params.set("name",req.body.name);
     params.set("image",req.body.image);
-    console.log(params);
     var data = await fetch("https://api.imgbb.com/1/upload",{
       method: "POST",
       body: params
@@ -71,8 +70,7 @@ router.route("/list").get(async (req,res) => {
   var { poster } = req.query;
   try {
     var search = {};
-    if (poster) search.poster = poster;
-    if (req.query.customQuery) search = req.query.customQuery;
+    if (poster) search.poster = String(poster);
     var media = await Media.find(search);
     const list = media.map(e=>e.pack());
     res.status(200).json({ media: list });

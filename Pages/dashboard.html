@@ -111,7 +111,7 @@
           <a href="/api/project/list?randomEntryAction=redirect"> Random Project </a>
           <a href="/preferences">Preferences</a>
           <a href="/userlist">User List</a>
-          ${(tok.user.role === "Admin" ? `<a href="/admin">Admin List</a>` : "")}
+          ${(isadmin(tok.user.role) ? `<a href="/admin">Admin List</a>` : "")}
         `;
     });
   </script>

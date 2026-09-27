@@ -64,6 +64,11 @@
           nameCSSClass = "logo-text";
           nameCSS = "font-size: 24px; font-weight: bold;";
           break;
+        case "Uni Lover":
+          roleBorderCSS = "border-color: #ff66cc;";
+          nameCSSClass = "username";
+          nameCSS = "font-size: 24px; font-weight: bold; background: linear-gradient(90deg,#ff5f6d,#ffc371,#47e891,#4facfe,#b06ab3); background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: unilover-shift 6s linear infinite;";
+          break;
         default:
           roleBorderCSS = "border-color: grey;";
           nameCSSClass = "username";
@@ -71,7 +76,7 @@
       }
 
       display.innerHTML = `
-    <div class="profile ${userData.role.toLowerCase()}">
+    <div class="profile ${userData.role.toLowerCase().replace(/[^a-z0-9]+/g, "-")}">
       <img class="banner" src="${userData.banner}">
       <div class="namecontainer">
         <img class="avatar" style="${roleBorderCSS}" src="${userData.avatar}">

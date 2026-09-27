@@ -1,4 +1,5 @@
 const Users = require("../../Database/model/Users");
+const { isadmin } = require("../../util/js/roles");
 var PostAPI = require("../Forum/post.js");
 
 module.exports = class extends PostAPI {
@@ -53,6 +54,10 @@ async publish(req, res, next) {
       message: "Project not successfully published",
       error: "Link is not a valid url",
     });
+    if (thumbnail && !String(thumbnail).match(/^(https?:\/\/|\/)[^\s"'<>]+$/)) return res.status(400).json({
+      message: "Project not successfully published",
+      error: "Thumbnail is not a valid url",
+    });
     var e = this.processLink(link,thumbnail);
     const project = await this.model.create({
       title,
@@ -100,12 +105,16 @@ async update(req, res, next) {
       error: "Project not found",
     });
     const user = res.locals.userToken;
-    if (project.posterId !== user.id && user.role !== "Admin") return res.status(403).json({
+    if (project.posterId !== user.id && !isadmin(user.role)) return res.status(403).json({
       message: "Not Authorized. You do not own this project",
     });
     if (!link.match(/^https?:\/\/[^\s"'<>]+$/)) return res.status(400).json({
       message: "Project not successfully updated",
       error: "Link is not a valid url",
+    });
+    if (thumbnail && !String(thumbnail).match(/^(https?:\/\/|\/)[^\s"'<>]+$/)) return res.status(400).json({
+      message: "Project not successfully updated",
+      error: "Thumbnail is not a valid url",
     });
     var e = this.processLink(link,thumbnail);
     project.title = title;
@@ -143,7 +152,7 @@ async delete(req, res, next) {
       error: "Project not found",
     });
     const user = res.locals.userToken;
-    if (project.posterId !== user.id && user.role !== "Admin") return res.status(403).json({
+    if (project.posterId !== user.id && !isadmin(user.role)) return res.status(403).json({
       message: "Not Authorized. You do not own this project",
     });
     var users = await Users.find({ favorites: { $all: [ pid ] } });

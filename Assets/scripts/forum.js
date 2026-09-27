@@ -13,7 +13,7 @@ async function createPost(post,data,txt,name,reload) {
     ${convertMarkdown(data.content)} <br>
     ${txt}
     <div style="display: flex; flex-wrap: wrap">
-      ${data.tags.map(t=>(t.length > 0 ? `<a href="/search?includeTags=${t}">#${t}</a>`: ""))} <br>
+      ${data.tags.map(t=>(t.length > 0 ? `<a href="/search?includeTags=${encodeURIComponent(t)}">#${makeLiteralChars(t)}</a>`: ""))} <br>
     </div>
   </div>
   <div id="comments" class="comment-list">
@@ -42,7 +42,7 @@ async function createPost(post,data,txt,name,reload) {
     </button>-->
   </div>`;
   markdownTextbox("#reply-textbox",true);
-  if (tok.user.role === "Admin") {
+  if (isadmin(tok.user.role)) {
     display.innerHTML += `
     <label for="featured-btn">Featured:
       <input
@@ -69,7 +69,7 @@ async function createPost(post,data,txt,name,reload) {
       <svg viewBox="0 0 512 512" height="1em" xmlns="http://www.w3.org/2000/svg" class="upvote-icon"><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"></path></svg>
     </label>
   </div>`;
-  if (tok.user.id !== data.posterId && tok.user.role !== "Admin") return;
+  if (tok.user.id !== data.posterId && !isadmin(tok.user.role)) return;
   console.log(post);
   if (name == "forum") name = "forum/discussion";
   display.innerHTML += `<a class="edit button" href="/${name}/${pid}/edit">Edit</a>`;
@@ -84,7 +84,7 @@ async function listComments(list,comments,self,events) {
       if (self.id == c.posterId) {
         options += `<input type="button" value="edit" onclick="window.oneditbtnclick(${i});">`;
       }
-      if (self.id == c.posterId || self.role == "Admin") {
+      if (self.id == c.posterId || isadmin(self.role)) {
         options += `<input type="button" style="color:red;" value="delete" onclick="window.ondeletebtnclick(${i});">`;
       }
     }

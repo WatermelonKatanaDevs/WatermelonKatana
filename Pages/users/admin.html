@@ -6,88 +6,192 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin | WatermelonKatana</title>
     <link rel="stylesheet" type="text/css" href="/styles/style.css">
+    <link rel="stylesheet" type="text/css" href="/styles/user.css">
     <script src="/scripts/HtmlSanitizer.js"></script>
     <script src="/scripts/script.js"></script>
+    <style>
+      .admin-section { width: 80%; margin: 20px auto; }
+      .admin-card {
+        background: var(--palette-background-card);
+        margin: 10px 0;
+        padding: 12px 15px;
+        border-left: 5px solid #77aaff;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .admin-card img.avatar-mini {
+        width: 40px; height: 40px; border-radius: 50%; object-fit: cover;
+      }
+      .admin-card .grow { flex: 1; min-width: 160px; }
+      .admin-card select, .admin-card button {
+        padding: 6px 10px; border-radius: 5px; cursor: var(--cursor-pointer);
+      }
+      .admin-card button.delete { color: #fff; background: #d9534f; border: none; }
+      #status { width: 80%; margin: 10px auto; color: #d9534f; }
+      .report-link { word-break: break-all; }
+    </style>
   </head>
   <body>
     <script src="/scripts/navbar.js"></script>
-    <h1>Users</h1>
-    <ul id="userList"></ul>
+    <div id="status"></div>
+
+    <div class="admin-section">
+      <h1>Users</h1>
+      <div id="userlist"></div>
+    </div>
+
+    <div class="admin-section">
+      <h1>Reports</h1>
+      <div id="reportlist"></div>
+    </div>
+
     <script>
-      const ul = document.querySelector('#userList');
-      const display = document.querySelector('.display');
+      const roles = ["Basic", "Moderator", "Admin", "Uni Lover"];
+      const status = document.querySelector("#status");
+      const userlist = document.querySelector("#userlist");
+      const reportlist = document.querySelector("#reportlist");
 
-      const getUsers = async () => {
-        try {
-          const res = await fetch('/api/auth/listUsers');
-          const data = await res.json();
-          if (!data.user) throw new Error('No users found');
+      function seterror(message) { status.textContent = message ? "Error: " + message : ""; }
 
-          ul.innerHTML = '';
-          data.user.forEach((user) => {
-            if (user.username !== 'admin') {
-              const li = document.createElement('li');
-              li.innerHTML = `
-                <b>Username:</b> ${user.username} <br>
-                <b>Role:</b> ${user.role}
-                <button class="edit" data-id="${user.id}">Edit Role</button>
-                <button class="delete" data-id="${user.id}">Delete User</button>
-              `;
-              ul.appendChild(li);
-            }
-          });
+      async function apicall(url, options) {
+        const res = await fetch(url, options);
+        let body = {};
+        try { body = await res.json(); } catch (e) {}
+        if (!res.ok) throw new Error(body.message || res.status);
+        return body;
+      }
 
-          attachEventListeners();
-        } catch (error) {
-          display.textContent = `Error: ${error.message}`;
+      function rolepicker(user) {
+        const select = document.createElement("select");
+        for (const r of roles) {
+          const option = document.createElement("option");
+          option.value = r;
+          option.textContent = r;
+          if (r === user.role) option.selected = true;
+          select.appendChild(option);
         }
-      };
-
-      const attachEventListeners = () => {
-        document.querySelectorAll('.edit').forEach(button => {
-          button.addEventListener('click', async () => {
-            const id = button.getAttribute('data-id');
-            const role = prompt('Enter new role (Admin/Basic):');
-            if (role !== 'Admin' && role !== 'Basic') {
-              alert('Invalid role');
-              return;
-            }
-            try {
-              const res = await fetch('/api/auth/updateRole', {
-                method: 'PUT',
-                body: JSON.stringify({ role, id }),
-                headers: { 'Content-Type': 'application/json' }
-              });
-              const result = await res.json();
-              if (!res.ok) throw new Error(result.message);
-              getUsers();
-            } catch (error) {
-              display.textContent = `Error: ${error.message}`;
-            }
-          });
+        select.addEventListener("change", async () => {
+          try {
+            await apicall("/api/auth/updateRole", {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ role: select.value, id: user.id })
+            });
+            seterror("");
+          } catch (err) { seterror(err.message); loadusers(); }
         });
+        return select;
+      }
 
-        document.querySelectorAll('.delete').forEach(button => {
-          button.addEventListener('click', async () => {
-            const id = button.getAttribute('data-id');
-            if (!confirm('Are you sure you want to delete this user?')) return;
-            try {
-              const res = await fetch('/api/auth/deleteUser', {
-                method: 'DELETE',
-                body: JSON.stringify({ id }),
-                headers: { 'Content-Type': 'application/json' }
-              });
-              const result = await res.json();
-              if (!res.ok) throw new Error(result.message);
-              getUsers();
-            } catch (error) {
-              display.textContent = `Error: ${error.message}`;
-            }
-          });
+      function usercard(user) {
+        const card = document.createElement("div");
+        card.className = "admin-card";
+
+        const avatar = document.createElement("img");
+        avatar.className = "avatar-mini";
+        avatar.src = user.avatar || "/images/default_pfp.png";
+        card.appendChild(avatar);
+
+        const info = document.createElement("div");
+        info.className = "grow";
+        const name = document.createElement("a");
+        name.href = "/user/" + user.username;
+        name.textContent = "@" + user.username;
+        const meta = document.createElement("div");
+        meta.textContent = (user.verified ? "verified" : "unverified") + " · joined " + new Date(user.joinedAt).toLocaleDateString();
+        info.appendChild(name);
+        info.appendChild(meta);
+        card.appendChild(info);
+
+        card.appendChild(rolepicker(user));
+
+        const resetbtn = document.createElement("button");
+        resetbtn.textContent = "Reset Password";
+        resetbtn.addEventListener("click", async () => {
+          const password = prompt("New password for @" + user.username + " (min 8 chars):");
+          if (!password) return;
+          if (password.length < 8) { seterror("Password must be at least 8 characters"); return; }
+          try {
+            await apicall("/api/admin/resetpassword?uid=" + encodeURIComponent(user.id) + "&password=" + encodeURIComponent(password));
+            seterror("");
+            alert("Password reset for @" + user.username);
+          } catch (err) { seterror(err.message); }
         });
-      };
+        card.appendChild(resetbtn);
 
-      getUsers();
+        const deletebtn = document.createElement("button");
+        deletebtn.className = "delete";
+        deletebtn.textContent = "Delete";
+        deletebtn.addEventListener("click", async () => {
+          if (!confirm("Permanently delete @" + user.username + "?")) return;
+          try {
+            await apicall("/api/auth/deleteUser", {
+              method: "DELETE",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id: user.id })
+            });
+            loadusers();
+          } catch (err) { seterror(err.message); }
+        });
+        card.appendChild(deletebtn);
+
+        return card;
+      }
+
+      async function loadusers() {
+        try {
+          const data = await apicall("/api/auth/listUsers");
+          userlist.innerHTML = "";
+          for (const user of data.user) {
+            if (user.username === "admin") continue;
+            userlist.appendChild(usercard(user));
+          }
+        } catch (err) { seterror(err.message); }
+      }
+
+      function reportcard(report) {
+        const card = document.createElement("div");
+        card.className = "admin-card";
+        const info = document.createElement("div");
+        info.className = "grow";
+        const who = document.createElement("div");
+        who.textContent = "By @" + report.poster + " · " + new Date(report.postedAt).toLocaleString();
+        const content = document.createElement("div");
+        content.textContent = report.content;
+        const link = document.createElement("a");
+        link.className = "report-link";
+        link.href = report.link;
+        link.textContent = report.link;
+        info.appendChild(who);
+        info.appendChild(content);
+        info.appendChild(link);
+        card.appendChild(info);
+
+        const openbtn = document.createElement("a");
+        openbtn.className = "button";
+        openbtn.href = "/report/" + report.id;
+        openbtn.textContent = "Resolve & Open";
+        card.appendChild(openbtn);
+        return card;
+      }
+
+      async function loadreports() {
+        try {
+          const data = await apicall("/api/admin/reports/list");
+          reportlist.innerHTML = "";
+          if (!data.report || data.report.length === 0) {
+            reportlist.textContent = "No open reports.";
+            return;
+          }
+          for (const report of data.report) reportlist.appendChild(reportcard(report));
+        } catch (err) { seterror(err.message); }
+      }
+
+      loadusers();
+      loadreports();
     </script>
   </body>
 </html>

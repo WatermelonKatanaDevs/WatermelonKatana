@@ -1,5 +1,6 @@
 const Users = require("../../Database/model/Users");
 const Profanity = require("../../util/js/censored");
+const { isadmin } = require("../../util/js/roles");
 const { checkFormToken } = require("../../Middleware/auth");
 const entriesPerPage = 30;
 
@@ -103,7 +104,7 @@ module.exports = class {
         error: "Post not found",
       });
       const user = res.locals.userToken;
-      if (post.posterId !== user.id && user.role !== "Admin") return res.status(403).json({
+      if (post.posterId !== user.id && !isadmin(user.role)) return res.status(403).json({
         message: "Not Authorized. You do not own this post",
       });
       post.title = title;
@@ -147,7 +148,7 @@ module.exports = class {
         error: "Post not found",
       });
       const user = res.locals.userToken;
-      if (post.posterId !== user.id && user.role !== "Admin") return res.status(403).json({
+      if (post.posterId !== user.id && !isadmin(user.role)) return res.status(403).json({
         message: "Not Authorized. You do not own this post",
       });
       await this.model.deleteOne({ _id: pid });
@@ -189,28 +190,28 @@ module.exports = class {
       const { poster, platform, postedBefore, postedAfter, includeTags, excludeTags, featured, randomEntryAction, page, total, sort, showMature, showHidden, showRecent, recipient, customQuery, noclient } = req.query;
       var search = { hidden: false };
       let uid = res.locals.userToken?.id;
-      if (poster) search.poster = poster;
-      if (platform) search.platform = platform;
+      let viewer = uid ? await Users.findOne({ _id: String(uid) }) : null;
+      if (poster) search.poster = String(poster);
+      if (platform) search.platform = String(platform);
       interpretBool(search, "featured", featured);
-      if (showMature == "false" || showMature == "0" || !uid || !(await Users.findOne({ _id: uid })).mature) search.mature = false;
-      if (showHidden == "true" || showHidden == "1") delete search.hidden;
+      if (showMature == "false" || showMature == "0" || !viewer || !viewer.mature) search.mature = false;
+      if ((showHidden == "true" || showHidden == "1") && viewer && (isadmin(viewer.role) || (poster && String(poster) === viewer.username))) delete search.hidden;
       // work out recipient search later
       if (postedBefore || postedAfter) {
         search.postedAt = {};
-        if (postedBefore) search.postedAt.$lte = postedBefore;
-        if (postedAfter) search.postedAt.$gte = postedAfter;
+        if (postedBefore) search.postedAt.$lte = Number(postedBefore);
+        if (postedAfter) search.postedAt.$gte = Number(postedAfter);
       }
       if (includeTags) {
-        search.tags = { $all: includeTags.split("+") };
+        search.tags = { $all: String(includeTags).split("+") };
       }
       if (excludeTags) {
-        excludeTags = excludeTags.split("+");
+        const excludetagslist = String(excludeTags).split("+");
         search.$nor = [];
-        for (var i = 0; i < excludeTags.length; i++) {
-          search.$nor.push({ tags: excludeTags[i] });
+        for (var i = 0; i < excludetagslist.length; i++) {
+          search.$nor.push({ tags: excludetagslist[i] });
         }
       }
-      if (customQuery) search = JSON.parse(customQuery);
       var list = [], length = parseInt(total);
       if (showRecent > 0 || typeof sort === "string" || page > 0 || randomEntryAction) {
         var sortby = {}, limitby = showRecent, skipby = 0;
@@ -297,10 +298,11 @@ module.exports = class {
   async search(req, res, next) {
     try {
       const { query, page, total, showMature, showHidden } = req.query;
-      var search = { hidden: false, $text: { $search: query } };
+      var search = { hidden: false, $text: { $search: String(query) } };
       var skipby = 0, length = parseInt(total), uid = res.locals.userToken?.id;
-      if (showMature == "false" || showMature == "0" || !uid || !(await Users.findOne({ _id: uid })).mature) search.mature = false;
-      if (showHidden == "true" || showHidden == "1") delete search.hidden;
+      var viewer = uid ? await Users.findOne({ _id: String(uid) }) : null;
+      if (showMature == "false" || showMature == "0" || !viewer || !viewer.mature) search.mature = false;
+      if ((showHidden == "true" || showHidden == "1") && viewer && isadmin(viewer.role)) delete search.hidden;
       if (!Number.isSafeInteger(parseInt(length))) {
         length = await this.entriesLength(search);
       }
@@ -333,6 +335,21 @@ module.exports = class {
       if (!post) return res.status(404).json({
         message: "Fetch not successful",
         error: "Post not found",
+      });
+      const uid = res.locals.userToken?.id;
+      const viewer = uid ? await Users.findOne({ _id: String(uid) }) : null;
+      const isowner = uid && (post.posterId === uid || isadmin(viewer?.role));
+      if (post.hidden && !isowner) return res.status(404).json({
+        message: "Fetch not successful",
+        error: "Post not found",
+      });
+      if (post.mature && !isowner && !viewer?.mature) return res.status(403).json({
+        message: "Not authorized",
+        error: "Mature content",
+      });
+      if (post.privateRecipients && post.privateRecipients.length > 0 && !isowner && !(uid && post.privateRecipients.includes(uid))) return res.status(403).json({
+        message: "Not authorized",
+        error: "Private content",
       });
       var data = await this.censor(post.pack(), res);
       res.status(200).json(data);
@@ -464,7 +481,7 @@ module.exports = class {
         error: "User not found",
       });
       var comment = post.comments[index];
-      if (user.id !== comment.posterId && user.role !== "Admin") return res.status(404).json({
+      if (user.id !== comment.posterId && !isadmin(user.role)) return res.status(404).json({
         message: "Delete not successful",
         error: "User does not own comment",
       });

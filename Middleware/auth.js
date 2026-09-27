@@ -1,4 +1,6 @@
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
+const { isadmin } = require("../util/js/roles");
 const jwtSecret = process.env["JWT_SECRET"];
 const cldir = __dirname;
 const formTokens = new Map();
@@ -10,7 +12,7 @@ exports.adminAuth = (req, res, next) => {
       if (err) {
         return res.status(403).sendFile(cldir + "/403.html");
       } else {
-        if (decodedToken.role !== "Admin") {
+        if (!isadmin(decodedToken.role)) {
           return res.status(403).json({ message: "Not authorized, user not admin" });
         } else {
           res.locals.userToken = decodedToken;
@@ -72,7 +74,7 @@ exports.makeFormToken = function (req, res, next) {
 exports.checkFormToken = function (req, res, next) {
   let tokenId = req.cookies["formToken"];
   let formToken = formTokens.get(tokenId);
-  if (tokenId && formToken.state === "pending") {
+  if (tokenId && formToken && formToken.state === "pending") {
     formToken.state = "processing";
     res.locals.clearCookie = () => { res.clearCookie("formToken"); formTokens.delete(tokenId); generateFormToken(res) }
     next();
@@ -82,10 +84,10 @@ exports.checkFormToken = function (req, res, next) {
 }
 
 function generateFormToken(res) {
-  tokenId = Math.random(0, Date.now()).toString(36).slice(2) + Math.random().toString(36).slice(2);
-  formTokens.set(tokenId, {
+  const tokenid = crypto.randomBytes(24).toString("hex");
+  formTokens.set(tokenid, {
     state: "pending",
     expires: Date.now() + 9e5
   });
-  res.cookie("formToken", tokenId);
+  res.cookie("formToken", tokenid);
 }

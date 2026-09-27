@@ -84,7 +84,7 @@ const UserSchema = new Mongoose.Schema({
 }, {
   //strict: false,
   methods: {
-    pack: function() {
+    pack: function(full) {
       const container = {};
       container.username = this.username;
       container.verified = !!this.email;
@@ -93,13 +93,15 @@ const UserSchema = new Mongoose.Schema({
       container.biography = this.biography;
       container.badges = this.badges;
       container.role = this.role;
-      container.favorites = this.favorites;
       container.following = this.following;
       container.followers = this.followers;
       container.joinedAt = this.joinedAt;
       container.mature = this.mature;
-      container.notifications = this.notifications;
       container.id = this._id;
+      if (full) {
+        container.favorites = this.favorites;
+        container.notifications = this.notifications;
+      }
       return container;
     },
     notify: function(title,content,link,posterId,poster) {
