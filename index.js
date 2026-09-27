@@ -12,6 +12,7 @@ const makeLiteralChars = require('./util/js/makeLiteralChars');
 const { logInfo, logDebug, logError, logWarn } = require('./util/js/logger');
 
 const connectDB = require("./Database/connect");
+const { isadmin } = require("./util/js/roles");
 const { adminAuth, userAuth, checkAuth, makeFormToken } = require("./Middleware/auth");
 const sendFileReplace = require("./Middleware/replace");
 const { Turbo } = require("./Turbo/index");
@@ -146,19 +147,19 @@ app.get("/project/:id", checkAuth, makeFormToken, async (req, res) => {
   } 
   // keep this in until all posts and projects are at the correct number of views
   proj.views = proj.viewers.length;
-  sendFileReplace(res, "./Pages/projects/project.html", (s) => s.replace("<!--og:meta-->", `
+  sendFileReplace(res, "./Pages/projects/project.html", (s) => s.replace("<!--og:meta-->", () => `
     <meta property="og:title" content="${makeLiteralChars(proj.title)}"/>
     <meta property="og:type" content="website"/>
     <meta property="og:image" content="${makeLiteralChars(proj.thumbnail)}"/>
     <meta property="og:description" content="${makeLiteralChars(proj.content)} \n By: ${proj.poster} \n Score: ${proj.score} Views: ${proj.views}"/>
-  `).replace("<!--content-->", `
+  `).replace("<!--content-->", () => `
     ${makeLiteralChars(proj.title)}<br>
     By: ${proj.poster}<br>
     ${makeLiteralChars(proj.content)}<br>
     <a href="${makeLiteralChars(proj.link)}">${makeLiteralChars(proj.link)}</a><br>
     ${proj.tags.map(v => "#" + makeLiteralChars(v)).join(", ")}<br>
     Score: ${proj.score} Views: ${proj.views} Platform: ${proj.platform} Featured: ${proj.featured}
-  `).replace("<!--title-->", `
+  `).replace("<!--title-->", () => `
     <title>${makeLiteralChars(proj.title)} | WatermelonKatana</title>
   `));
   await proj.save();
@@ -166,7 +167,7 @@ app.get("/project/:id", checkAuth, makeFormToken, async (req, res) => {
 app.get("/project/:id/edit", userAuth, async (req, res) => {
   const project = await Projects.findOne({ _id: req.params.id });
   const tok = res.locals.userToken;
-  if (!tok || (project.posterId !== tok.id && tok.role !== "Admin"))
+  if (!tok || (project.posterId !== tok.id && !isadmin(tok.role)))
     return res.status(403).sendFile(__dirname + "/Middleware/403.html");
   res.sendFile(cldir + "/projects/edit.html");
 }); // Edit project page, users only
@@ -191,17 +192,17 @@ app.get("/forum/discussion/:id", checkAuth, makeFormToken, async (req, res) => {
   }
   // keep this in until all posts and projects are at the correct number of views
   post.views = post.viewers.length;
-  sendFileReplace(res, "./Pages/forum/discussion.html", (s) => s.replace("<!--og:meta-->", `
+  sendFileReplace(res, "./Pages/forum/discussion.html", (s) => s.replace("<!--og:meta-->", () => `
     <meta property="og:title" content="${makeLiteralChars(post.title)}"/>
     <meta property="og:type" content="website"/>
     <meta property="og:description" content="${makeLiteralChars(post.content)} \n By: ${post.poster} \n Views: ${post.views}"/>
-  `).replace("<!--content-->", `
+  `).replace("<!--content-->", () => `
     ${makeLiteralChars(post.title)}<br>
     By: ${post.poster}<br>
     ${makeLiteralChars(post.content)}<br>
-    ${post.tags.map(v => "#" + v).join(", ")}<br>
+    ${post.tags.map(v => "#" + makeLiteralChars(v)).join(", ")}<br>
     Views: ${post.views} Featured: ${post.featured}
-  `).replace("<!--title-->", `
+  `).replace("<!--title-->", () => `
     <title>${makeLiteralChars(post.title)} | WatermelonKatana Forum</title>
   `));
   await post.save();
@@ -209,7 +210,7 @@ app.get("/forum/discussion/:id", checkAuth, makeFormToken, async (req, res) => {
 app.get("/forum/discussion/:id/edit", userAuth, async (req, res) => {
   const post = await Posts.findOne({ _id: req.params.id });
   const tok = res.locals.userToken;
-  if (!tok || (post.posterId !== tok.id && tok.role !== "Admin"))
+  if (!tok || (post.posterId !== tok.id && !isadmin(tok.role)))
     return res.status(403).sendFile(__dirname + "/Middleware/403.html");
   res.sendFile(cldir + "/forum/edit.html");
 }); // Edit post page, users only
@@ -222,17 +223,17 @@ app.get("/user/:name", async (req, res) => {
     res.status(404).sendFile(cldir + "/404.html");
     return;
   }
-  sendFileReplace(res, "./Pages/users/user.html", (s) => s.replace("<!--og:meta-->", `
+  sendFileReplace(res, "./Pages/users/user.html", (s) => s.replace("<!--og:meta-->", () => `
     <meta property="og:title" content="@${user.username} on WatermelonKatana"/>
     <meta property="og:type" content="website"/>
     <meta property="og:image" content="${makeLiteralChars(user.avatar)}"/>
     <meta property="og:description" content="${makeLiteralChars(user.biography)}"/>
-  `).replace("<!--content-->", `
+  `).replace("<!--content-->", () => `
     ${user.username}<br>
     ${makeLiteralChars(user.biography)}<br>
     ${user.badges.join(", ")}<br>
     Role: ${user.role}
-  `).replace("<!--title-->", `
+  `).replace("<!--title-->", () => `
     <title>${user.username} | WatermelonKatana</title>
   `));
 });
