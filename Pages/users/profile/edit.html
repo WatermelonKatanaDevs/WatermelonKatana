@@ -61,28 +61,30 @@
 
       <div class="editor-field">
         <label>Avatar</label><br>
-        <button type="button" class="uploadbutton" onclick="uploadavatar()">Change Avatar Image</button>
-        <div class="hint">Drag to reposition, slider to zoom.</div>
         <div id="avatar-frame" class="positioner avatar-frame"></div>
         <div class="zoomrow">
           <span>Zoom</span>
           <input type="range" id="avatar-zoom" min="100" max="400" step="1">
         </div>
+        <button type="button" class="uploadbutton" onclick="uploadavatar()">Change Avatar Image</button>
+        <div class="hint">Drag to reposition, slider to zoom.</div>
       </div>
 
       <div class="editor-field">
         <label>Banner</label><br>
-        <button type="button" class="uploadbutton" onclick="uploadbanner()">Change Banner Image</button>
-        <div class="hint">Drag to reposition, slider to zoom.</div>
         <div id="banner-frame" class="positioner banner-frame"></div>
         <div class="zoomrow">
           <span>Zoom</span>
           <input type="range" id="banner-zoom" min="100" max="400" step="1">
         </div>
+        <button type="button" class="uploadbutton" onclick="uploadbanner()">Change Banner Image</button>
+        <div class="hint">Drag to reposition, slider to zoom.</div>
       </div>
 
       <div id="flair-section" style="display:none">
-        <h3>Uni Lover Flair</h3>
+        <h3>Custom User Flair<br>
+        <span class="hint">(Uni Lover Flair)</span>
+      </h3>
       </div>
 
       <label for="mature">Mature
