@@ -343,7 +343,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   var auth = await getAuth();
   if (auth.user) {
-    if (auth.user.role == "Admin") {
+    if (isadmin(auth.user.role)) {
       const res = await fetch("/api/admin/reports/list");
       const data = await res.json();
       const reportCount = data.report.length;
