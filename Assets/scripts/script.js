@@ -344,7 +344,7 @@ function focalstyle(url, pos) {
   const zoom = clampnum(pos.zoom, 100, 400, 100);
   const safe = /^(https?:\/\/|\/)[^\s"'<>()]+$/.test(url || "") ? url : "";
   const size = zoom <= 100 ? "cover" : zoom + "%";
-  return `background-image:url("${safe}");background-size:${size};background-position:${x}% ${y}%;background-repeat:no-repeat;`;
+  return `background-image:url('${safe}');background-size:${size};background-position:${x}% ${y}%;background-repeat:no-repeat;`;
 }
 
 function hexok(color) {
