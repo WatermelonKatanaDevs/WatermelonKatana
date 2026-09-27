@@ -186,7 +186,7 @@
         wrap.innerHTML = `
           <legend>${def.label}</legend>
           <div class="editrow">
-            <label><input type="checkbox" class="fp-enabled"> Enabled</label>
+            <label><input type="checkbox" class="fp-enabled"><span class="checkbox"></span> Enabled</label>
             <label>Style
               <select class="fp-style">
                 <option value="rainbow">Rainbow</option>
@@ -201,7 +201,7 @@
           </div>
           ${def.border ? `<div class="editrow">
             <label>Thickness <input type="range" class="fp-thickness" min="1" max="12" step="1"></label>
-            <label><input type="checkbox" class="fp-glow"> Glow</label>
+            <label><input type="checkbox" class="fp-glow"><span class="checkbox"></span> Glow</label>
           </div>` : ""}
         `;
         const enabled = wrap.querySelector(".fp-enabled");
@@ -222,13 +222,18 @@
         const slots = [];
         for (let i = 0; i < 3; i++) {
           const row = document.createElement("span");
+          const label = document.createElement("label");
           const use = document.createElement("input");
           use.type = "checkbox";
           use.checked = i < state.colors.length;
+          const box = document.createElement("span");
+          box.className = "checkbox";
+          label.appendChild(use);
+          label.appendChild(box);
           const color = document.createElement("input");
           color.type = "color";
           color.value = state.colors[i] || palette[i];
-          row.appendChild(use);
+          row.appendChild(label);
           row.appendChild(color);
           colorsbox.appendChild(row);
           slots.push({ use, color });
