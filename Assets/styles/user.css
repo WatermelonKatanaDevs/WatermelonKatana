@@ -43,6 +43,8 @@ body {
   display: flex;
   align-items: center;
   margin-top: -50px;
+  position: relative;
+  z-index: 1;
 }
 
 .avatar {
