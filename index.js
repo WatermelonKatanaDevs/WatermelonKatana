@@ -64,8 +64,22 @@ app.use((req, res, next) => {
   if (dest && dest !== "empty" && dest !== "document") {
     return res.status(403).json({ message: "Invalid request context" });
   }
+  const referer = req.headers["referer"];
+  const authcheck = req.method === "GET" && req.path === "/api/auth/check";
+  if (!authcheck && (fromturbowarp(referer) || (site === "same-origin" && !referer))) {
+    return res.status(403).json({ message: "Request blocked from project context" });
+  }
   next();
 });
+
+function fromturbowarp(referer) {
+  if (!referer) return false;
+  try {
+    return /^\/+turbowarp/i.test(new URL(referer).pathname);
+  } catch {
+    return true;
+  }
+}
 
 /**
  * Serve static files from the Client directory
