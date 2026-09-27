@@ -6,7 +6,7 @@ async function createPost(post,data,txt,name,reload) {
     <p class="comment-data">${new Date(data.postedAt).toUTCString()}</p>
     <div class="comment-top">
       <a href="/user/${u.username}">
-        <img class="comment-avatar" src="${u.avatar}">
+        <span class="comment-avatar">${focalimg(u.avatar, u.avatarpos)}</span>
         <p class="comment-username">${u.username}</p>
       </a>
     </div>
@@ -28,7 +28,7 @@ async function createPost(post,data,txt,name,reload) {
   document.body.innerHTML += `
   <div id="reply">
     <div class="comment-top">
-      <img class="comment-avatar" src="${tok.user.avatar}">
+      <span class="comment-avatar">${focalimg(tok.user.avatar, tok.user.avatarpos)}</span>
       <p class="comment-username">${tok.user.username}</p>
     </div>
     <textarea id="reply-textbox" oninput="growtextarea(this)" resize=false placeholder="Write a reply..."></textarea>
@@ -99,7 +99,7 @@ async function listComments(list,comments,self,events) {
       </div>`:""}
       <div class="comment-top">
         <a href="/user/${u.username}">
-          <img class="comment-avatar" src="${u.avatar}">
+          <span class="comment-avatar">${focalimg(u.avatar, u.avatarpos)}</span>
           <p class="comment-username">${u.username}</p>
         </a>
         <p class="comment-data">${relativeDate(c.postedAt)}</p>
@@ -123,7 +123,7 @@ async function listComments(list,comments,self,events) {
   var repbtn = `
   <button class="comment" id="reply-btn"  onclick="window.onreplybtnclick()">
     <div class="comment-top">
-      <img class="comment-avatar" src="${self.avatar}">
+      <span class="comment-avatar">${focalimg(self.avatar, self.avatarpos)}</span>
       <p class="comment-username">${self.username}</p>
     </div>
     <p class="comment-content">Write a reply...</p>

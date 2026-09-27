@@ -206,7 +206,7 @@ function userHTML(list) {
   return function (user) {
     let div = `<a class="user-panel" href="/user/${user.username}">
       <div class="comment-top">
-      <img class="comment-avatar" src="${user.avatar || "/images/blank_project.png"}">
+      <span class="comment-avatar">${focalimg(user.avatar || "/images/blank_project.png", user.avatarpos)}</span>
       <div class="comment-username">${user.username}</div>
       </div>
       ${previewContent(user.biography, 100)}
@@ -402,3 +402,132 @@ JSON.safeParse = function (str, backup) {
     return backup;
   }
 };
+
+var _rolesdata = null;
+async function getroles() {
+  if (_rolesdata) return _rolesdata;
+  try {
+    _rolesdata = ((await (await fetch("/data/badges.json")).json()).roles) || [];
+  } catch (e) {
+    _rolesdata = [];
+  }
+  return _rolesdata;
+}
+
+function rolestylefor(user, roles) {
+  if (user.rolegradient === false) return "";
+  if (isadmin(user.role) && user.flair && user.flair.role && user.flair.role.enabled) return flairtext(user.flair.role);
+  const roledef = roles.find(r => r.name === user.role);
+  if (roledef && roledef.colors && roledef.colors.length >= 2) return flairtext({ enabled: true, style: "custom", colors: roledef.colors, angle: 90, speed: 6 });
+  return "";
+}
+
+var _previewcache = {};
+async function getuserbyname(username) {
+  if (_previewcache[username]) return _previewcache[username];
+  try {
+    var res = await fetch("/api/auth/userdata?username=" + encodeURIComponent(username));
+    var u = await res.json();
+    if (u.error) return null;
+    _previewcache[username] = u;
+    return u;
+  } catch (e) {
+    return null;
+  }
+}
+
+var _previewcard = null;
+var _previewtimer = null;
+var _previewtoken = 0;
+
+function ensurepreviewcard() {
+  if (_previewcard) return _previewcard;
+  const style = document.createElement("style");
+  style.textContent = `
+    @keyframes flair-shift { from { background-position: 0% 50%; } to { background-position: 300% 50%; } }
+    .user-preview {
+      position: absolute; z-index: 3000; width: 300px; max-width: 80vw;
+      background: var(--palette-background-card); color: var(--palette-textcolor);
+      border-radius: 10px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .user-preview .up-banner { width: 100%; height: 80px; overflow: hidden; background: var(--palette-background-item); }
+    .user-preview .up-body { padding: 0 14px 14px; }
+    .user-preview .up-avatar {
+      width: 64px; height: 64px; border-radius: 50%; overflow: hidden;
+      border: 4px solid var(--palette-background-card); margin-top: -34px; position: relative;
+    }
+    .user-preview .focal { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .user-preview .up-name { font-size: 18px; font-weight: bold; margin-top: 6px; display: inline-block; }
+    .user-preview .up-role { font-size: 13px; opacity: 0.85; margin: 2px 0 8px; display: inline-block; }
+    .user-preview .up-bio { font-size: 14px; max-height: 120px; overflow: auto; word-wrap: break-word; }
+    .user-preview .flair-border { position: relative; }
+    .user-preview .flair-border::after {
+      content: ""; position: absolute; inset: 0; border-radius: inherit; padding: var(--flair-w, 4px);
+      background-image: var(--flair-grad, linear-gradient(90deg, #ff5f6d, #4facfe, #ff5f6d)); background-size: 300% 100%;
+      animation: flair-shift var(--flair-speed, 6s) linear infinite;
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); mask-composite: exclude;
+      pointer-events: none;
+    }
+    .user-preview .flair-border.flair-glow { box-shadow: 0 0 12px var(--flair-glow, #ff66cc), 0 0 24px var(--flair-glow, #ff66cc); }
+  `;
+  document.head.appendChild(style);
+  _previewcard = document.createElement("div");
+  _previewcard.className = "user-preview";
+  _previewcard.style.display = "none";
+  _previewcard.addEventListener("mouseenter", () => clearTimeout(_previewtimer));
+  _previewcard.addEventListener("mouseleave", hidepreview);
+  document.body.appendChild(_previewcard);
+  return _previewcard;
+}
+
+async function showpreview(anchor, username) {
+  if (localStorage.getItem("user-preview") === "off") return;
+  const token = ++_previewtoken;
+  const card = ensurepreviewcard();
+  const u = await getuserbyname(username);
+  if (!u || token !== _previewtoken) return;
+  const roles = await getroles();
+  if (token !== _previewtoken) return;
+  const canflair = isadmin(u.role);
+  const avatarflair = canflair ? flairborder(u.flair, "avatar") : { cls: "", style: "" };
+  const namecss = canflair ? flairname(u.flair) : "";
+  const rolecss = rolestylefor(u, roles);
+  card.innerHTML = `
+    <div class="up-banner">${focalimg(u.banner, u.bannerpos)}</div>
+    <div class="up-body">
+      <div class="up-avatar ${avatarflair.cls}" style="${avatarflair.style}">${focalimg(u.avatar, u.avatarpos)}</div>
+      <div><span class="up-name" style="${namecss}">${makeLiteralChars(u.username)}</span></div>
+      <div><span class="up-role" style="${rolecss}">${makeLiteralChars(u.role)}</span></div>
+      <div class="up-bio">${convertMarkdown(u.biography || "")}</div>
+    </div>`;
+  const rect = anchor.getBoundingClientRect();
+  card.style.display = "block";
+  let left = window.scrollX + rect.left;
+  const cw = card.offsetWidth;
+  const maxleft = window.scrollX + document.documentElement.clientWidth - cw - 8;
+  if (left > maxleft) left = maxleft;
+  card.style.top = (window.scrollY + rect.bottom + 6) + "px";
+  card.style.left = Math.max(8, left) + "px";
+}
+
+function hidepreview() {
+  clearTimeout(_previewtimer);
+  _previewtimer = setTimeout(() => { if (_previewcard) _previewcard.style.display = "none"; }, 200);
+}
+
+document.addEventListener("mouseover", (e) => {
+  if (!e.target || !e.target.closest) return;
+  const a = e.target.closest('a[href^="/user/"]');
+  if (!a) return;
+  const m = a.getAttribute("href").match(/^\/user\/([^\/?#]+)/);
+  if (!m) return;
+  clearTimeout(_previewtimer);
+  showpreview(a, decodeURIComponent(m[1]));
+});
+
+document.addEventListener("mouseout", (e) => {
+  if (!e.target || !e.target.closest) return;
+  if (!e.target.closest('a[href^="/user/"]')) return;
+  hidepreview();
+});

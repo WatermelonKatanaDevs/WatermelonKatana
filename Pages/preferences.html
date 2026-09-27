@@ -53,9 +53,20 @@
       </label>
     </div>
   </div>
+  <div class="config">
+    <h3>User hover previews:</h3>
+
+    <div>
+      <label>
+        <input type="checkbox" id="user-preview-toggle" onchange="localStorage.setItem('user-preview', this.checked ? 'on' : 'off')">
+        <span class="checkbox"></span>
+      </label>
+    </div>
+  </div>
   <script>
     let currentuser = null;
     const signedinbannertoggle = document.querySelector("#signedin-banner-toggle");
+    document.querySelector("#user-preview-toggle").checked = localStorage.getItem("user-preview") !== "off";
     (async () => {
       const data = await getAuth();
       currentuser = data.user;

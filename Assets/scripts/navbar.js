@@ -412,7 +412,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       var user = await getUser(notif.posterId);
       return `<a class="user-panel" href="/notification/${notificationCount-index-1}">
         <div class="comment-top">
-        <img class="comment-avatar" src="${user.avatar || "/images/blank_project.png"}">
+        <span class="comment-avatar">${focalimg(user.avatar || "/images/blank_project.png", user.avatarpos)}</span>
         <div class="comment-username">${notif.title}</div>
         </div>
         <div style="display: flex">
@@ -439,7 +439,7 @@ async function reportHTML(report) {
   var user = await getUser(report.posterId);
   return `<a class="user-panel" href="/report/${report.id}">
     <div class="comment-top">
-    <img class="comment-avatar" src="${user.avatar || "/images/blank_project.png"}">
+    <span class="comment-avatar">${focalimg(user.avatar || "/images/blank_project.png", user.avatarpos)}</span>
     <div class="comment-username">New Report</div>
     </div>
     ${user.username} reported ${report.link} because ${report.content}

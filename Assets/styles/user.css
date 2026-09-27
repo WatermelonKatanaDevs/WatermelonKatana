@@ -190,6 +190,16 @@ body {
   border-radius: 50%;
   margin-right: 10px;
   vertical-align: middle;
+  overflow: hidden;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.follower-avatar > .focal {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .avatar-basicBorder {
