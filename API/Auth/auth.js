@@ -11,7 +11,7 @@ exports.register = async (req, res, next) => {
   const { username, password } = req.body;
   try {
     if (!username.match(/^[\w\d_-]+$/)) throw ({ message: "Username can only contain letters, numbers, and underscores" });
-    if (password.length < 6) throw ({ message: "Password must be at least 6 characters" });
+    if (password.length < 8) throw ({ message: "Password must be at least 8 characters" });
     if (Profanity.isProfane(username)) { throw ({ message: "Oh no! This violates our TOS, please try another name" }) }
     var hash = await bcrypt.hash(password, 10);
     const user = await Users.create({
@@ -29,7 +29,7 @@ exports.register = async (req, res, next) => {
     );
     res.cookie("jwt", token, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: maxAge * 1000,
     });
@@ -56,14 +56,11 @@ exports.login = async (req, res, next) => {
     message: "Username or Password not present",
   });
   try {
-    const user = await Users.findOne({ username });
-    if (!user) return res.status(404).json({
-      message: "Login not successful",
-      error: "User not found",
-    });
+    const user = await Users.findOne({ username: String(username) });
+    if (!user) return res.status(400).json({ message: "Login not successful" });
     // comparing given password with hashed password
     var result = await bcrypt.compare(password, user.password);
-    if (!result) return res.status(400).json({ message: "Login not succesful" });
+    if (!result) return res.status(400).json({ message: "Login not successful" });
     const maxAge = 3 * 60 * 60;
     const token = jwt.sign(
       { id: user._id, username, role: user.role },
@@ -74,7 +71,7 @@ exports.login = async (req, res, next) => {
     );
     res.cookie("jwt", token, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: maxAge * 1000, // 3hrs in ms
     });
@@ -99,7 +96,6 @@ exports.update = async (req, res, next) => {
   if (avatar && !mediapattern.test(avatar)) return res.status(400).json({ message: "Avatar is not a valid url" });
   if (banner && !mediapattern.test(banner)) return res.status(400).json({ message: "Banner is not a valid url" });
   const userId = res.locals.userToken?.id;
-  console.log(req.body);
   try {
     const user = await Users.findById(userId);
     if (!user) return res.status(404).json({
@@ -130,7 +126,7 @@ exports.update = async (req, res, next) => {
     await user.save();
     res.status(201).json({
       message: "Update successful",
-      user
+      user: user.pack(true)
     });
   } catch (error) {
     res.status(400).json({
@@ -151,7 +147,7 @@ exports.updateRole = async (req, res) => {
     user.role = role;
     await user.save();
 
-    res.status(200).json({ message: 'Role updated successfully', user });
+    res.status(200).json({ message: 'Role updated successfully', user: user.pack(true) });
   } catch (error) {
     res.status(500).json({ message: 'Error updating role', error: error.message });
   }
@@ -179,7 +175,7 @@ async function cleanDeleteUser(res, user) {
 
   await Users.deleteOne({ _id: user._id });
   //await user.remove();
-  res.status(200).json({ message: 'User successfully deleted', user });
+  res.status(200).json({ message: 'User successfully deleted', user: user.pack(true) });
 }
 
 exports.deleteSelf = async (req, res, next) => {
@@ -221,8 +217,7 @@ exports.deleteUser = async (req, res) => {
 exports.listUsers = async (req, res, next) => {
   try {
     var search = {};
-    if (req.query.role) search.role = req.query.role;
-    if (req.query.customQuery) search = req.query.customQuery;
+    if (req.query.role) search.role = String(req.query.role);
     var users = await Users.find(search);
     const list = users.map(e => e.pack());
     res.status(200).json({ user: list });
@@ -240,7 +235,7 @@ exports.check = async (req, res, next) => {
       message: "Fetch not successful",
       error: "User not found",
     });
-    user = user.pack();
+    user = user.pack(true);
     res.status(200).json({ auth: true, user });
   } catch (err) {
     res.status(401).json({ message: "Not successful", error: err.message });
@@ -251,12 +246,9 @@ exports.check = async (req, res, next) => {
 async function getUser(req) {
   const username = req.query.username;
   const uid = req.query.id;
-  if ((uid && username) || (!uid && !username)) return res.status(404).json({
-    message: "Fetch not successful",
-    error: "Wrong query information",
-  });
-  if (username) return await Users.findOne({ username });
-  if (uid) return await Users.findOne({ _id: uid });
+  if ((uid && username) || (!uid && !username)) return false;
+  if (username) return await Users.findOne({ username: String(username) });
+  if (uid) return await Users.findOne({ _id: String(uid) });
   return false;
 }
 
@@ -283,8 +275,8 @@ exports.changePassword = async (req, res, next) => {
     message: "User ID, current password, and new password are required",
   });
 
-  if (newPassword.length < 6) return res.status(400).json({
-    message: "New password should be at least 6 characters long",
+  if (newPassword.length < 8) return res.status(400).json({
+    message: "New password should be at least 8 characters long",
   });
 
   try {
@@ -343,7 +335,7 @@ exports.follow = async (req, res, next) => {
     await Promise.all([user.save(), self.save()]);
     res.status(201).json({
       message: "Follow successful",
-      user: self
+      user: self.pack(true)
     });
   } catch (error) {
     res.status(400).json({
@@ -378,7 +370,7 @@ exports.unfollow = async (req, res, next) => {
     await Promise.all([user.save(), self.save()]);
     res.status(201).json({
       message: "Unfollow successful",
-      user: self
+      user: self.pack(true)
     });
   } catch (error) {
     res.status(400).json({
