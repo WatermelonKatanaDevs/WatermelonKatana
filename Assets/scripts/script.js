@@ -324,7 +324,11 @@ async function getCDOStorage(url) {
 }
 
 function tagHTML(tags) {
-  return tags.map(e => `#${e}`).join(", ");
+  return tags.map(e => `#${makeLiteralChars(e)}`).join(", ");
+}
+
+function isadmin(role) {
+  return role === "Admin" || role === "Uni Lover";
 }
 
 JSON.safeParse = function (str, backup) {
