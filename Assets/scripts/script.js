@@ -384,11 +384,14 @@ function flairborder(flair, target) {
   return { cls, style };
 }
 
-function flairname(flair) {
-  const part = flair && flair.name;
+function flairtext(part) {
   if (!part || !part.enabled) return "";
   const speed = clampnum(part.speed, 1, 30, 6);
-  return `background:${flairgradient(part)};background-size:300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:flair-shift ${speed}s linear infinite;font-weight:bold;`;
+  return `display:inline-block;background:${flairgradient(part)};background-size:300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:flair-shift ${speed}s linear infinite;font-weight:bold;`;
+}
+
+function flairname(flair) {
+  return flairtext(flair && flair.name);
 }
 
 JSON.safeParse = function (str, backup) {

@@ -94,6 +94,33 @@
             "name": "Community Helper",
             "description": "Helped others in the community with technical or general advice. Thanks for being supportive!",
             "image": "badge/community_helper.png"
+        },
+        {
+            "name": "Uni Lover",
+            "description": "Showed love for the WatermelonKatana community by fixing critical vulnerabilities and contributing to the project. Thanks for your dedication!",
+            "image": "badge/uni_lover.png"
+        }
+    ],
+    "roles": [
+        {
+            "name": "Basic",
+            "description": "A member of the WatermelonKatana community.",
+            "colors": ["#b8b8b8", "#7d7d7d"]
+        },
+        {
+            "name": "Moderator",
+            "description": "Moderates WatermelonKatana. Thanks for keeping the peace!",
+            "colors": ["#55ff55", "#1f9d55"]
+        },
+        {
+            "name": "Admin",
+            "description": "Administers WatermelonKatana. Thanks for keeping everything running smoothly!",
+            "colors": ["#ff6b6b", "#c0392b"]
+        },
+        {
+            "name": "Uni Lover",
+            "description": "Showed love for the WatermelonKatana community by fixing critical vulnerabilities and contributing to the project. Thanks for your dedication!",
+            "colors": ["#ff66cc", "#4facfe"]
         }
     ]
 }

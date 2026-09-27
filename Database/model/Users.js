@@ -84,6 +84,10 @@ const UserSchema = new Mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  rolegradient: {
+    type: Boolean,
+    default: true,
+  },
   avatarpos: {
     x: { type: Number, default: 50 },
     y: { type: Number, default: 50 },
@@ -96,6 +100,13 @@ const UserSchema = new Mongoose.Schema({
   },
   flair: {
     name: {
+      enabled: { type: Boolean, default: false },
+      style: { type: String, default: "rainbow" },
+      colors: [ String ],
+      angle: { type: Number, default: 90 },
+      speed: { type: Number, default: 6 },
+    },
+    role: {
       enabled: { type: Boolean, default: false },
       style: { type: String, default: "rainbow" },
       colors: [ String ],
@@ -140,6 +151,7 @@ const UserSchema = new Mongoose.Schema({
       container.joinedAt = this.joinedAt;
       container.mature = this.mature;
       container.signedinbanner = this.signedinbanner;
+      container.rolegradient = this.rolegradient;
       container.avatarpos = this.avatarpos;
       container.bannerpos = this.bannerpos;
       container.flair = this.flair;

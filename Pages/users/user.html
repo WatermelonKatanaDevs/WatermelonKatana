@@ -47,6 +47,7 @@
     const display = document.querySelector("#display");
     location.path = location.pathname.split("/");
     const name = location.path[2];
+    var rolesdata = [];
 
     async function renderProfile(userData, isAuthenticated, isOwnProfile) {
       let roleBorderCSS;
@@ -80,6 +81,16 @@
       const bannerflair = canflair ? flairborder(userData.flair, "banner") : { cls: "", style: "" };
       const nameflaircss = canflair ? flairname(userData.flair) : "";
       const finalnamecss = nameflaircss || (nameCSS + "; margin-top: 35px; width: 100%");
+      const roledef = rolesdata.find(r => r.name === userData.role);
+      let rolestyle = "";
+      if (userData.rolegradient !== false) {
+        if (canflair && userData.flair && userData.flair.role && userData.flair.role.enabled) {
+          rolestyle = flairtext(userData.flair.role);
+        } else if (roledef && roledef.colors && roledef.colors.length >= 2) {
+          rolestyle = flairtext({ enabled: true, style: "custom", colors: roledef.colors, angle: 90, speed: 6 });
+        }
+      }
+      const roletip = roledef ? roledef.description : "";
 
       display.innerHTML = `
     <div class="profile ${userData.role.toLowerCase().replace(/[^a-z0-9]+/g, "-")}">
@@ -97,7 +108,7 @@
         }
       </div>
       <p class="biography">${convertMarkdown(userData.biography)}</p>
-      <p class="role">${userData.role}</p>
+      <p class="role" title="${makeLiteralChars(roletip)}" style="${rolestyle}">${userData.role}</p>
       Joined on ${new Date(userData.joinedAt).toUTCString().replace(/\d\d:[^]+$/, "")} |
       <span id="followercount" class="link">${userData.followers.length}</span> Followers |
       <span id="followingcount" class="link">${userData.following.length}</span> Following
@@ -134,6 +145,8 @@
 
         const res = await fetch(`/api/auth/userdata?username=${name}`);
         const userData = await res.json();
+
+        try { rolesdata = ((await (await fetch("/data/badges.json")).json()).roles) || []; } catch (e) {}
 
         const isOwnProfile = isAuthenticated && username === userData.username;
         await renderProfile(userData, isAuthenticated, isOwnProfile);

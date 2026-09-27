@@ -89,6 +89,10 @@
         <input type="checkbox" id="mature">
         <span class="checkbox"></span>
       </label><br>
+      <label for="rolegradient">Role gradient
+        <input type="checkbox" id="rolegradient">
+        <span class="checkbox"></span>
+      </label><br>
       <input type="submit" value="update"/><br>
     </form>
     <br/>
@@ -103,6 +107,7 @@
       const name = document.querySelector("#name");
       const bio = document.querySelector("#bio");
       const mature = document.querySelector("#mature");
+      const rolegradienttoggle = document.querySelector("#rolegradient");
       const display = document.querySelector(".error");
 
       const avatarframe = document.querySelector("#avatar-frame");
@@ -113,6 +118,7 @@
       const flairsection = document.querySelector("#flair-section");
       const flairparts = [
         { key: "name", label: "Username", border: false },
+        { key: "role", label: "Role label", border: false },
         { key: "avatar", label: "Avatar border", border: true },
         { key: "banner", label: "Banner border", border: true },
       ];
@@ -303,6 +309,7 @@
         avatarzoom.value = avatarpos.zoom;
         bannerzoom.value = bannerpos.zoom;
         mature.checked = user.mature;
+        rolegradienttoggle.checked = user.rolegradient !== false;
         refreshavatar();
         refreshbanner();
 
@@ -348,6 +355,7 @@
               avatar: avatarurl,
               banner: bannerurl,
               mature: mature.checked,
+              rolegradient: rolegradienttoggle.checked,
               avatarpos,
               bannerpos,
               flair: flairstate,
