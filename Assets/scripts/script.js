@@ -337,28 +337,55 @@ function clampnum(value, min, max, fallback) {
   return Math.max(min, Math.min(max, value));
 }
 
-function focalstyle(url, pos) {
+function safeurl(url) {
+  return /^(https?:\/\/|\/)[^\s"'<>()]+$/.test(url || "") ? url : "";
+}
+
+function focalimg(url, pos, cls) {
   pos = pos || {};
   const x = clampnum(pos.x, 0, 100, 50);
   const y = clampnum(pos.y, 0, 100, 50);
   const zoom = clampnum(pos.zoom, 100, 400, 100);
-  const safe = /^(https?:\/\/|\/)[^\s"'<>()]+$/.test(url || "") ? url : "";
-  const size = zoom <= 100 ? "cover" : zoom + "%";
-  return `background-image:url('${safe}');background-size:${size};background-position:${x}% ${y}%;background-repeat:no-repeat;`;
+  return `<img class="focal ${cls || ""}" src="${safeurl(url)}" style="object-position:${x}% ${y}%;transform:scale(${zoom / 100});transform-origin:${x}% ${y}%;">`;
 }
 
 function hexok(color) {
   return /^#[0-9a-fA-F]{6}$/.test(color || "");
 }
 
-function flairborder(flair, target) {
-  if (!flair || flair.target !== target) return { cls: "", style: "" };
-  if (flair.style === "custom") {
-    const c1 = hexok(flair.color1) ? flair.color1 : "#ff5f6d";
-    const c2 = hexok(flair.color2) ? flair.color2 : "#4facfe";
-    return { cls: "flair-custom", style: `--flair-c1:${c1};--flair-c2:${c2};` };
+function flairgradient(part) {
+  const angle = clampnum(part.angle, 0, 360, 90);
+  let list;
+  if (part.style === "custom") {
+    list = (Array.isArray(part.colors) ? part.colors.filter(hexok) : []);
+    if (list.length === 0) list = ["#ff5f6d", "#4facfe"];
+  } else {
+    list = ["#ff5f6d", "#ffc371", "#47e891", "#4facfe", "#b06ab3"];
   }
-  return { cls: "flair-rainbow", style: "" };
+  if (list.length === 1) list = [list[0], list[0]];
+  return `linear-gradient(${angle}deg, ${list.join(", ")}, ${list[0]})`;
+}
+
+function flairborder(flair, target) {
+  const part = flair && flair[target];
+  if (!part || !part.enabled) return { cls: "", style: "" };
+  const speed = clampnum(part.speed, 1, 30, 6);
+  const width = clampnum(part.thickness, 1, 12, 4);
+  let cls = "flair-border";
+  let style = `--flair-grad:${flairgradient(part)};--flair-speed:${speed}s;--flair-w:${width}px;`;
+  if (part.glow) {
+    const glowc = (part.style === "custom" && Array.isArray(part.colors) && part.colors.filter(hexok)[0]) || "#ff66cc";
+    cls += " flair-glow";
+    style += `--flair-glow:${glowc};`;
+  }
+  return { cls, style };
+}
+
+function flairname(flair) {
+  const part = flair && flair.name;
+  if (!part || !part.enabled) return "";
+  const speed = clampnum(part.speed, 1, 30, 6);
+  return `background:${flairgradient(part)};background-size:300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:flair-shift ${speed}s linear infinite;font-weight:bold;`;
 }
 
 JSON.safeParse = function (str, backup) {

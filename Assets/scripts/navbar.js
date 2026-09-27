@@ -158,7 +158,27 @@
       text-decoration: none;
       display: flex;
       align-items: center;
+      position: relative;
+      overflow: hidden;
       transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .signedin-bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      filter: blur(8px);
+      opacity: 0.5;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .focal {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
     }
 
     .signedin:hover {
@@ -173,12 +193,17 @@
       padding: 0px;
       margin: 0px;
       display: inline-flex;
+      overflow: hidden;
+      position: relative;
+      z-index: 1;
     }
 
     .signedin-username {
       padding: 0px;
       margin: 7px;
       display: inline-flex;
+      position: relative;
+      z-index: 1;
     }
 
     .dropdown {
@@ -360,6 +385,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         `;
     }
     const notificationCount = auth.user.notifications.length;
+    const signedinname = isadmin(auth.user.role) ? flairname(auth.user.flair) : "";
+    const bannerurl = safeurl(auth.user.banner);
+    const signedinbg = (auth.user.signedinbanner && bannerurl)
+      ? `<span class="signedin-bg" style="background-image:url('${bannerurl}')"></span>`
+      : "";
     nhtml += `
     <div id="notification-icon" class="dropdown-icon" data-count="${notificationCount}" onclick="notificationbtnclick()">
       <svg viewBox="0 0 448 512" id="bellsvg" class="iconsvg">
@@ -370,8 +400,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       Loading...
     </div>
     <a class="signedin" href="/user/${auth.user.username}">
-      <img class="signedin-avatar" src="${auth.user.avatar}">
-      <p class="signedin-username">${auth.user.username}</p>
+      ${signedinbg}
+      <span class="signedin-avatar">${focalimg(auth.user.avatar, auth.user.avatarpos)}</span>
+      <p class="signedin-username" style="${signedinname}">${auth.user.username}</p>
     </a>
     `;
     Promise.all(auth.user.notifications.sort((a, b) => b.createdAt - a.createdAt).map(notificationHTML)).then(notifs => {

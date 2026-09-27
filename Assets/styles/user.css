@@ -51,6 +51,18 @@ body {
   width: 100px;
   height: 100px;
   margin-right: 20px;
+  overflow: hidden;
+}
+
+.profile .banner {
+  overflow: hidden;
+}
+
+.avatar > .focal, .banner > .focal {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .username {
@@ -132,20 +144,19 @@ body {
   to { background-position: 300% 50%; }
 }
 
-.avatar.flair-rainbow, .banner.flair-rainbow,
-.avatar.flair-custom, .banner.flair-custom {
+.flair-border {
   position: relative;
 }
 
-.avatar.flair-rainbow::after, .banner.flair-rainbow::after,
-.avatar.flair-custom::after, .banner.flair-custom::after {
+.flair-border::after {
   content: "";
   position: absolute;
-  inset: -4px;
+  inset: calc(-1 * var(--flair-w, 4px));
   border-radius: inherit;
-  padding: 4px;
+  padding: var(--flair-w, 4px);
+  background-image: var(--flair-grad, linear-gradient(90deg, #ff5f6d, #4facfe, #ff5f6d));
   background-size: 300% 100%;
-  animation: flair-shift 6s linear infinite;
+  animation: flair-shift var(--flair-speed, 6s) linear infinite;
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
@@ -153,12 +164,8 @@ body {
   pointer-events: none;
 }
 
-.avatar.flair-rainbow::after, .banner.flair-rainbow::after {
-  background-image: linear-gradient(90deg, #ff5f6d, #ffc371, #47e891, #4facfe, #b06ab3, #ff5f6d);
-}
-
-.avatar.flair-custom::after, .banner.flair-custom::after {
-  background-image: linear-gradient(90deg, var(--flair-c1), var(--flair-c2), var(--flair-c1));
+.flair-border.flair-glow {
+  box-shadow: 0 0 12px var(--flair-glow, #ff66cc), 0 0 24px var(--flair-glow, #ff66cc);
 }
 
 .hidden {

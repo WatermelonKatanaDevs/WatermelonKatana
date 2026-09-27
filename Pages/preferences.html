@@ -43,6 +43,43 @@
       <button onclick="updateCursorScheme('default')">Default</button>
     </div>
   </div>
+  <div class="config">
+    <h3>Signed-in banner background: <span id="signedin-banner-state"></span></h3>
+
+    <div>
+      <button onclick="setsignedinbanner(true)">On</button>
+      <button onclick="setsignedinbanner(false)">Off</button>
+    </div>
+  </div>
+  <script>
+    let currentuser = null;
+    (async () => {
+      const data = await getAuth();
+      currentuser = data.user;
+      const state = document.querySelector("#signedin-banner-state");
+      if (currentuser) state.textContent = currentuser.signedinbanner ? "(On)" : "(Off)";
+    })();
+
+    async function setsignedinbanner(value) {
+      if (!currentuser) return alert("Not signed in!");
+      await fetch("/api/auth/update", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: currentuser.username,
+          biography: currentuser.biography,
+          avatar: currentuser.avatar,
+          banner: currentuser.banner,
+          mature: currentuser.mature,
+          avatarpos: currentuser.avatarpos,
+          bannerpos: currentuser.bannerpos,
+          flair: currentuser.flair,
+          signedinbanner: value,
+        }),
+      });
+      location.reload();
+    }
+  </script>
   <!-- <div id="footer"> -->
   </div>
 </body>

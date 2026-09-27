@@ -24,16 +24,35 @@ function sanitizepos(pos) {
   };
 }
 
+function sanitizecolors(colors) {
+  if (!Array.isArray(colors)) return [];
+  const hex = /^#[0-9a-fA-F]{6}$/;
+  return colors.filter(c => hex.test(c)).slice(0, 5);
+}
+
+function sanitizeflairpart(part, border) {
+  part = part || {};
+  const styles = ["rainbow", "custom"];
+  const out = {
+    enabled: !!part.enabled,
+    style: styles.includes(part.style) ? part.style : "rainbow",
+    colors: sanitizecolors(part.colors),
+    angle: clampnum(part.angle, 0, 360, 90),
+    speed: clampnum(part.speed, 1, 30, 6),
+  };
+  if (border) {
+    out.thickness = clampnum(part.thickness, 1, 12, 4);
+    out.glow = !!part.glow;
+  }
+  return out;
+}
+
 function sanitizeflair(flair) {
   flair = flair || {};
-  const targets = ["none", "avatar", "banner"];
-  const styles = ["rainbow", "custom"];
-  const hex = /^#[0-9a-fA-F]{6}$/;
   return {
-    target: targets.includes(flair.target) ? flair.target : "none",
-    style: styles.includes(flair.style) ? flair.style : "rainbow",
-    color1: hex.test(flair.color1) ? flair.color1 : "#ff5f6d",
-    color2: hex.test(flair.color2) ? flair.color2 : "#4facfe",
+    name: sanitizeflairpart(flair.name, false),
+    avatar: sanitizeflairpart(flair.avatar, true),
+    banner: sanitizeflairpart(flair.banner, true),
   };
 }
 exports.register = async (req, res, next) => {
@@ -118,7 +137,7 @@ exports.login = async (req, res, next) => {
 };
 
 exports.update = async (req, res, next) => {
-  const { username, avatar, banner, biography, mature, avatarpos, bannerpos, flair } = req.body;
+  const { username, avatar, banner, biography, mature, avatarpos, bannerpos, flair, signedinbanner } = req.body;
   if (!username.match(/^[\w\d_-]+$/)) return res.status(400).json({ message: "Username can only contain letters, numbers, and underscores" });
   if (Profanity.isProfane(username)) { return res.status(400).json({ message: "Oh no! This violates our TOS, please try another name" }) }
   const mediapattern = /^(https?:\/\/|\/)[^\s"'<>]+$/;
@@ -155,6 +174,7 @@ exports.update = async (req, res, next) => {
     if (avatarpos) user.avatarpos = sanitizepos(avatarpos);
     if (bannerpos) user.bannerpos = sanitizepos(bannerpos);
     if (flair && isadmin(user.role)) user.flair = sanitizeflair(flair);
+    if (typeof signedinbanner === "boolean") user.signedinbanner = signedinbanner;
     await user.save();
     res.status(201).json({
       message: "Update successful",

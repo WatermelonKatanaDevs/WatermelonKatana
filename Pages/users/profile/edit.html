@@ -34,6 +34,13 @@
       #flair-section select, #flair-section input[type="color"] {
         padding: 4px; border-radius: 5px; margin-right: 12px;
       }
+      .flair-part {
+        margin: 12px 0; padding: 12px; border-radius: 8px;
+        border: 1px solid var(--palette-background-container);
+      }
+      .flair-part legend { padding: 0 6px; font-weight: bold; }
+      .flair-part .editrow { margin: 8px 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+      .fp-colors span { margin-right: 10px; }
       .hint { font-size: 13px; color: #999; }
     </style>
   </head>
@@ -76,24 +83,7 @@
 
       <div id="flair-section" style="display:none">
         <h3>Uni Lover Flair</h3>
-        <div class="hint">Add an animated border to your avatar or banner.</div>
-        <div class="editor-field">
-          <label for="flair-target">Apply to</label>
-          <select id="flair-target">
-            <option value="none">None</option>
-            <option value="avatar">Avatar border</option>
-            <option value="banner">Banner border</option>
-          </select>
-          <label for="flair-style">Style</label>
-          <select id="flair-style">
-            <option value="rainbow">Rainbow</option>
-            <option value="custom">Custom colours</option>
-          </select>
-          <span id="flair-colors" style="display:none">
-            <input type="color" id="flair-color1" value="#ff5f6d">
-            <input type="color" id="flair-color2" value="#4facfe">
-          </span>
-        </div>
+        <div class="hint">Customise your username, avatar border and banner border independently. Colours 2 and 3 are optional.</div>
       </div>
 
       <label for="mature">Mature
@@ -122,25 +112,38 @@
       const bannerzoom = document.querySelector("#banner-zoom");
 
       const flairsection = document.querySelector("#flair-section");
-      const flairtarget = document.querySelector("#flair-target");
-      const flairstyle = document.querySelector("#flair-style");
-      const flaircolors = document.querySelector("#flair-colors");
-      const flaircolor1 = document.querySelector("#flair-color1");
-      const flaircolor2 = document.querySelector("#flair-color2");
+      const flairparts = [
+        { key: "name", label: "Username", border: false },
+        { key: "avatar", label: "Avatar border", border: true },
+        { key: "banner", label: "Banner border", border: true },
+      ];
+      const flairstate = {};
 
       let avatarurl = "";
       let bannerurl = "";
       let avatarpos = { x: 50, y: 50, zoom: 100 };
       let bannerpos = { x: 50, y: 50, zoom: 100 };
 
-      function paint(frame, url, pos) {
-        frame.style.cssText = frame.getAttribute("data-base") + focalstyle(url, pos);
-      }
-
       function makepositioner(frame, slider, geturl, getpos) {
-        frame.setAttribute("data-base", frame.style.cssText);
+        frame.style.overflow = "hidden";
+        const img = document.createElement("img");
+        img.style.width = "100%";
+        img.style.height = "100%";
+        img.style.objectFit = "cover";
+        img.style.display = "block";
+        img.style.pointerEvents = "none";
+        frame.appendChild(img);
         let dragging = false, startx = 0, starty = 0, basex = 50, basey = 50;
-        const refresh = () => paint(frame, geturl(), getpos());
+        const refresh = () => {
+          const pos = getpos();
+          const x = clampnum(pos.x, 0, 100, 50);
+          const y = clampnum(pos.y, 0, 100, 50);
+          const zoom = clampnum(pos.zoom, 100, 400, 100);
+          img.src = safeurl(geturl());
+          img.style.objectPosition = x + "% " + y + "%";
+          img.style.transform = "scale(" + (zoom / 100) + ")";
+          img.style.transformOrigin = x + "% " + y + "%";
+        };
         frame.addEventListener("pointerdown", (e) => {
           dragging = true;
           startx = e.clientX; starty = e.clientY;
@@ -156,6 +159,7 @@
           refresh();
         });
         frame.addEventListener("pointerup", () => { dragging = false; });
+        frame.addEventListener("pointercancel", () => { dragging = false; });
         slider.addEventListener("input", () => {
           getpos().zoom = clampnum(slider.value, 100, 400, 100);
           refresh();
@@ -166,10 +170,102 @@
       const refreshavatar = makepositioner(avatarframe, avatarzoom, () => avatarurl, () => avatarpos);
       const refreshbanner = makepositioner(bannerframe, bannerzoom, () => bannerurl, () => bannerpos);
 
-      function syncflaircolors() {
-        flaircolors.style.display = flairstyle.value === "custom" ? "inline" : "none";
+      function makeflairpart(def, src) {
+        src = src || {};
+        const palette = ["#ff5f6d", "#4facfe", "#b06ab3"];
+        const state = {
+          enabled: !!src.enabled,
+          style: ["rainbow", "custom"].includes(src.style) ? src.style : "rainbow",
+          colors: Array.isArray(src.colors) ? src.colors.filter(hexok) : [],
+          angle: clampnum(src.angle, 0, 360, 90),
+          speed: clampnum(src.speed, 1, 30, 6),
+          thickness: clampnum(src.thickness, 1, 12, 4),
+          glow: !!src.glow,
+        };
+        const wrap = document.createElement("fieldset");
+        wrap.className = "flair-part";
+        wrap.innerHTML = `
+          <legend>${def.label}</legend>
+          <div class="editrow">
+            <label><input type="checkbox" class="fp-enabled"> Enabled</label>
+            <label>Style
+              <select class="fp-style">
+                <option value="rainbow">Rainbow</option>
+                <option value="custom">Custom colours</option>
+              </select>
+            </label>
+          </div>
+          <div class="editrow fp-colors"></div>
+          <div class="editrow">
+            <label>Angle <input type="range" class="fp-angle" min="0" max="360" step="1"></label>
+            <label>Speed <input type="range" class="fp-speed" min="1" max="30" step="1"></label>
+          </div>
+          ${def.border ? `<div class="editrow">
+            <label>Thickness <input type="range" class="fp-thickness" min="1" max="12" step="1"></label>
+            <label><input type="checkbox" class="fp-glow"> Glow</label>
+          </div>` : ""}
+        `;
+        const enabled = wrap.querySelector(".fp-enabled");
+        const style = wrap.querySelector(".fp-style");
+        const colorsbox = wrap.querySelector(".fp-colors");
+        const angle = wrap.querySelector(".fp-angle");
+        const speed = wrap.querySelector(".fp-speed");
+        const thickness = def.border ? wrap.querySelector(".fp-thickness") : null;
+        const glow = def.border ? wrap.querySelector(".fp-glow") : null;
+
+        enabled.checked = state.enabled;
+        style.value = state.style;
+        angle.value = state.angle;
+        speed.value = state.speed;
+        if (thickness) thickness.value = state.thickness;
+        if (glow) glow.checked = state.glow;
+
+        const slots = [];
+        for (let i = 0; i < 3; i++) {
+          const row = document.createElement("span");
+          const use = document.createElement("input");
+          use.type = "checkbox";
+          use.checked = i < state.colors.length;
+          const color = document.createElement("input");
+          color.type = "color";
+          color.value = state.colors[i] || palette[i];
+          row.appendChild(use);
+          row.appendChild(color);
+          colorsbox.appendChild(row);
+          slots.push({ use, color });
+        }
+
+        function readcolors() {
+          state.colors = slots.filter(s => s.use.checked).map(s => s.color.value);
+        }
+        function synccolors() {
+          colorsbox.style.display = style.value === "custom" ? "flex" : "none";
+        }
+
+        enabled.addEventListener("change", () => state.enabled = enabled.checked);
+        style.addEventListener("change", () => { state.style = style.value; synccolors(); });
+        angle.addEventListener("input", () => state.angle = clampnum(angle.value, 0, 360, 90));
+        speed.addEventListener("input", () => state.speed = clampnum(speed.value, 1, 30, 6));
+        if (thickness) thickness.addEventListener("input", () => state.thickness = clampnum(thickness.value, 1, 12, 4));
+        if (glow) glow.addEventListener("change", () => state.glow = glow.checked);
+        slots.forEach(s => {
+          s.use.addEventListener("change", readcolors);
+          s.color.addEventListener("input", readcolors);
+        });
+
+        readcolors();
+        synccolors();
+        return { state, wrap };
       }
-      flairstyle.addEventListener("change", syncflaircolors);
+
+      function buildflairui(userflair) {
+        userflair = userflair || {};
+        for (const def of flairparts) {
+          const part = makeflairpart(def, userflair[def.key]);
+          flairstate[def.key] = part.state;
+          flairsection.appendChild(part.wrap);
+        }
+      }
 
       const discardbtn = document.querySelector("#discardbtn");
       discardbtn.onclick = () => {
@@ -208,12 +304,7 @@
 
         if (isadmin(user.role)) {
           flairsection.style.display = "block";
-          const flair = user.flair || {};
-          flairtarget.value = ["none", "avatar", "banner"].includes(flair.target) ? flair.target : "none";
-          flairstyle.value = ["rainbow", "custom"].includes(flair.style) ? flair.style : "rainbow";
-          if (/^#[0-9a-fA-F]{6}$/.test(flair.color1)) flaircolor1.value = flair.color1;
-          if (/^#[0-9a-fA-F]{6}$/.test(flair.color2)) flaircolor2.value = flair.color2;
-          syncflaircolors();
+          buildflairui(user.flair || {});
         }
 
         markdownTextbox('#bio');
@@ -244,12 +335,6 @@
           return display.textContent = 'Avatar is not a vaild URL';
         if (bannerurl && !bannerurl.match(/^https?:\/\/[^"]+$/) && !bannerurl.match(/^\/api\/media\/[^"]+$/))
           return display.textContent = 'Banner is not a vaild URL';
-        const flair = {
-          target: flairtarget.value,
-          style: flairstyle.value,
-          color1: flaircolor1.value,
-          color2: flaircolor2.value,
-        };
         try {
           const res = await fetch("/api/auth/update", {
             method: "PUT",
@@ -261,7 +346,7 @@
               mature: mature.checked,
               avatarpos,
               bannerpos,
-              flair,
+              flair: flairstate,
             }),
             headers: { "Content-Type": "application/json" },
           });

@@ -78,20 +78,22 @@
       const canflair = isadmin(userData.role);
       const avatarflair = canflair ? flairborder(userData.flair, "avatar") : { cls: "", style: "" };
       const bannerflair = canflair ? flairborder(userData.flair, "banner") : { cls: "", style: "" };
+      const nameflaircss = canflair ? flairname(userData.flair) : "";
+      const finalnamecss = nameflaircss || (nameCSS + "; margin-top: 35px; width: 100%");
 
       display.innerHTML = `
     <div class="profile ${userData.role.toLowerCase().replace(/[^a-z0-9]+/g, "-")}">
-      <div class="banner ${bannerflair.cls}" style="${focalstyle(userData.banner, userData.bannerpos)}${bannerflair.style}"></div>
+      <div class="banner ${bannerflair.cls}" style="${bannerflair.style}">${focalimg(userData.banner, userData.bannerpos)}</div>
       <div class="namecontainer">
-        <div class="avatar ${avatarflair.cls}" style="${roleBorderCSS}${focalstyle(userData.avatar, userData.avatarpos)}${avatarflair.style}"></div>
+        <div class="avatar ${avatarflair.cls}" style="${roleBorderCSS}${avatarflair.style}">${focalimg(userData.avatar, userData.avatarpos)}</div>
         ${isAuthenticated && isOwnProfile ? `
           <div id="profile-actions">
-            <span class="${nameCSSClass}" style="${nameCSS}; margin-top: 35px; width: 100%">${userData.username}</span>
+            <span class="${nameCSSClass}" style="${finalnamecss}; margin-top: 35px; width: 100%">${userData.username}</span>
             <a class="button" href="/logout">Log Out</a>
             <a class="button" href="/profile/edit">Edit Profile</a>
             <a class="button" href="/profile/chpass">Change Password</a>
             <a class="button" href="/profile/verify">Verify Email</a>
-          </div>` : `<span class="${nameCSSClass}" style="${nameCSS}; margin-top: 35px; width: 100%">${userData.username}</span>`
+          </div>` : `<span class="${nameCSSClass}" style="${finalnamecss}; margin-top: 35px; width: 100%">${userData.username}</span>`
         }
       </div>
       <p class="biography">${convertMarkdown(userData.biography)}</p>

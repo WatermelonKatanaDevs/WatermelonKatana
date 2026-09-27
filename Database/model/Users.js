@@ -80,6 +80,10 @@ const UserSchema = new Mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  signedinbanner: {
+    type: Boolean,
+    default: false,
+  },
   avatarpos: {
     x: { type: Number, default: 50 },
     y: { type: Number, default: 50 },
@@ -91,10 +95,31 @@ const UserSchema = new Mongoose.Schema({
     zoom: { type: Number, default: 100 },
   },
   flair: {
-    target: { type: String, default: "none" },
-    style: { type: String, default: "rainbow" },
-    color1: { type: String, default: "#ff5f6d" },
-    color2: { type: String, default: "#4facfe" },
+    name: {
+      enabled: { type: Boolean, default: false },
+      style: { type: String, default: "rainbow" },
+      colors: [ String ],
+      angle: { type: Number, default: 90 },
+      speed: { type: Number, default: 6 },
+    },
+    avatar: {
+      enabled: { type: Boolean, default: false },
+      style: { type: String, default: "rainbow" },
+      colors: [ String ],
+      angle: { type: Number, default: 90 },
+      speed: { type: Number, default: 6 },
+      thickness: { type: Number, default: 4 },
+      glow: { type: Boolean, default: false },
+    },
+    banner: {
+      enabled: { type: Boolean, default: false },
+      style: { type: String, default: "rainbow" },
+      colors: [ String ],
+      angle: { type: Number, default: 90 },
+      speed: { type: Number, default: 6 },
+      thickness: { type: Number, default: 4 },
+      glow: { type: Boolean, default: false },
+    },
   },
   notifications: [ NotificationSchema ],
 }, {
@@ -114,6 +139,7 @@ const UserSchema = new Mongoose.Schema({
       container.followers = this.followers;
       container.joinedAt = this.joinedAt;
       container.mature = this.mature;
+      container.signedinbanner = this.signedinbanner;
       container.avatarpos = this.avatarpos;
       container.bannerpos = this.bannerpos;
       container.flair = this.flair;
