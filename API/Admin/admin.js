@@ -9,14 +9,14 @@ const Reports = require("../../Database/model/Reports");
 exports.transferProject = async (req, res) => {
   const { uid, project, post } = req.query;
   try {
-    const user = await Users.findOne({ _id: uid });
+    const user = await Users.findOne({ _id: String(uid) });
     if (!user) return res.status(404).json({
       message: "Transfer not successful",
       error: "User not found",
     });
     var p = false;
-    if (project && !post) p = await Projects.findOne({ _id: project });
-    if (post && !project) p = await Posts.findOne({ _id: post });
+    if (project && !post) p = await Projects.findOne({ _id: String(project) });
+    if (post && !project) p = await Posts.findOne({ _id: String(post) });
     if (!p) return res.status(404).json({
       message: "Transfer not successful",
       error: "Post/Project not found",
@@ -47,7 +47,7 @@ exports.resetPassword = async (req, res) => {
       error: "Password not present",
     });
     var hash = await bcrypt.hash(password, 10);
-    const user = await Users.findOne({ _id: uid });
+    const user = await Users.findOne({ _id: String(uid) });
     if (!user) return res.status(404).json({
       message: "Transfer not successful",
       error: "User not found",
@@ -110,6 +110,7 @@ exports.openReport = async (req, res, next) => {
     // await report.remove();
     await Reports.deleteOne({ _id: rid });
     console.log("deleted " + rid);
+    if (typeof link !== "string" || !/^\/[^/]/.test(link)) link = "/";
     res.redirect(link);
   } catch (error) {
     res.status(400).json({
@@ -122,8 +123,6 @@ exports.openReport = async (req, res, next) => {
 exports.listReports = async (req, res, next) => {
   try {
     var search = {};
-    const { customQuery } = req.query;
-    if (customQuery) search = JSON.parse(customQuery);
     var list = await Reports.find(search);
     list = list.map(e => e.pack());
     var data = {};
