@@ -2,16 +2,11 @@
 const Users = require("../../Database/model/Users");
 const mailer = require("../mail");
 const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
 const origin = "https://watermelonkatana.com";
 
 function makeid(length) {
-  let result = '';
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  const charactersLength = characters.length;
-  for (let i = 0; i < length; i++) { 
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
+  return crypto.randomBytes(length).toString("base64url").slice(0, length);
 }
 
 var pendingVerifications = {};
@@ -103,36 +98,34 @@ exports.sendPasswordReset = async (req,res) => {
       error: "Email not valid",
     });
     const user = await Users.findOne({ email });
-    if (!user) return res.status(404).json({
-      message: "Reset email not successfully created",
-      error: "User not found",
-    });
-    var verifyId = makeid(64);
-    const maxAge = 60 * 60 * 1000; // 1 hour
-    pendingVerifications[verifyId] = {
-      uid: user._id,
-      email: email,
-      expiresAt: Date.now() + maxAge,
-    };
-    var resetUrl = origin+"/resetpass?id="+verifyId;
-    mailer.sendMail(email,{
-      subject: "WatermelonKatana Password Reset",
-      text: `
-        Hello ${user.username},
+    if (user) {
+      var verifyId = makeid(64);
+      const maxAge = 60 * 60 * 1000; // 1 hour
+      pendingPasswordResets[verifyId] = {
+        uid: user._id,
+        email: email,
+        expiresAt: Date.now() + maxAge,
+      };
+      var resetUrl = origin+"/resetpass?id="+verifyId;
+      mailer.sendMail(email,{
+        subject: "WatermelonKatana Password Reset",
+        text: `
+          Hello ${user.username},
 
-        Open the link below to reset your password.
-        ${resetUrl}
-        
-        Not you? Don't open the above link.
-      `,
-      html: `
-        Hello ${user.username},<br>
-        <br>
-        <a href="${resetUrl}">Click here to reset your password.</a><br>
-        <br>
-        Not you? Don't click the above link.
-      `,
-    })
+          Open the link below to reset your password.
+          ${resetUrl}
+
+          Not you? Don't open the above link.
+        `,
+        html: `
+          Hello ${user.username},<br>
+          <br>
+          <a href="${resetUrl}">Click here to reset your password.</a><br>
+          <br>
+          Not you? Don't click the above link.
+        `,
+      })
+    }
     res.status(200).json({
       message: "Reset email creation successful",
     });
@@ -161,8 +154,8 @@ exports.resetPassword = async (req,res) => {
       message: "Reset not successful",
       error: "User not found",
     });
-    if (password.length < 6) return res.status(400).json({
-      message: "New password should be at least 6 characters long",
+    if (password.length < 8) return res.status(400).json({
+      message: "New password should be at least 8 characters long",
     });
     const hash = await bcrypt.hash(password, 10);
     user.password = hash;
