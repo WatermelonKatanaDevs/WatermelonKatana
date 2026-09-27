@@ -44,20 +44,22 @@
     </div>
   </div>
   <div class="config">
-    <h3>Signed-in banner background: <span id="signedin-banner-state"></span></h3>
+    <h3>Signed-in banner background:</h3>
 
     <div>
-      <button onclick="setsignedinbanner(true)">On</button>
-      <button onclick="setsignedinbanner(false)">Off</button>
+      <label>
+        <input type="checkbox" id="signedin-banner-toggle" onchange="setsignedinbanner(this.checked)">
+        <span class="checkbox"></span>
+      </label>
     </div>
   </div>
   <script>
     let currentuser = null;
+    const signedinbannertoggle = document.querySelector("#signedin-banner-toggle");
     (async () => {
       const data = await getAuth();
       currentuser = data.user;
-      const state = document.querySelector("#signedin-banner-state");
-      if (currentuser) state.textContent = currentuser.signedinbanner ? "(On)" : "(Off)";
+      if (currentuser) signedinbannertoggle.checked = !!currentuser.signedinbanner;
     })();
 
     async function setsignedinbanner(value) {
@@ -77,7 +79,7 @@
           signedinbanner: value,
         }),
       });
-      location.reload();
+      currentuser.signedinbanner = value;
     }
   </script>
   <!-- <div id="footer"> -->

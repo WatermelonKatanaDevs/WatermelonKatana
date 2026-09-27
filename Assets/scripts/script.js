@@ -338,7 +338,10 @@ function clampnum(value, min, max, fallback) {
 }
 
 function safeurl(url) {
-  return /^(https?:\/\/|\/)[^\s"'<>()]+$/.test(url || "") ? url : "";
+  url = url || "";
+  if (!/^(https?:\/\/|\/)/.test(url)) return "";
+  if (/["'<>]/.test(url)) return "";
+  return url;
 }
 
 function focalimg(url, pos, cls) {

@@ -151,7 +151,7 @@ body {
 .flair-border::after {
   content: "";
   position: absolute;
-  inset: calc(-1 * var(--flair-w, 4px));
+  inset: 0;
   border-radius: inherit;
   padding: var(--flair-w, 4px);
   background-image: var(--flair-grad, linear-gradient(90deg, #ff5f6d, #4facfe, #ff5f6d));

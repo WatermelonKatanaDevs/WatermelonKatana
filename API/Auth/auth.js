@@ -140,7 +140,7 @@ exports.update = async (req, res, next) => {
   const { username, avatar, banner, biography, mature, avatarpos, bannerpos, flair, signedinbanner } = req.body;
   if (!username.match(/^[\w\d_-]+$/)) return res.status(400).json({ message: "Username can only contain letters, numbers, and underscores" });
   if (Profanity.isProfane(username)) { return res.status(400).json({ message: "Oh no! This violates our TOS, please try another name" }) }
-  const mediapattern = /^(https?:\/\/|\/)[^\s"'<>]+$/;
+  const mediapattern = /^(https?:\/\/|\/)[^"'<>]+$/;
   if (avatar && !mediapattern.test(avatar)) return res.status(400).json({ message: "Avatar is not a valid url" });
   if (banner && !mediapattern.test(banner)) return res.status(400).json({ message: "Banner is not a valid url" });
   const userId = res.locals.userToken?.id;
