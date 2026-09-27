@@ -111,6 +111,36 @@ body {
   color: #55ff55;
 }
 
+@keyframes unilover-shift {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+
+.profile.uni-lover .role {
+  display: inline-block;
+  font-weight: bold;
+  background: linear-gradient(90deg, #ff5f6d, #ffc371, #47e891, #4facfe, #b06ab3, #ff5f6d);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: unilover-shift 6s linear infinite;
+}
+
+.profile.uni-lover .role::before {
+  content: "\2726 ";
+  -webkit-text-fill-color: #ff66cc;
+}
+
+.profile.uni-lover .avatar {
+  box-shadow: 0 0 12px #ff66cc, 0 0 24px #4facfe;
+}
+
+.profile.uni-lover .banner {
+  border-bottom: 3px solid transparent;
+  border-image: linear-gradient(90deg, #ff5f6d, #4facfe, #b06ab3) 1;
+}
+
 .hidden {
   display: none;
 }
