@@ -331,6 +331,36 @@ function isadmin(role) {
   return role === "Admin" || role === "Uni Lover";
 }
 
+function clampnum(value, min, max, fallback) {
+  value = Number(value);
+  if (!isFinite(value)) return fallback;
+  return Math.max(min, Math.min(max, value));
+}
+
+function focalstyle(url, pos) {
+  pos = pos || {};
+  const x = clampnum(pos.x, 0, 100, 50);
+  const y = clampnum(pos.y, 0, 100, 50);
+  const zoom = clampnum(pos.zoom, 100, 400, 100);
+  const safe = /^(https?:\/\/|\/)[^\s"'<>()]+$/.test(url || "") ? url : "";
+  const size = zoom <= 100 ? "cover" : zoom + "%";
+  return `background-image:url("${safe}");background-size:${size};background-position:${x}% ${y}%;background-repeat:no-repeat;`;
+}
+
+function hexok(color) {
+  return /^#[0-9a-fA-F]{6}$/.test(color || "");
+}
+
+function flairborder(flair, target) {
+  if (!flair || flair.target !== target) return { cls: "", style: "" };
+  if (flair.style === "custom") {
+    const c1 = hexok(flair.color1) ? flair.color1 : "#ff5f6d";
+    const c2 = hexok(flair.color2) ? flair.color2 : "#4facfe";
+    return { cls: "flair-custom", style: `--flair-c1:${c1};--flair-c2:${c2};` };
+  }
+  return { cls: "flair-rainbow", style: "" };
+}
+
 JSON.safeParse = function (str, backup) {
   if (str === null || str === undefined) return backup;
   try {

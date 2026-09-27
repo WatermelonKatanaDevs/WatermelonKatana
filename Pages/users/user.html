@@ -75,11 +75,15 @@
           break;
       }
 
+      const canflair = isadmin(userData.role);
+      const avatarflair = canflair ? flairborder(userData.flair, "avatar") : { cls: "", style: "" };
+      const bannerflair = canflair ? flairborder(userData.flair, "banner") : { cls: "", style: "" };
+
       display.innerHTML = `
     <div class="profile ${userData.role.toLowerCase().replace(/[^a-z0-9]+/g, "-")}">
-      <img class="banner" src="${userData.banner}">
+      <div class="banner ${bannerflair.cls}" style="${focalstyle(userData.banner, userData.bannerpos)}${bannerflair.style}"></div>
       <div class="namecontainer">
-        <img class="avatar" style="${roleBorderCSS}" src="${userData.avatar}">
+        <div class="avatar ${avatarflair.cls}" style="${roleBorderCSS}${focalstyle(userData.avatar, userData.avatarpos)}${avatarflair.style}"></div>
         ${isAuthenticated && isOwnProfile ? `
           <div id="profile-actions">
             <span class="${nameCSSClass}" style="${nameCSS}; margin-top: 35px; width: 100%">${userData.username}</span>

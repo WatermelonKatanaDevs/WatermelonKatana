@@ -127,18 +127,38 @@ body {
   animation: unilover-shift 6s linear infinite;
 }
 
-.profile.uni-lover .role::before {
-  content: "\2726 ";
-  -webkit-text-fill-color: #ff66cc;
+@keyframes flair-shift {
+  from { background-position: 0% 50%; }
+  to { background-position: 300% 50%; }
 }
 
-.profile.uni-lover .avatar {
-  box-shadow: 0 0 12px #ff66cc, 0 0 24px #4facfe;
+.avatar.flair-rainbow, .banner.flair-rainbow,
+.avatar.flair-custom, .banner.flair-custom {
+  position: relative;
 }
 
-.profile.uni-lover .banner {
-  border-bottom: 3px solid transparent;
-  border-image: linear-gradient(90deg, #ff5f6d, #4facfe, #b06ab3) 1;
+.avatar.flair-rainbow::after, .banner.flair-rainbow::after,
+.avatar.flair-custom::after, .banner.flair-custom::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  padding: 4px;
+  background-size: 300% 100%;
+  animation: flair-shift 6s linear infinite;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.avatar.flair-rainbow::after, .banner.flair-rainbow::after {
+  background-image: linear-gradient(90deg, #ff5f6d, #ffc371, #47e891, #4facfe, #b06ab3, #ff5f6d);
+}
+
+.avatar.flair-custom::after, .banner.flair-custom::after {
+  background-image: linear-gradient(90deg, var(--flair-c1), var(--flair-c2), var(--flair-c1));
 }
 
 .hidden {

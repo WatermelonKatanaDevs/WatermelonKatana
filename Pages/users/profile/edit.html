@@ -5,15 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Edit Profile | WatermelonKatana</title>
     <link rel="stylesheet" type="text/css" href="/styles/style.css">
+    <link rel="stylesheet" type="text/css" href="/styles/user.css">
     <script src="/scripts/HtmlSanitizer.js"></script>
     <script src="/scripts/script.js"></script>
     <script src="/scripts/EmojiPicker.js"></script>
     <script src="/scripts/markdowntextbox.js"></script>
+    <style>
+      .editor-field { margin: 12px 0; }
+      .positioner {
+        border-radius: 10px;
+        cursor: grab;
+        touch-action: none;
+        background-color: var(--palette-background-item);
+        overflow: hidden;
+      }
+      .positioner:active { cursor: grabbing; }
+      .positioner.avatar-frame { width: 140px; height: 140px; border-radius: 50%; }
+      .positioner.banner-frame { width: 100%; max-width: 480px; height: 160px; }
+      .zoomrow { display: flex; align-items: center; gap: 10px; max-width: 480px; margin-top: 8px; }
+      .zoomrow input[type="range"] { flex: 1; }
+      #flair-section {
+        margin: 16px 0;
+        padding: 14px;
+        border-radius: 10px;
+        background: var(--palette-background-item);
+      }
+      #flair-section label { margin-right: 8px; }
+      #flair-section select, #flair-section input[type="color"] {
+        padding: 4px; border-radius: 5px; margin-right: 12px;
+      }
+      .hint { font-size: 13px; color: #999; }
+    </style>
   </head>
   <body>
     <script src="/scripts/mediaupload.js"></script>
     <script src="/scripts/navbar.js"></script>
-    
+
     <h1>Edit Profile</h1>
 
     <form>
@@ -21,18 +48,54 @@
       <br>
       <label for="name">Username</label><br>
       <input type="text" id="name" required/><br>
+
       <label for="bio">Biography</label><br>
       <textarea id="bio"></textarea><br>
-      <label for="avatar">Avatar</label><br>
-      <button type="button" class="uploadbutton" onclick="uploadAvatar()">
-        Edit Avatar<br>
-        <img id="avatar" style="max-width:100px; max-height:100px;">
-      </button><br>
-      <label for="banner">Banner</label><br>
-      <button type="button" class="uploadbutton" onclick="uploadBanner()">
-        Edit Banner<br>
-        <img id="banner" style="max-width:100px; max-height:100px;">
-      </button><br>
+
+      <div class="editor-field">
+        <label>Avatar</label><br>
+        <button type="button" class="uploadbutton" onclick="uploadavatar()">Change Avatar Image</button>
+        <div class="hint">Drag to reposition, slider to zoom.</div>
+        <div id="avatar-frame" class="positioner avatar-frame"></div>
+        <div class="zoomrow">
+          <span>Zoom</span>
+          <input type="range" id="avatar-zoom" min="100" max="400" step="1">
+        </div>
+      </div>
+
+      <div class="editor-field">
+        <label>Banner</label><br>
+        <button type="button" class="uploadbutton" onclick="uploadbanner()">Change Banner Image</button>
+        <div class="hint">Drag to reposition, slider to zoom.</div>
+        <div id="banner-frame" class="positioner banner-frame"></div>
+        <div class="zoomrow">
+          <span>Zoom</span>
+          <input type="range" id="banner-zoom" min="100" max="400" step="1">
+        </div>
+      </div>
+
+      <div id="flair-section" style="display:none">
+        <h3>Uni Lover Flair</h3>
+        <div class="hint">Add an animated border to your avatar or banner.</div>
+        <div class="editor-field">
+          <label for="flair-target">Apply to</label>
+          <select id="flair-target">
+            <option value="none">None</option>
+            <option value="avatar">Avatar border</option>
+            <option value="banner">Banner border</option>
+          </select>
+          <label for="flair-style">Style</label>
+          <select id="flair-style">
+            <option value="rainbow">Rainbow</option>
+            <option value="custom">Custom colours</option>
+          </select>
+          <span id="flair-colors" style="display:none">
+            <input type="color" id="flair-color1" value="#ff5f6d">
+            <input type="color" id="flair-color2" value="#4facfe">
+          </span>
+        </div>
+      </div>
+
       <label for="mature">Mature
         <input type="checkbox" id="mature">
         <span class="checkbox"></span>
@@ -41,26 +104,80 @@
     </form>
     <br/>
     <div style="position: relative; top: 60px; transform: translateX(-45%)">
-    <button id="discardbtn"> Discard Changes </button>
-    <br><br>
-    <button id="deletebtn"> Delete Account</button>
+      <button id="discardbtn"> Discard Changes </button>
+      <br><br>
+      <button id="deletebtn"> Delete Account</button>
     </div>
+
     <script>
       const form = document.querySelector("form");
       const name = document.querySelector("#name");
       const bio = document.querySelector("#bio");
-      const avatar = document.querySelector("#avatar");
-      const banner = document.querySelector("#banner");
       const mature = document.querySelector("#mature");
       const display = document.querySelector(".error");
 
+      const avatarframe = document.querySelector("#avatar-frame");
+      const bannerframe = document.querySelector("#banner-frame");
+      const avatarzoom = document.querySelector("#avatar-zoom");
+      const bannerzoom = document.querySelector("#banner-zoom");
+
+      const flairsection = document.querySelector("#flair-section");
+      const flairtarget = document.querySelector("#flair-target");
+      const flairstyle = document.querySelector("#flair-style");
+      const flaircolors = document.querySelector("#flair-colors");
+      const flaircolor1 = document.querySelector("#flair-color1");
+      const flaircolor2 = document.querySelector("#flair-color2");
+
+      let avatarurl = "";
+      let bannerurl = "";
+      let avatarpos = { x: 50, y: 50, zoom: 100 };
+      let bannerpos = { x: 50, y: 50, zoom: 100 };
+
+      function paint(frame, url, pos) {
+        frame.style.cssText = frame.getAttribute("data-base") + focalstyle(url, pos);
+      }
+
+      function makepositioner(frame, slider, geturl, getpos) {
+        frame.setAttribute("data-base", frame.style.cssText);
+        let dragging = false, startx = 0, starty = 0, basex = 50, basey = 50;
+        const refresh = () => paint(frame, geturl(), getpos());
+        frame.addEventListener("pointerdown", (e) => {
+          dragging = true;
+          startx = e.clientX; starty = e.clientY;
+          basex = getpos().x; basey = getpos().y;
+          frame.setPointerCapture(e.pointerId);
+        });
+        frame.addEventListener("pointermove", (e) => {
+          if (!dragging) return;
+          const rect = frame.getBoundingClientRect();
+          const pos = getpos();
+          pos.x = clampnum(basex - (e.clientX - startx) / rect.width * 100, 0, 100, 50);
+          pos.y = clampnum(basey - (e.clientY - starty) / rect.height * 100, 0, 100, 50);
+          refresh();
+        });
+        frame.addEventListener("pointerup", () => { dragging = false; });
+        slider.addEventListener("input", () => {
+          getpos().zoom = clampnum(slider.value, 100, 400, 100);
+          refresh();
+        });
+        return refresh;
+      }
+
+      const refreshavatar = makepositioner(avatarframe, avatarzoom, () => avatarurl, () => avatarpos);
+      const refreshbanner = makepositioner(bannerframe, bannerzoom, () => bannerurl, () => bannerpos);
+
+      function syncflaircolors() {
+        flaircolors.style.display = flairstyle.value === "custom" ? "inline" : "none";
+      }
+      flairstyle.addEventListener("change", syncflaircolors);
+
       const discardbtn = document.querySelector("#discardbtn");
       discardbtn.onclick = () => {
-        if(confirm("Are you sure you want to discard your changes?")) {
+        if (confirm("Are you sure you want to discard your changes?")) {
           location.assign(`/user/${name.value}`);
         }
-      }
-      
+      };
+
       const deletebtn = document.querySelector("#deletebtn");
       deletebtn.onclick = async () => {
         var confirmationPswd = prompt("Warning, this is permanent! Enter your password to continue.");
@@ -79,50 +196,79 @@
         const user = data.user;
         name.value = user.username;
         bio.value = user.biography || "";
-        avatar.value = user.avatar || "";
-        avatar.src = user.avatar || "";
-        banner.value = user.banner || "";
-        banner.src = user.banner || "";
+        avatarurl = user.avatar || "";
+        bannerurl = user.banner || "";
+        avatarpos = { x: 50, y: 50, zoom: 100, ...(user.avatarpos || {}) };
+        bannerpos = { x: 50, y: 50, zoom: 100, ...(user.bannerpos || {}) };
+        avatarzoom.value = avatarpos.zoom;
+        bannerzoom.value = bannerpos.zoom;
         mature.checked = user.mature;
+        refreshavatar();
+        refreshbanner();
+
+        if (isadmin(user.role)) {
+          flairsection.style.display = "block";
+          const flair = user.flair || {};
+          flairtarget.value = ["none", "avatar", "banner"].includes(flair.target) ? flair.target : "none";
+          flairstyle.value = ["rainbow", "custom"].includes(flair.style) ? flair.style : "rainbow";
+          if (/^#[0-9a-fA-F]{6}$/.test(flair.color1)) flaircolor1.value = flair.color1;
+          if (/^#[0-9a-fA-F]{6}$/.test(flair.color2)) flaircolor2.value = flair.color2;
+          syncflaircolors();
+        }
+
         markdownTextbox('#bio');
       })();
 
-      async function uploadAvatar() {
-        var url = await getFileUpload(avatar.value);
+      async function uploadavatar() {
+        var url = await getFileUpload(avatarurl);
         if (!url) return;
-        avatar.value = url;
-        avatar.src = url;
+        avatarurl = url;
+        avatarpos = { x: 50, y: 50, zoom: 100 };
+        avatarzoom.value = 100;
+        refreshavatar();
       }
-      
-      async function uploadBanner() {
-        var url = await getFileUpload(banner.value);
+
+      async function uploadbanner() {
+        var url = await getFileUpload(bannerurl);
         if (!url) return;
-        banner.value = url;
-        banner.src = url;
+        bannerurl = url;
+        bannerpos = { x: 50, y: 50, zoom: 100 };
+        bannerzoom.value = 100;
+        refreshbanner();
       }
 
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
         display.textContent = "";
-        if (avatar.value && !avatar.value.match(/^https?:\/\/[^"]+$/) && !avatar.value.match(/^\/api\/media\/[^"]+$/)) 
+        if (avatarurl && !avatarurl.match(/^https?:\/\/[^"]+$/) && !avatarurl.match(/^\/api\/media\/[^"]+$/))
           return display.textContent = 'Avatar is not a vaild URL';
-        if (banner.value && !banner.value.match(/^https?:\/\/[^"]+$/) && !banner.value.match(/^\/api\/media\/[^"]+$/)) 
+        if (bannerurl && !bannerurl.match(/^https?:\/\/[^"]+$/) && !bannerurl.match(/^\/api\/media\/[^"]+$/))
           return display.textContent = 'Banner is not a vaild URL';
+        const flair = {
+          target: flairtarget.value,
+          style: flairstyle.value,
+          color1: flaircolor1.value,
+          color2: flaircolor2.value,
+        };
         try {
           const res = await fetch("/api/auth/update", {
             method: "PUT",
             body: JSON.stringify({
               username: name.value,
               biography: bio.value,
-              avatar: avatar.value,
-              banner: banner.value,
+              avatar: avatarurl,
+              banner: bannerurl,
               mature: mature.checked,
+              avatarpos,
+              bannerpos,
+              flair,
             }),
             headers: { "Content-Type": "application/json" },
           });
+          const result = await res.json();
           if (res.status === 400 || res.status === 401) {
             return (display.textContent =
-              data.message + ". " + (data.error ? data.error : ""));
+              result.message + ". " + (result.error ? result.error : ""));
           }
           location.assign(`/user/${name.value}`);
         } catch (err) {

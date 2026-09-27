@@ -5,8 +5,37 @@ const Media = require("../../Database/model/Media");
 const Profanity = require("../../util/js/censored");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { isadmin } = require("../../util/js/roles");
 
 const jwtSecret = process.env["JWT_SECRET"];
+
+function clampnum(value, min, max, fallback) {
+  value = Number(value);
+  if (!isFinite(value)) return fallback;
+  return Math.max(min, Math.min(max, value));
+}
+
+function sanitizepos(pos) {
+  pos = pos || {};
+  return {
+    x: clampnum(pos.x, 0, 100, 50),
+    y: clampnum(pos.y, 0, 100, 50),
+    zoom: clampnum(pos.zoom, 100, 400, 100),
+  };
+}
+
+function sanitizeflair(flair) {
+  flair = flair || {};
+  const targets = ["none", "avatar", "banner"];
+  const styles = ["rainbow", "custom"];
+  const hex = /^#[0-9a-fA-F]{6}$/;
+  return {
+    target: targets.includes(flair.target) ? flair.target : "none",
+    style: styles.includes(flair.style) ? flair.style : "rainbow",
+    color1: hex.test(flair.color1) ? flair.color1 : "#ff5f6d",
+    color2: hex.test(flair.color2) ? flair.color2 : "#4facfe",
+  };
+}
 exports.register = async (req, res, next) => {
   const { username, password } = req.body;
   try {
@@ -89,7 +118,7 @@ exports.login = async (req, res, next) => {
 };
 
 exports.update = async (req, res, next) => {
-  const { username, avatar, banner, biography, mature } = req.body;
+  const { username, avatar, banner, biography, mature, avatarpos, bannerpos, flair } = req.body;
   if (!username.match(/^[\w\d_-]+$/)) return res.status(400).json({ message: "Username can only contain letters, numbers, and underscores" });
   if (Profanity.isProfane(username)) { return res.status(400).json({ message: "Oh no! This violates our TOS, please try another name" }) }
   const mediapattern = /^(https?:\/\/|\/)[^\s"'<>]+$/;
@@ -123,6 +152,9 @@ exports.update = async (req, res, next) => {
     user.banner = banner;
     user.biography = Profanity.censorText(biography);
     user.mature = mature;
+    if (avatarpos) user.avatarpos = sanitizepos(avatarpos);
+    if (bannerpos) user.bannerpos = sanitizepos(bannerpos);
+    if (flair && isadmin(user.role)) user.flair = sanitizeflair(flair);
     await user.save();
     res.status(201).json({
       message: "Update successful",
