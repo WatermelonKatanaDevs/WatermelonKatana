@@ -138,7 +138,7 @@ exports.login = async (req, res, next) => {
 };
 
 exports.update = async (req, res, next) => {
-  const { username, avatar, banner, biography, mature, avatarpos, bannerpos, flair, signedinbanner, rolegradient } = req.body;
+  const { username, avatar, banner, biography, mature, avatarpos, bannerpos, flair, signedinbanner, rolegradient, allowuserdata } = req.body;
   if (!username.match(/^[\w\d_-]+$/)) return res.status(400).json({ message: "Username can only contain letters, numbers, and underscores" });
   if (Profanity.isProfane(username)) { return res.status(400).json({ message: "Oh no! This violates our TOS, please try another name" }) }
   const mediapattern = /^(https?:\/\/|\/)[^"'<>]+$/;
@@ -177,6 +177,7 @@ exports.update = async (req, res, next) => {
     if (flair && isadmin(user.role)) user.flair = sanitizeflair(flair);
     if (typeof signedinbanner === "boolean") user.signedinbanner = signedinbanner;
     if (typeof rolegradient === "boolean") user.rolegradient = rolegradient;
+    if (typeof allowuserdata === "boolean") user.allowuserdata = allowuserdata;
     await user.save();
     res.status(201).json({
       message: "Update successful",

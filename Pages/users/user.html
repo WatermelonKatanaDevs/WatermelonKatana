@@ -161,6 +161,7 @@
           userData.favorites.map(async (pid) => {
             const res = await fetch("/api/project/data/" + pid);
             const proj = await res.json();
+            if (!proj || proj.error) { return }
             if (proj.mature && !isMature) { return }
             projHTML(favlist)(proj);
           }),
@@ -189,7 +190,7 @@
             userData[type].forEach(async (followId) => {
               const follow = await getUser(followId);
               followList.innerHTML += `<li>
-              <img src="${follow.avatar}" alt="${follow.username}" class="follower-avatar">
+              <span class="follower-avatar">${focalimg(follow.avatar, follow.avatarpos)}</span>
               <a href="/user/${follow.username}">${follow.username}</a>
             </li>`;
             });

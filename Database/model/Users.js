@@ -88,6 +88,10 @@ const UserSchema = new Mongoose.Schema({
     type: Boolean,
     default: true,
   },
+  allowuserdata: {
+    type: Boolean,
+    default: false,
+  },
   avatarpos: {
     x: { type: Number, default: 50 },
     y: { type: Number, default: 50 },
@@ -152,6 +156,7 @@ const UserSchema = new Mongoose.Schema({
       container.mature = this.mature;
       container.signedinbanner = this.signedinbanner;
       container.rolegradient = this.rolegradient;
+      container.allowuserdata = this.allowuserdata;
       container.avatarpos = this.avatarpos;
       container.bannerpos = this.bannerpos;
       container.flair = this.flair;

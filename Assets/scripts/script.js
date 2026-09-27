@@ -167,10 +167,21 @@ function previewContent(str, len) {
   return makeLiteralChars(str).replace(/\n[^]*$/, "").slice(0, len) + ((str.includes("\n") || str.length > len) ? "..." : "");
 }
 
+function authorpfp(anchor, posterId) {
+  getUser(posterId).then((u) => {
+    const pfp = anchor.querySelector(".author-pfp");
+    if (pfp && u) pfp.innerHTML = focalimg(u.avatar || "/images/blank_project.png", u.avatarpos);
+  });
+}
+
 function projHTML(list, tok) {
   return function (proj) {
     let classes = (proj.featured ? " featured" : "") + (proj.posterId == tok?.user?.id ? " published" : "") + (tok?.user?.favorites.includes(proj.id) ? " favorited" : "");
-    let div = `<a class="project-panel" href="/project/${proj.id}" style="${proj.viewers.includes(tok?.user?.id) ? `"color: var(--palette-text-viewed);"` : ""}">
+    const a = document.createElement("a");
+    a.className = "project-panel";
+    a.href = "/project/" + proj.id;
+    if (proj.viewers.includes(tok?.user?.id)) a.style.color = "var(--palette-text-viewed)";
+    a.innerHTML = `
       <div class="thumbnail-border ${classes}">
         <div class="panel-overlay">
           <div>Score: ${proj.score} Views: ${proj.views}</div>
@@ -179,26 +190,30 @@ function projHTML(list, tok) {
         <img class="project-thumbnail" src="${proj.thumbnail || "/images/blank_project.png"}" alt="">
       </div>
       <div class="project-link">${previewContent(proj.title, 100)}</div>
-      <div>By: <object><a href="/user/${proj.poster}"><i>${proj.poster}</i></a></object></div>
-    </a>`;
-    list.innerHTML += div;
-    let lastThumbnail = list.children[list.children.length - 1].querySelector(".project-thumbnail");
-    if (!lastThumbnail.getAttribute("src")) lastThumbnail.src = "/images/blank_project.png";
+      <div>By: <object><a href="/user/${proj.poster}"><span class="comment-avatar author-pfp"></span><i>${proj.poster}</i></a></object></div>`;
+    list.appendChild(a);
+    const thumb = a.querySelector(".project-thumbnail");
+    if (!thumb.getAttribute("src")) thumb.src = "/images/blank_project.png";
+    authorpfp(a, proj.posterId);
   };
 }
 
 function forumHTML(list, tok) {
   return function (post) {
-    let div = `<a class="post-panel" href="/forum/discussion/${post.id}" ${post.viewers.includes(tok?.user?.id) ? `style="color: var(--palette-text-viewed);"` : ""}>
+    const a = document.createElement("a");
+    a.className = "post-panel";
+    a.href = "/forum/discussion/" + post.id;
+    if (post.viewers.includes(tok?.user?.id)) a.style.color = "var(--palette-text-viewed)";
+    a.innerHTML = `
       <div class="post-top">
-        <h2>${previewContent(post.title, 100)}</h2> 
+        <h2>${previewContent(post.title, 100)}</h2>
         <p style="display: inline;">${previewContent(post.content, 100)}
         <br>
-      By: <object><a href="/user/${post.poster}"><i>${post.poster}</i></a></object> | Views: ${post.views} | Active ${relativeDate(post.activeAt)}</p>
+      By: <object><a href="/user/${post.poster}"><span class="comment-avatar author-pfp"></span><i>${post.poster}</i></a></object> | Views: ${post.views} | Active ${relativeDate(post.activeAt)}</p>
       <div class="forum-tags">${tagHTML(post.tags)}</div>
-      </div>
-    </a>`;
-    list.innerHTML += div;
+      </div>`;
+    list.appendChild(a);
+    authorpfp(a, post.posterId);
   };
 }
 

@@ -10,41 +10,84 @@
     <script src="/scripts/HtmlSanitizer.js"></script>
     <script src="/scripts/script.js"></script>
     <style>
-      .admin-section { width: 80%; margin: 20px auto; }
+      .admin-section {
+        width: 80%;
+        max-width: 900px;
+        margin: 20px auto;
+      }
+      .admin-section h2 {
+        background-color: var(--palette-background-item);
+        color: var(--palette-textcolor);
+        padding: 10px 14px;
+        border-radius: 5px;
+      }
       .admin-card {
         background: var(--palette-background-card);
-        margin: 10px 0;
-        padding: 12px 15px;
-        border-left: 5px solid #77aaff;
-        border-radius: 5px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        padding: 14px 16px;
+        margin: 12px 0;
         display: flex;
         align-items: center;
+        gap: 12px;
         flex-wrap: wrap;
-        gap: 10px;
       }
-      .admin-card img.avatar-mini {
-        width: 40px; height: 40px; border-radius: 50%; object-fit: cover;
+      .admin-card .grow {
+        flex: 1;
+        min-width: 180px;
       }
-      .admin-card .grow { flex: 1; min-width: 160px; }
-      .admin-card select, .admin-card button {
-        padding: 6px 10px; border-radius: 5px; cursor: var(--cursor-pointer);
+      .admin-card .card-name {
+        font-weight: bold;
+        font-size: 1.1em;
       }
-      .admin-card button.delete { color: #fff; background: #d9534f; border: none; }
-      #status { width: 80%; margin: 10px auto; color: #d9534f; }
-      .report-link { word-break: break-all; }
+      .admin-card .card-meta {
+        font-size: 0.85em;
+        color: var(--palette-text-viewed);
+      }
+      .admin-card .card-content {
+        margin: 4px 0;
+      }
+      .report-link {
+        word-break: break-all;
+        font-size: 0.9em;
+      }
+      #status {
+        width: 80%;
+        max-width: 900px;
+        margin: 10px auto 0;
+        color: var(--palette-delete-button);
+        font-weight: bold;
+        min-height: 1.2em;
+      }
     </style>
   </head>
   <body>
     <script src="/scripts/navbar.js"></script>
+
     <div id="status"></div>
 
     <div class="admin-section">
-      <h1>Users</h1>
+      <h2>Users</h2>
+      <input type="text" id="user-search" placeholder="Search users by name..." style="width: 100%; margin-bottom: 10px;">
       <div id="userlist"></div>
     </div>
 
     <div class="admin-section">
-      <h1>Reports</h1>
+      <h2>Content Tools</h2>
+      <div class="admin-card">
+        <input type="text" id="content-link" class="grow" placeholder="Project or post link / ID">
+        <select id="content-type">
+          <option value="project">Project</option>
+          <option value="forum">Forum post</option>
+        </select>
+        <button id="feature-btn">Feature</button>
+        <button id="unfeature-btn">Unfeature</button>
+        <button id="content-delete-btn" class="delete">Delete</button>
+      </div>
+    </div>
+
+    <div class="admin-section">
+      <h2>Reports</h2>
       <div id="reportlist"></div>
     </div>
 
@@ -54,19 +97,22 @@
       const userlist = document.querySelector("#userlist");
       const reportlist = document.querySelector("#reportlist");
 
-      function seterror(message) { status.textContent = message ? "Error: " + message : ""; }
+      function seterror(message) {
+        status.textContent = message ? "Error: " + message : "";
+      }
 
       async function apicall(url, options) {
         const res = await fetch(url, options);
         let body = {};
         try { body = await res.json(); } catch (e) {}
-        if (!res.ok) throw new Error(body.message || res.status);
+        if (!res.ok) throw new Error(body.message || ("Request failed (" + res.status + ")"));
         return body;
       }
 
       function rolepicker(user) {
         const select = document.createElement("select");
-        for (const r of roles) {
+        const options = roles.includes(user.role) ? roles : [user.role].concat(roles);
+        for (const r of options) {
           const option = document.createElement("option");
           option.value = r;
           option.textContent = r;
@@ -81,7 +127,10 @@
               body: JSON.stringify({ role: select.value, id: user.id })
             });
             seterror("");
-          } catch (err) { seterror(err.message); loadusers(); }
+          } catch (err) {
+            seterror(err.message);
+            loadusers();
+          }
         });
         return select;
       }
@@ -90,19 +139,22 @@
         const card = document.createElement("div");
         card.className = "admin-card";
 
-        const avatar = document.createElement("img");
-        avatar.className = "avatar-mini";
-        avatar.src = user.avatar || "/images/default_pfp.png";
+        const avatar = document.createElement("span");
+        avatar.className = "comment-avatar";
+        avatar.innerHTML = focalimg(user.avatar || "/images/default_pfp.png", user.avatarpos);
         card.appendChild(avatar);
 
         const info = document.createElement("div");
         info.className = "grow";
         const name = document.createElement("a");
+        name.className = "card-name";
         name.href = "/user/" + user.username;
         name.textContent = "@" + user.username;
         const meta = document.createElement("div");
-        meta.textContent = (user.verified ? "verified" : "unverified") + " · joined " + new Date(user.joinedAt).toLocaleDateString();
+        meta.className = "card-meta";
+        meta.textContent = (user.verified ? "Verified" : "Unverified") + " · Joined " + new Date(user.joinedAt).toLocaleDateString();
         info.appendChild(name);
+        info.appendChild(document.createElement("br"));
         info.appendChild(meta);
         card.appendChild(info);
 
@@ -118,7 +170,9 @@
             await apicall("/api/admin/resetpassword?uid=" + encodeURIComponent(user.id) + "&password=" + encodeURIComponent(password));
             seterror("");
             alert("Password reset for @" + user.username);
-          } catch (err) { seterror(err.message); }
+          } catch (err) {
+            seterror(err.message);
+          }
         });
         card.appendChild(resetbtn);
 
@@ -126,7 +180,7 @@
         deletebtn.className = "delete";
         deletebtn.textContent = "Delete";
         deletebtn.addEventListener("click", async () => {
-          if (!confirm("Permanently delete @" + user.username + "?")) return;
+          if (!confirm("Permanently delete @" + user.username + "? This cannot be undone.")) return;
           try {
             await apicall("/api/auth/deleteUser", {
               method: "DELETE",
@@ -134,32 +188,76 @@
               body: JSON.stringify({ id: user.id })
             });
             loadusers();
-          } catch (err) { seterror(err.message); }
+          } catch (err) {
+            seterror(err.message);
+          }
         });
         card.appendChild(deletebtn);
 
         return card;
       }
 
+      let allusers = [];
+      function renderusers() {
+        const q = (document.querySelector("#user-search").value || "").toLowerCase();
+        userlist.innerHTML = "";
+        for (const user of allusers) {
+          if (user.username === "admin") continue;
+          if (q && !user.username.toLowerCase().includes(q)) continue;
+          userlist.appendChild(usercard(user));
+        }
+      }
+
       async function loadusers() {
         try {
           const data = await apicall("/api/auth/listUsers");
-          userlist.innerHTML = "";
-          for (const user of data.user) {
-            if (user.username === "admin") continue;
-            userlist.appendChild(usercard(user));
-          }
-        } catch (err) { seterror(err.message); }
+          allusers = data.user || [];
+          renderusers();
+        } catch (err) {
+          seterror(err.message);
+        }
       }
+
+      document.querySelector("#user-search").addEventListener("input", renderusers);
+
+      function parsecontentid(input) {
+        const m = String(input || "").match(/[a-f0-9]{24}/i);
+        return m ? m[0] : null;
+      }
+
+      async function contentaction(action) {
+        const type = document.querySelector("#content-type").value;
+        const id = parsecontentid(document.querySelector("#content-link").value);
+        if (!id) return seterror("Enter a valid project/post link or ID");
+        try {
+          if (action === "delete") {
+            if (!confirm("Delete this " + type + "?")) return;
+            await apicall("/api/" + type + "/delete/" + id, { method: "DELETE" });
+          } else {
+            await apicall("/api/" + type + "/" + action + "/" + id);
+          }
+          seterror("");
+          alert(action.charAt(0).toUpperCase() + action.slice(1) + " successful");
+        } catch (err) {
+          seterror(err.message);
+        }
+      }
+
+      document.querySelector("#feature-btn").addEventListener("click", () => contentaction("feature"));
+      document.querySelector("#unfeature-btn").addEventListener("click", () => contentaction("unfeature"));
+      document.querySelector("#content-delete-btn").addEventListener("click", () => contentaction("delete"));
 
       function reportcard(report) {
         const card = document.createElement("div");
         card.className = "admin-card";
+
         const info = document.createElement("div");
         info.className = "grow";
         const who = document.createElement("div");
+        who.className = "card-meta";
         who.textContent = "By @" + report.poster + " · " + new Date(report.postedAt).toLocaleString();
         const content = document.createElement("div");
+        content.className = "card-content";
         content.textContent = report.content;
         const link = document.createElement("a");
         link.className = "report-link";
@@ -187,7 +285,9 @@
             return;
           }
           for (const report of data.report) reportlist.appendChild(reportcard(report));
-        } catch (err) { seterror(err.message); }
+        } catch (err) {
+          seterror(err.message);
+        }
       }
 
       loadusers();

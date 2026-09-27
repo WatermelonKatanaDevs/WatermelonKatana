@@ -63,35 +63,50 @@
       </label>
     </div>
   </div>
+  <div class="config">
+    <h3>Allow projects to access your data (name, avatar, banner, role):</h3>
+
+    <div>
+      <label>
+        <input type="checkbox" id="allow-userdata-toggle" onchange="savepref('allowuserdata', this.checked)">
+        <span class="checkbox"></span>
+      </label>
+    </div>
+  </div>
   <script>
     let currentuser = null;
-    const signedinbannertoggle = document.querySelector("#signedin-banner-toggle");
     document.querySelector("#user-preview-toggle").checked = localStorage.getItem("user-preview") !== "off";
     (async () => {
       const data = await getAuth();
       currentuser = data.user;
-      if (currentuser) signedinbannertoggle.checked = !!currentuser.signedinbanner;
+      if (currentuser) {
+        document.querySelector("#signedin-banner-toggle").checked = !!currentuser.signedinbanner;
+        document.querySelector("#allow-userdata-toggle").checked = !!currentuser.allowuserdata;
+      }
     })();
 
-    async function setsignedinbanner(value) {
+    async function savepref(key, value) {
       if (!currentuser) return alert("Not signed in!");
+      const body = {
+        username: currentuser.username,
+        biography: currentuser.biography,
+        avatar: currentuser.avatar,
+        banner: currentuser.banner,
+        mature: currentuser.mature,
+        avatarpos: currentuser.avatarpos,
+        bannerpos: currentuser.bannerpos,
+        flair: currentuser.flair,
+      };
+      body[key] = value;
       await fetch("/api/auth/update", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: currentuser.username,
-          biography: currentuser.biography,
-          avatar: currentuser.avatar,
-          banner: currentuser.banner,
-          mature: currentuser.mature,
-          avatarpos: currentuser.avatarpos,
-          bannerpos: currentuser.bannerpos,
-          flair: currentuser.flair,
-          signedinbanner: value,
-        }),
+        body: JSON.stringify(body),
       });
-      currentuser.signedinbanner = value;
+      currentuser[key] = value;
     }
+
+    function setsignedinbanner(value) { savepref("signedinbanner", value); }
   </script>
   <!-- <div id="footer"> -->
   </div>
