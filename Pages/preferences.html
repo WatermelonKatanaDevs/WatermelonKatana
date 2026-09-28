@@ -64,6 +64,17 @@
     </div>
   </div>
   <div class="config">
+    <h3>Anonymous mode (hide your name, avatar, and profile across the site):</h3>
+
+    <div>
+      <label>
+        <input type="checkbox" id="anonymous-toggle" onchange="setanonymous(this.checked)">
+        <span class="checkbox"></span>
+      </label>
+    </div>
+  </div>
+  <!--
+  <div class="config">
     <h3>Allow projects to access your data (name, avatar, banner, role):</h3>
 
     <div>
@@ -73,6 +84,7 @@
       </label>
     </div>
   </div>
+  -->
   <script>
     let currentuser = null;
     document.querySelector("#user-preview-toggle").checked = localStorage.getItem("user-preview") !== "off";
@@ -81,7 +93,8 @@
       currentuser = data.user;
       if (currentuser) {
         document.querySelector("#signedin-banner-toggle").checked = !!currentuser.signedinbanner;
-        document.querySelector("#allow-userdata-toggle").checked = !!currentuser.allowuserdata;
+        document.querySelector("#anonymous-toggle").checked = !!currentuser.anonymous;
+        // document.querySelector("#allow-userdata-toggle").checked = !!currentuser.allowuserdata;
       }
     })();
 
@@ -107,6 +120,7 @@
     }
 
     function setsignedinbanner(value) { savepref("signedinbanner", value); }
+    function setanonymous(value) { savepref("anonymous", value); }
   </script>
   <!-- <div id="footer"> -->
   </div>

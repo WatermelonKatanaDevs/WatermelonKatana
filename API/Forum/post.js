@@ -25,6 +25,8 @@ module.exports = class {
     router.route("/delete/:id").get(userAuth, this.delete.bind(this));
     router.route("/feature/:id").get(adminAuth, this.feature.bind(this));
     router.route("/unfeature/:id").get(adminAuth, this.unfeature.bind(this));
+    router.route("/hide/:id").get(adminAuth, this.hide.bind(this));
+    router.route("/unhide/:id").get(adminAuth, this.unhide.bind(this));
     router.route("/comment/:id").post(userAuth, checkFormToken, this.comment.bind(this));
     router.route("/comment/:id/edit").put(userAuth, this.editComment.bind(this));
     router.route("/comment/:id/delete").delete(userAuth, this.deleteComment.bind(this));
@@ -185,6 +187,31 @@ module.exports = class {
     return Array.isArray(data) ? censoredData: censoredData[0];
   }
 
+  async maskanon(data, res) {
+    if (isadmin(res.locals.userToken?.role)) return data;
+    var entries = [].concat(data);
+    var ids = new Set();
+    for (const e of entries) {
+      if (e && e.posterId) ids.add(String(e.posterId));
+      if (e && Array.isArray(e.comments)) for (const c of e.comments) if (c && c.posterId) ids.add(String(c.posterId));
+    }
+    if (ids.size === 0) return data;
+    var anons = await Users.find({ _id: { $in: [...ids] }, anonymous: true });
+    if (anons.length === 0) return data;
+    var map = {};
+    for (const u of anons) map[String(u._id)] = u.anonname || ("anon-" + String(u._id).slice(-4));
+    var mask = (obj) => {
+      if (!obj) return;
+      var alias = map[String(obj.posterId)];
+      if (alias) obj.poster = alias;
+    };
+    for (const e of entries) {
+      mask(e);
+      if (e && Array.isArray(e.comments)) for (const c of e.comments) mask(c);
+    }
+    return Array.isArray(data) ? entries : entries[0];
+  }
+
   async list(req, res, next) {
     try {
       const { poster, platform, postedBefore, postedAfter, includeTags, excludeTags, featured, randomEntryAction, page, total, sort, showMature, showHidden, showRecent, recipient, customQuery, noclient } = req.query;
@@ -243,6 +270,7 @@ module.exports = class {
       }
       list = list.map(e => e.pack());
       list = await this.censor(list, res);
+      list = await this.maskanon(list, res);
       if (noclient == "1" || noclient == "true") {
         list = JSON.parse(JSON.stringify(list).replace(/\</g, "&lt;").replace(/\>/g, "&gt;"));
         var content = `<head><link rel="stylesheet" type="text/css" href="/styles/style.css"></head><body>`;
@@ -317,6 +345,7 @@ module.exports = class {
         return c;
       });
       list = await this.censor(list, res);
+      list = await this.maskanon(list, res);
       res.status(200).json({
         [this.name]: list,
         length: length
@@ -352,6 +381,7 @@ module.exports = class {
         error: "Private content",
       });
       var data = await this.censor(post.pack(), res);
+      data = await this.maskanon(data, res);
       res.status(200).json(data);
     } catch (err) {
       res.status(401).json({ message: "Not successful", error: err.message });
@@ -403,6 +433,54 @@ module.exports = class {
     } catch (error) {
       res.status(400).json({
         message: "Post not successfully updated",
+        error: error.message,
+      });
+      console.log(error.message);
+    }
+  };
+
+  async hide(req, res, next) {
+    try {
+      const pid = req.params.id;
+      const post = await this.model.findOne({ _id: pid });
+      if (!post) return res.status(404).json({
+        message: "Fetch not successful",
+        error: "Post not found",
+      });
+      post.hidden = true;
+      await post.save();
+      res.status(201).json({
+        message: "Post successfully hidden",
+        id: post._id,
+        title: post.title,
+      });
+    } catch (error) {
+      res.status(400).json({
+        message: "Post not successfully hidden",
+        error: error.message,
+      });
+      console.log(error.message);
+    }
+  };
+
+  async unhide(req, res, next) {
+    try {
+      const pid = req.params.id;
+      const post = await this.model.findOne({ _id: pid });
+      if (!post) return res.status(404).json({
+        message: "Fetch not successful",
+        error: "Post not found",
+      });
+      post.hidden = false;
+      await post.save();
+      res.status(201).json({
+        message: "Post successfully unhidden",
+        id: post._id,
+        title: post.title,
+      });
+    } catch (error) {
+      res.status(400).json({
+        message: "Post not successfully unhidden",
         error: error.message,
       });
       console.log(error.message);

@@ -448,6 +448,13 @@ input[type=checkbox]:checked+.checkbox::after {
 	margin-right: 4px;
 }
 
+.verified-badge {
+	display: inline-block;
+	color: #3ba55d;
+	font-weight: bold;
+	margin-right: 2px;
+}
+
 
 
 /*stuff added by Gabriel below*/

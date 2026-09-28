@@ -178,6 +178,54 @@ async delete(req, res, next) {
   }
 };
 
+async verify(req, res, next) {
+  try {
+    const pid = req.params.id;
+    const project = await this.model.findOne({ _id: pid });
+    if (!project) return res.status(404).json({
+      message: "Fetch not successful",
+      error: "Project not found",
+    });
+    project.verified = true;
+    await project.save();
+    res.status(201).json({
+      message: "Project successfully verified",
+      id: project._id,
+      title: project.title,
+    });
+  } catch(error) {
+    res.status(400).json({
+      message: "Project not successfully verified",
+      error: error.message,
+    });
+    console.log(error.message);
+  }
+};
+
+async unverify(req, res, next) {
+  try {
+    const pid = req.params.id;
+    const project = await this.model.findOne({ _id: pid });
+    if (!project) return res.status(404).json({
+      message: "Fetch not successful",
+      error: "Project not found",
+    });
+    project.verified = false;
+    await project.save();
+    res.status(201).json({
+      message: "Project successfully unverified",
+      id: project._id,
+      title: project.title,
+    });
+  } catch(error) {
+    res.status(400).json({
+      message: "Project not successfully unverified",
+      error: error.message,
+    });
+    console.log(error.message);
+  }
+};
+
 async favorite(req, res, next) {
   try {
     const pid = req.params.id;

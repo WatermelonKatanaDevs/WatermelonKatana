@@ -169,8 +169,13 @@ function previewContent(str, len) {
 
 function authorpfp(anchor, posterId) {
   getUser(posterId).then((u) => {
+    if (!u) return;
     const pfp = anchor.querySelector(".author-pfp");
-    if (pfp && u) pfp.innerHTML = focalimg(u.avatar || "/images/blank_project.png", u.avatarpos);
+    if (pfp) pfp.innerHTML = focalimg(u.avatar || "/images/blank_project.png", u.avatarpos);
+    if (u.revealed) {
+      const label = anchor.querySelector(".author-link i");
+      if (label && !label.dataset.anon) { label.dataset.anon = "1"; label.textContent += " (anon)"; }
+    }
   });
 }
 
@@ -189,8 +194,8 @@ function projHTML(list, tok) {
         </div>
         <img class="project-thumbnail" src="${proj.thumbnail || "/images/blank_project.png"}" alt="">
       </div>
-      <div class="project-link">${previewContent(proj.title, 100)}</div>
-      <div>By: <object><a href="/user/${proj.poster}"><span class="comment-avatar author-pfp"></span><i>${proj.poster}</i></a></object></div>`;
+      <div class="project-link">${proj.verified ? '<span class="verified-badge" title="Verified by moderators">✔</span> ' : ""}${previewContent(proj.title, 100)}</div>
+      <div>By: <object><a class="author-link" href="/user/${proj.poster}"><span class="comment-avatar author-pfp"></span><i>${proj.poster}</i></a></object></div>`;
     list.appendChild(a);
     const thumb = a.querySelector(".project-thumbnail");
     if (!thumb.getAttribute("src")) thumb.src = "/images/blank_project.png";
@@ -209,7 +214,7 @@ function forumHTML(list, tok) {
         <h2>${previewContent(post.title, 100)}</h2>
         <p style="display: inline;">${previewContent(post.content, 100)}
         <br>
-      By: <object><a href="/user/${post.poster}"><span class="comment-avatar author-pfp"></span><i>${post.poster}</i></a></object> | Views: ${post.views} | Active ${relativeDate(post.activeAt)}</p>
+      By: <object><a class="author-link" href="/user/${post.poster}"><span class="comment-avatar author-pfp"></span><i>${post.poster}</i></a></object> | Views: ${post.views} | Active ${relativeDate(post.activeAt)}</p>
       <div class="forum-tags">${tagHTML(post.tags)}</div>
       </div>`;
     list.appendChild(a);
@@ -512,7 +517,7 @@ async function showpreview(anchor, username) {
     <div class="up-banner">${focalimg(u.banner, u.bannerpos)}</div>
     <div class="up-body">
       <div class="up-avatar ${avatarflair.cls}" style="${avatarflair.style}">${focalimg(u.avatar, u.avatarpos)}</div>
-      <div><span class="up-name" style="${namecss}">${makeLiteralChars(u.username)}</span></div>
+      <div><span class="up-name" style="${namecss}">${makeLiteralChars(u.username)}</span>${u.revealed ? ' <span class="up-role">(anon)</span>' : ""}</div>
       <div><span class="up-role" style="${rolecss}">${makeLiteralChars(u.role)}</span></div>
       <div class="up-bio">${convertMarkdown(u.biography || "")}</div>
     </div>`;

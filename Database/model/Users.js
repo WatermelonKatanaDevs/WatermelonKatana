@@ -88,10 +88,19 @@ const UserSchema = new Mongoose.Schema({
     type: Boolean,
     default: true,
   },
-  allowuserdata: {
+  anonymous: {
     type: Boolean,
     default: false,
   },
+  anonname: {
+    type: String,
+    default: "",
+    maxlength: 100,
+  },
+  // allowuserdata: {
+  //   type: Boolean,
+  //   default: false,
+  // },
   avatarpos: {
     x: { type: Number, default: 50 },
     y: { type: Number, default: 50 },
@@ -140,8 +149,31 @@ const UserSchema = new Mongoose.Schema({
 }, {
   //strict: false,
   methods: {
-    pack: function(full) {
+    pack: function(full, reveal) {
       const container = {};
+      if (!full && this.anonymous && !reveal) {
+        const alias = this.anonname || ("anon-" + String(this._id).slice(-4));
+        container.username = alias;
+        container.verified = false;
+        container.avatar = "/images/default_pfp.png";
+        container.banner = "/images/default_banner.png";
+        container.biography = "This user is browsing anonymously.";
+        container.badges = [];
+        container.role = "Basic";
+        container.favorites = [];
+        container.following = [];
+        container.followers = [];
+        container.joinedAt = 0;
+        container.mature = false;
+        container.signedinbanner = false;
+        container.rolegradient = false;
+        container.avatarpos = { x: 50, y: 50, zoom: 100 };
+        container.bannerpos = { x: 50, y: 50, zoom: 100 };
+        container.flair = {};
+        container.anonymous = true;
+        container.id = "anon-" + String(this._id).slice(-8);
+        return container;
+      }
       container.username = this.username;
       container.verified = !!this.email;
       container.avatar = this.avatar;
@@ -156,7 +188,10 @@ const UserSchema = new Mongoose.Schema({
       container.mature = this.mature;
       container.signedinbanner = this.signedinbanner;
       container.rolegradient = this.rolegradient;
-      container.allowuserdata = this.allowuserdata;
+      container.anonymous = this.anonymous;
+      container.anonname = this.anonname;
+      if (reveal && this.anonymous) container.revealed = true;
+      // container.allowuserdata = this.allowuserdata;
       container.avatarpos = this.avatarpos;
       container.bannerpos = this.bannerpos;
       container.flair = this.flair;

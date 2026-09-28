@@ -82,6 +82,10 @@
         </select>
         <button id="feature-btn">Feature</button>
         <button id="unfeature-btn">Unfeature</button>
+        <button id="verify-btn">Verify</button>
+        <button id="unverify-btn">Unverify</button>
+        <button id="hide-btn">Hide</button>
+        <button id="unhide-btn">Unhide</button>
         <button id="content-delete-btn" class="delete">Delete</button>
       </div>
     </div>
@@ -176,6 +180,25 @@
         });
         card.appendChild(resetbtn);
 
+        const warnbtn = document.createElement("button");
+        warnbtn.textContent = "Warn";
+        warnbtn.addEventListener("click", async () => {
+          const message = prompt("Warning message to send to @" + user.username + ":");
+          if (!message) return;
+          try {
+            await apicall("/api/admin/warn", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id: user.id, message })
+            });
+            seterror("");
+            alert("Warning sent to @" + user.username);
+          } catch (err) {
+            seterror(err.message);
+          }
+        });
+        card.appendChild(warnbtn);
+
         const deletebtn = document.createElement("button");
         deletebtn.className = "delete";
         deletebtn.textContent = "Delete";
@@ -245,6 +268,10 @@
 
       document.querySelector("#feature-btn").addEventListener("click", () => contentaction("feature"));
       document.querySelector("#unfeature-btn").addEventListener("click", () => contentaction("unfeature"));
+      document.querySelector("#verify-btn").addEventListener("click", () => contentaction("verify"));
+      document.querySelector("#unverify-btn").addEventListener("click", () => contentaction("unverify"));
+      document.querySelector("#hide-btn").addEventListener("click", () => contentaction("hide"));
+      document.querySelector("#unhide-btn").addEventListener("click", () => contentaction("unhide"));
       document.querySelector("#content-delete-btn").addEventListener("click", () => contentaction("delete"));
 
       function reportcard(report) {

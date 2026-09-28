@@ -5,6 +5,7 @@ const Media = require("../../Database/model/Media");
 const Profanity = require("../../util/js/censored");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 const { isadmin } = require("../../util/js/roles");
 
 const jwtSecret = process.env["JWT_SECRET"];
@@ -138,7 +139,7 @@ exports.login = async (req, res, next) => {
 };
 
 exports.update = async (req, res, next) => {
-  const { username, avatar, banner, biography, mature, avatarpos, bannerpos, flair, signedinbanner, rolegradient, allowuserdata } = req.body;
+  const { username, avatar, banner, biography, mature, avatarpos, bannerpos, flair, signedinbanner, rolegradient, anonymous, allowuserdata } = req.body;
   if (!username.match(/^[\w\d_-]+$/)) return res.status(400).json({ message: "Username can only contain letters, numbers, and underscores" });
   if (Profanity.isProfane(username)) { return res.status(400).json({ message: "Oh no! This violates our TOS, please try another name" }) }
   const mediapattern = /^(https?:\/\/|\/)[^"'<>]+$/;
@@ -177,7 +178,11 @@ exports.update = async (req, res, next) => {
     if (flair && isadmin(user.role)) user.flair = sanitizeflair(flair);
     if (typeof signedinbanner === "boolean") user.signedinbanner = signedinbanner;
     if (typeof rolegradient === "boolean") user.rolegradient = rolegradient;
-    if (typeof allowuserdata === "boolean") user.allowuserdata = allowuserdata;
+    if (typeof anonymous === "boolean") {
+      user.anonymous = anonymous;
+      if (anonymous && !user.anonname) user.anonname = "anon-" + crypto.randomBytes(3).toString("hex");
+    }
+    // if (typeof allowuserdata === "boolean") user.allowuserdata = allowuserdata;
     await user.save();
     res.status(201).json({
       message: "Update successful",
@@ -274,7 +279,8 @@ exports.listUsers = async (req, res, next) => {
     var search = {};
     if (req.query.role) search.role = String(req.query.role);
     var users = await Users.find(search);
-    const list = users.map(e => e.pack());
+    const reveal = isadmin(res.locals.userToken?.role);
+    const list = users.map(e => e.pack(false, reveal));
     res.status(200).json({ user: list });
   } catch (err) {
     res.status(401).json({ message: "Not successful", error: err.message });
@@ -310,11 +316,14 @@ async function getUser(req) {
 exports.userdata = async (req, res, next) => {
   try {
     var user = await getUser(req);
+    if (!user && req.query.username) user = await Users.findOne({ anonname: String(req.query.username) });
     if (!user) return res.status(404).json({
       message: "Fetch not successful",
       error: "User not found",
     });
-    user = user.pack();
+    const viewerid = res.locals.userToken?.id;
+    const reveal = isadmin(res.locals.userToken?.role) || (viewerid && String(viewerid) === String(user._id));
+    user = user.pack(false, reveal);
     res.status(200).json(user);
   } catch (err) {
     res.status(401).json({ message: "Not successful", error: err.message });

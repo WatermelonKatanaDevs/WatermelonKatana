@@ -27,6 +27,10 @@ const ProjectSchema = new Mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  verified: {
+    type: Boolean,
+    default: false,
+  },
   tags: [ String ],
   mature: {
     type: Boolean,
@@ -85,6 +89,7 @@ const ProjectSchema = new Mongoose.Schema({
       container.link = this.link;
       container.content = this.content;
       container.featured = this.featured;
+      container.verified = this.verified;
       container.thumbnail = this.thumbnail;
       container.tags = this.tags || [];
       container.mature = this.mature;
