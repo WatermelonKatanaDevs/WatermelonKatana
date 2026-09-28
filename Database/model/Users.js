@@ -149,31 +149,8 @@ const UserSchema = new Mongoose.Schema({
 }, {
   //strict: false,
   methods: {
-    pack: function(full, reveal) {
+    pack: function(full) {
       const container = {};
-      if (!full && this.anonymous && !reveal) {
-        const alias = this.anonname || ("anon-" + String(this._id).slice(-4));
-        container.username = alias;
-        container.verified = false;
-        container.avatar = "/images/anon_pfp.png";
-        container.banner = "/images/anon_banner.png";
-        container.biography = "This user is browsing anonymously.";
-        container.badges = [];
-        container.role = "Basic";
-        container.favorites = [];
-        container.following = [];
-        container.followers = [];
-        container.joinedAt = 0;
-        container.mature = false;
-        container.signedinbanner = false;
-        container.rolegradient = false;
-        container.avatarpos = { x: 50, y: 50, zoom: 100 };
-        container.bannerpos = { x: 50, y: 50, zoom: 100 };
-        container.flair = {};
-        container.anonymous = true;
-        container.id = "anon-" + String(this._id).slice(-8);
-        return container;
-      }
       container.username = this.username;
       container.verified = !!this.email;
       container.avatar = this.avatar;
@@ -188,9 +165,10 @@ const UserSchema = new Mongoose.Schema({
       container.mature = this.mature;
       container.signedinbanner = this.signedinbanner;
       container.rolegradient = this.rolegradient;
-      container.anonymous = this.anonymous;
-      if (full || reveal) container.anonname = this.anonname;
-      if (reveal && this.anonymous) container.revealed = true;
+      if (full) {
+        container.anonymous = this.anonymous;
+        container.anonname = this.anonname;
+      }
       // container.allowuserdata = this.allowuserdata;
       container.avatarpos = this.avatarpos;
       container.bannerpos = this.bannerpos;
@@ -200,6 +178,29 @@ const UserSchema = new Mongoose.Schema({
         container.notifications = this.notifications;
       }
       return container;
+    },
+    anonpack: function() {
+      return {
+        username: this.anonname || ("anon-" + String(this._id).slice(-4)),
+        verified: false,
+        avatar: "/images/anon_pfp.png",
+        banner: "/images/anon_banner.png",
+        biography: "",
+        badges: [],
+        role: "Basic",
+        favorites: [],
+        following: [],
+        followers: [],
+        joinedAt: this.joinedAt,
+        mature: false,
+        signedinbanner: false,
+        rolegradient: false,
+        avatarpos: { x: 50, y: 50, zoom: 100 },
+        bannerpos: { x: 50, y: 50, zoom: 100 },
+        flair: {},
+        anonymous: true,
+        id: "anon-" + String(this._id).slice(-8),
+      };
     },
     notify: function(title,content,link,posterId,poster) {
       this.notifications.push({ 

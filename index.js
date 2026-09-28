@@ -217,24 +217,20 @@ app.get("/forum/discussion/:id/edit", userAuth, async (req, res) => {
 app.get("/forum/discussion/:id/delete", userAuth, (req, res) => res.redirect("/api/forum/delete/" + req.params.id)); // Delete post route, users only
 
 // User profile page with dynamic user name
-app.get("/user/:name", checkAuth, async (req, res) => {
-  const viewer = res.locals.userToken;
-  const admin = viewer && isadmin(viewer.role);
+app.get("/user/:name", async (req, res) => {
   var user = await Users.findOne({ username: req.params.name });
-  const isself = viewer && user && String(viewer.id) === String(user._id);
-  if (user && user.anonymous && !admin && !isself) {
-    res.status(404).sendFile(cldir + "/404.html");
-    return;
+  var showanon = false;
+  if (!user) {
+    user = await Users.findOne({ anonname: req.params.name });
+    showanon = !!user;
   }
-  if (!user) user = await Users.findOne({ anonname: req.params.name });
   if (!user) {
     res.status(404).sendFile(cldir + "/404.html");
     return;
   }
-  const showanon = user.anonymous && !admin && !(viewer && String(viewer.id) === String(user._id));
   const dname = showanon ? (user.anonname || ("anon-" + String(user._id).slice(-4))) : user.username;
   const davatar = showanon ? "/images/anon_pfp.png" : user.avatar;
-  const dbio = showanon ? "This user is browsing anonymously." : user.biography;
+  const dbio = showanon ? "" : user.biography;
   const dbadges = showanon ? "" : user.badges.join(", ");
   const drole = showanon ? "Basic" : user.role;
   sendFileReplace(res, "./Pages/users/user.html", (s) => s.replace("<!--og:meta-->", () => `

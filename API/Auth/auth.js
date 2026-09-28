@@ -279,8 +279,7 @@ exports.listUsers = async (req, res, next) => {
     var search = {};
     if (req.query.role) search.role = String(req.query.role);
     var users = await Users.find(search);
-    const reveal = isadmin(res.locals.userToken?.role);
-    const list = users.map(e => e.pack(false, reveal));
+    const list = users.map(e => e.pack());
     res.status(200).json({ user: list });
   } catch (err) {
     res.status(401).json({ message: "Not successful", error: err.message });
@@ -317,23 +316,15 @@ exports.userdata = async (req, res, next) => {
   try {
     var user = await getUser(req);
     const byname = req.query.username ? String(req.query.username) : null;
-    const viewerid = res.locals.userToken?.id;
-    const admin = isadmin(res.locals.userToken?.role);
-    if (user && user.anonymous && byname && byname.toLowerCase() === String(user.username).toLowerCase()) {
-      const isself = viewerid && String(viewerid) === String(user._id);
-      if (!admin && !isself) return res.status(404).json({
-        message: "Fetch not successful",
-        error: "User not found",
-      });
+    if (!user && byname) {
+      const anonuser = await Users.findOne({ anonname: byname });
+      if (anonuser) return res.status(200).json(anonuser.anonpack());
     }
-    if (!user && byname) user = await Users.findOne({ anonname: byname });
     if (!user) return res.status(404).json({
       message: "Fetch not successful",
       error: "User not found",
     });
-    const reveal = admin || (viewerid && String(viewerid) === String(user._id));
-    user = user.pack(false, reveal);
-    res.status(200).json(user);
+    res.status(200).json(user.pack());
   } catch (err) {
     res.status(401).json({ message: "Not successful", error: err.message });
     console.log(err.message);

@@ -74,6 +74,7 @@ module.exports = class {
         activeAt: Date.now(),
         posterId: user.id,
         poster: user.username, //convert to ref eventually
+        anon: !!user.anonymous,
       });
       await this.notifyUserFollowers(user.username + " posted a discussion", user, title, "/forum/post/" + post._id);
       await this.notifyUserMentions(content, user, title, "/forum/post/" + post._id);
@@ -192,18 +193,16 @@ module.exports = class {
     var entries = [].concat(data);
     var ids = new Set();
     for (const e of entries) {
-      if (e && e.posterId) ids.add(String(e.posterId));
-      if (e && Array.isArray(e.comments)) for (const c of e.comments) if (c && c.posterId) ids.add(String(c.posterId));
+      if (e && e.anon && e.posterId) ids.add(String(e.posterId));
+      if (e && Array.isArray(e.comments)) for (const c of e.comments) if (c && c.anon && c.posterId) ids.add(String(c.posterId));
     }
     if (ids.size === 0) return data;
-    var anons = await Users.find({ _id: { $in: [...ids] }, anonymous: true });
-    if (anons.length === 0) return data;
+    var users = await Users.find({ _id: { $in: [...ids] } });
     var map = {};
-    for (const u of anons) map[String(u._id)] = u.anonname || ("anon-" + String(u._id).slice(-4));
+    for (const u of users) map[String(u._id)] = u.anonname || ("anon-" + String(u._id).slice(-4));
     var mask = (obj) => {
-      if (!obj) return;
-      var alias = map[String(obj.posterId)];
-      if (alias) obj.poster = alias;
+      if (!obj || !obj.anon) return;
+      obj.poster = map[String(obj.posterId)] || ("anon-" + String(obj.posterId).slice(-4));
     };
     for (const e of entries) {
       mask(e);
@@ -223,6 +222,7 @@ module.exports = class {
       interpretBool(search, "featured", featured);
       if (showMature == "false" || showMature == "0" || !viewer || !viewer.mature) search.mature = false;
       if ((showHidden == "true" || showHidden == "1") && viewer && (isadmin(viewer.role) || (poster && String(poster) === viewer.username))) delete search.hidden;
+      if (poster && !(viewer && isadmin(viewer.role)) && !(viewer && String(poster) === viewer.username)) search.anon = { $ne: true };
       // work out recipient search later
       if (postedBefore || postedAfter) {
         search.postedAt = {};
@@ -510,6 +510,7 @@ module.exports = class {
         poster: user.username,
         posterId: user.id,
         postedAt: Date.now(),
+        anon: !!user.anonymous,
       });
       await post.save();
       var link = this.name === "posts" ? "/forum/discussion/" + post._id : "/project/" + post._id;
