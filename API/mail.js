@@ -21,6 +21,9 @@ function buildtransport() {
         accessToken: process.env.EMAIL_ACCESS_TOKEN,
         accessUrl: "https://login.microsoftonline.com/" + tenant + "/oauth2/v2.0/token",
       },
+      connectionTimeout: 15000,
+      greetingTimeout: 10000,
+      socketTimeout: 20000,
       logger: maildebug,
       debug: maildebug,
     });
@@ -33,6 +36,9 @@ function buildtransport() {
       user: mailuser,
       pass: process.env.EMAIL_PASSWORD,
     },
+    connectionTimeout: 15000,
+    greetingTimeout: 10000,
+    socketTimeout: 20000,
     logger: maildebug,
     debug: maildebug,
   });
