@@ -13,13 +13,15 @@
   <script src="/scripts/navbar.js"></script>
   <div class="container">
     <h1 class="error-title">403: Not Authorized</h1>
-    <p class="error-message">You must be logged in and authorized to view this page.</p>
+    <p class="error-message">You aren't authorized to view this page, but heres a gif of Uni</p>
+    <img id="unigif" alt="Uni" class="error-image">
     <a class="home-link" href="/register" id="register-redirect">Register</a>
     <a class="home-link" href="/login" id="login-redirect">Login</a>
   </div>
   <div id="footer">
   </div>
   <script>
+    document.querySelector("#unigif").src = "/Assets/images/uni/" + (Math.floor(Math.random() * 16) + 1) + ".gif";
     var login = document.querySelector("#login-redirect");
     login.href = "/login?redir="+location.pathname;
     var register = document.querySelector("#register-redirect");

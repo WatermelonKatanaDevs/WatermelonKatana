@@ -11,7 +11,7 @@ function makeid(length) {
 
 function randomunigif() {
   const n = Math.floor(Math.random() * 16) + 1;
-  return origin + "/uni/" + n + ".gif";
+  return origin + "/Assets/images/uni/" + n + ".gif";
 }
 
 function emailtemplate(username, heading, intro, buttonlabel, buttonurl, footnote) {
