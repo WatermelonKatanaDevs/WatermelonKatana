@@ -455,9 +455,10 @@ input[type=checkbox]:checked+.checkbox::after {
 
 .verified-badge {
 	display: inline-block;
-	color: #3ba55d;
-	font-weight: bold;
-	margin-right: 2px;
+	width: 1em;
+	height: 1em;
+	vertical-align: -0.15em;
+	margin: 0 2px;
 }
 
 
