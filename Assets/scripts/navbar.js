@@ -85,6 +85,12 @@
       transition: color 0.5s ease, background 0.5s ease;
     }
 
+    .navbar-logo {
+      height: 2em;
+      vertical-align: middle;
+      display: block;
+    }
+
     @keyframes liquidSpill {
       0% {
         background-position: 0% 50%;
@@ -340,10 +346,14 @@
   `;
   document.head.append(style);
 
+  var usewordmarkicon = false;
+  try { usewordmarkicon = localStorage.getItem("wordmark-icon") === "on"; } catch (e) {}
+  var brand = usewordmarkicon ? `<img src="/images/icon.png" alt="WatermelonKatana" class="navbar-logo">` : "WatermelonKatana";
+
   var navbarHtml = `
   <div class="topnav">
     <div class="navbar-left">
-      <h2 class="navbar-name"><a href="/">WatermelonKatana</a></h2>
+      <h2 class="navbar-name"><a href="/">${brand}</a></h2>
       <a class="nav-btn" href="/chat">Chat</a>
       <a class="nav-btn" href="/search">Project Gallery</a>
       <a class="nav-btn" href="/forum">Forum</a>

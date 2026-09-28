@@ -316,13 +316,22 @@ async function getUser(req) {
 exports.userdata = async (req, res, next) => {
   try {
     var user = await getUser(req);
-    if (!user && req.query.username) user = await Users.findOne({ anonname: String(req.query.username) });
+    const byname = req.query.username ? String(req.query.username) : null;
+    const viewerid = res.locals.userToken?.id;
+    const admin = isadmin(res.locals.userToken?.role);
+    if (user && user.anonymous && byname && byname.toLowerCase() === String(user.username).toLowerCase()) {
+      const isself = viewerid && String(viewerid) === String(user._id);
+      if (!admin && !isself) return res.status(404).json({
+        message: "Fetch not successful",
+        error: "User not found",
+      });
+    }
+    if (!user && byname) user = await Users.findOne({ anonname: byname });
     if (!user) return res.status(404).json({
       message: "Fetch not successful",
       error: "User not found",
     });
-    const viewerid = res.locals.userToken?.id;
-    const reveal = isadmin(res.locals.userToken?.role) || (viewerid && String(viewerid) === String(user._id));
+    const reveal = admin || (viewerid && String(viewerid) === String(user._id));
     user = user.pack(false, reveal);
     res.status(200).json(user);
   } catch (err) {

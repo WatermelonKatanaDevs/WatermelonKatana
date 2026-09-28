@@ -64,6 +64,16 @@
     </div>
   </div>
   <div class="config">
+    <h3>Use icon instead of wordmark in the navbar:</h3>
+
+    <div>
+      <label>
+        <input type="checkbox" id="wordmark-icon-toggle" onchange="localStorage.setItem('wordmark-icon', this.checked ? 'on' : 'off')">
+        <span class="checkbox"></span>
+      </label>
+    </div>
+  </div>
+  <div class="config">
     <h3>Anonymous mode (hide your name, avatar, and profile across the site):</h3>
 
     <div>
@@ -88,6 +98,7 @@
   <script>
     let currentuser = null;
     document.querySelector("#user-preview-toggle").checked = localStorage.getItem("user-preview") !== "off";
+    document.querySelector("#wordmark-icon-toggle").checked = localStorage.getItem("wordmark-icon") === "on";
     (async () => {
       const data = await getAuth();
       currentuser = data.user;

@@ -64,22 +64,8 @@ app.use((req, res, next) => {
   if (dest && dest !== "empty" && dest !== "document") {
     return res.status(403).json({ message: "Invalid request context" });
   }
-  const referer = req.headers["referer"];
-  const authcheck = req.method === "GET" && req.path === "/api/auth/check";
-  if (!authcheck && (fromturbowarp(referer) || (site === "same-origin" && !referer))) {
-    return res.status(403).json({ message: "Request blocked from project context" });
-  }
   next();
 });
-
-function fromturbowarp(referer) {
-  if (!referer) return false;
-  try {
-    return /^\/+turbowarp/i.test(new URL(referer).pathname);
-  } catch {
-    return true;
-  }
-}
 
 /**
  * Serve static files from the Client directory
@@ -231,24 +217,38 @@ app.get("/forum/discussion/:id/edit", userAuth, async (req, res) => {
 app.get("/forum/discussion/:id/delete", userAuth, (req, res) => res.redirect("/api/forum/delete/" + req.params.id)); // Delete post route, users only
 
 // User profile page with dynamic user name
-app.get("/user/:name", async (req, res) => {
+app.get("/user/:name", checkAuth, async (req, res) => {
+  const viewer = res.locals.userToken;
+  const admin = viewer && isadmin(viewer.role);
   var user = await Users.findOne({ username: req.params.name });
+  const isself = viewer && user && String(viewer.id) === String(user._id);
+  if (user && user.anonymous && !admin && !isself) {
+    res.status(404).sendFile(cldir + "/404.html");
+    return;
+  }
+  if (!user) user = await Users.findOne({ anonname: req.params.name });
   if (!user) {
     res.status(404).sendFile(cldir + "/404.html");
     return;
   }
+  const showanon = user.anonymous && !admin && !(viewer && String(viewer.id) === String(user._id));
+  const dname = showanon ? (user.anonname || ("anon-" + String(user._id).slice(-4))) : user.username;
+  const davatar = showanon ? "/images/anon_pfp.png" : user.avatar;
+  const dbio = showanon ? "This user is browsing anonymously." : user.biography;
+  const dbadges = showanon ? "" : user.badges.join(", ");
+  const drole = showanon ? "Basic" : user.role;
   sendFileReplace(res, "./Pages/users/user.html", (s) => s.replace("<!--og:meta-->", () => `
-    <meta property="og:title" content="@${user.username} on WatermelonKatana"/>
+    <meta property="og:title" content="@${dname} on WatermelonKatana"/>
     <meta property="og:type" content="website"/>
-    <meta property="og:image" content="${makeLiteralChars(user.avatar)}"/>
-    <meta property="og:description" content="${makeLiteralChars(user.biography)}"/>
+    <meta property="og:image" content="${makeLiteralChars(davatar)}"/>
+    <meta property="og:description" content="${makeLiteralChars(dbio)}"/>
   `).replace("<!--content-->", () => `
-    ${user.username}<br>
-    ${makeLiteralChars(user.biography)}<br>
-    ${user.badges.join(", ")}<br>
-    Role: ${user.role}
+    ${dname}<br>
+    ${makeLiteralChars(dbio)}<br>
+    ${dbadges}<br>
+    Role: ${drole}
   `).replace("<!--title-->", () => `
-    <title>${user.username} | WatermelonKatana</title>
+    <title>${dname} | WatermelonKatana</title>
   `));
 });
 
