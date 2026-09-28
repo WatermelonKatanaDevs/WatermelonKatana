@@ -59,6 +59,23 @@
         font-weight: bold;
         min-height: 1.2em;
       }
+      .admin-card .card-name img.verified-badge {
+        width: 1em;
+        height: 1em;
+        vertical-align: -0.15em;
+      }
+      @media (max-width: 600px) {
+        .admin-section {
+          width: 94%;
+        }
+        .admin-card {
+          padding: 12px;
+          gap: 8px;
+        }
+        #status {
+          width: 94%;
+        }
+      }
     </style>
   </head>
   <body>
@@ -153,7 +170,7 @@
         const name = document.createElement("a");
         name.className = "card-name";
         name.href = "/user/" + user.username;
-        name.textContent = "@" + user.username;
+        name.innerHTML = "@" + user.username + " " + verifiedmark(user.verifiedbadge);
         const meta = document.createElement("div");
         meta.className = "card-meta";
         meta.textContent = (user.verified ? "Verified" : "Unverified") + " · Joined " + new Date(user.joinedAt).toLocaleDateString();
@@ -198,6 +215,25 @@
           }
         });
         card.appendChild(warnbtn);
+
+        const verifybtn = document.createElement("button");
+        verifybtn.textContent = user.verifiedbadge ? "Unverify" : "Verify";
+        verifybtn.addEventListener("click", async () => {
+          try {
+            await apicall("/api/auth/verifybadge", {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id: user.id, value: !user.verifiedbadge })
+            });
+            user.verifiedbadge = !user.verifiedbadge;
+            verifybtn.textContent = user.verifiedbadge ? "Unverify" : "Verify";
+            name.innerHTML = "@" + user.username + " " + verifiedmark(user.verifiedbadge);
+            seterror("");
+          } catch (err) {
+            seterror(err.message);
+          }
+        });
+        card.appendChild(verifybtn);
 
         const deletebtn = document.createElement("button");
         deletebtn.className = "delete";

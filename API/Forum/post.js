@@ -189,24 +189,35 @@ module.exports = class {
   }
 
   async maskanon(data, res) {
-    if (isadmin(res.locals.userToken?.role)) return data;
+    const admin = isadmin(res.locals.userToken?.role);
+    const viewerid = res.locals.userToken?.id ? String(res.locals.userToken.id) : null;
     var entries = [].concat(data);
     var ids = new Set();
     for (const e of entries) {
-      if (e && e.anon && e.posterId) ids.add(String(e.posterId));
-      if (e && Array.isArray(e.comments)) for (const c of e.comments) if (c && c.anon && c.posterId) ids.add(String(c.posterId));
+      if (e && e.posterId) ids.add(String(e.posterId));
+      if (e && Array.isArray(e.comments)) for (const c of e.comments) if (c && c.posterId) ids.add(String(c.posterId));
     }
     if (ids.size === 0) return data;
     var users = await Users.find({ _id: { $in: [...ids] } });
     var map = {};
-    for (const u of users) map[String(u._id)] = u.anonname || ("anon-" + String(u._id).slice(-4));
-    var mask = (obj) => {
-      if (!obj || !obj.anon) return;
-      obj.poster = map[String(obj.posterId)] || ("anon-" + String(obj.posterId).slice(-4));
+    for (const u of users) map[String(u._id)] = u;
+    var resolve = (obj) => {
+      if (!obj || !obj.posterId) return;
+      var u = map[String(obj.posterId)];
+      if (obj.anon) {
+        obj.poster = (u && u.anonname) || ("anon-" + String(obj.posterId).slice(-4));
+        obj.authoravatar = "/images/anon_pfp.png";
+        obj.authorpos = { x: 50, y: 50, zoom: 100 };
+        if (admin && u) obj.realposter = u.username;
+        else if (viewerid !== String(obj.posterId)) obj.posterId = "anon-" + String(obj.posterId).slice(-8);
+      } else {
+        obj.authoravatar = (u && u.avatar) || "/images/default_pfp.png";
+        obj.authorpos = (u && u.avatarpos) || { x: 50, y: 50, zoom: 100 };
+      }
     };
     for (const e of entries) {
-      mask(e);
-      if (e && Array.isArray(e.comments)) for (const c of e.comments) mask(c);
+      resolve(e);
+      if (e && Array.isArray(e.comments)) for (const c of e.comments) resolve(c);
     }
     return Array.isArray(data) ? entries : entries[0];
   }

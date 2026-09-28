@@ -167,18 +167,6 @@ function previewContent(str, len) {
   return makeLiteralChars(str).replace(/\n[^]*$/, "").slice(0, len) + ((str.includes("\n") || str.length > len) ? "..." : "");
 }
 
-function authorpfp(anchor, posterId) {
-  getUser(posterId).then((u) => {
-    if (!u) return;
-    const pfp = anchor.querySelector(".author-pfp");
-    if (pfp) pfp.innerHTML = focalimg(u.avatar || "/images/blank_project.png", u.avatarpos);
-    if (u.revealed) {
-      const label = anchor.querySelector(".author-link i");
-      if (label && !label.dataset.anon) { label.dataset.anon = "1"; label.textContent += " (anon)"; }
-    }
-  });
-}
-
 function projHTML(list, tok) {
   return function (proj) {
     let classes = (proj.featured ? " featured" : "") + (proj.posterId == tok?.user?.id ? " published" : "") + (tok?.user?.favorites.includes(proj.id) ? " favorited" : "");
@@ -194,12 +182,11 @@ function projHTML(list, tok) {
         </div>
         <img class="project-thumbnail" src="${proj.thumbnail || "/images/blank_project.png"}" alt="">
       </div>
-      <div class="project-link">${proj.verified ? '<span class="verified-badge" title="Verified by moderators">✔</span> ' : ""}${previewContent(proj.title, 100)}</div>
-      <div>By: <object><a class="author-link" href="/user/${proj.poster}"><span class="comment-avatar author-pfp"></span><i>${proj.poster}</i></a></object></div>`;
+      <div class="project-link">${verifiedmark(proj.verified)}${previewContent(proj.title, 100)}</div>
+      <div>By: <object><a class="author-link" href="/user/${proj.realposter || proj.poster}"${proj.realposter ? ` title="Posted anonymously by ${proj.realposter}"` : ""}><span class="comment-avatar author-pfp">${focalimg(proj.authoravatar || "/images/default_pfp.png", proj.authorpos)}</span><i>${proj.poster}</i></a></object></div>`;
     list.appendChild(a);
     const thumb = a.querySelector(".project-thumbnail");
     if (!thumb.getAttribute("src")) thumb.src = "/images/blank_project.png";
-    authorpfp(a, proj.posterId);
   };
 }
 
@@ -214,11 +201,10 @@ function forumHTML(list, tok) {
         <h2>${previewContent(post.title, 100)}</h2>
         <p style="display: inline;">${previewContent(post.content, 100)}
         <br>
-      By: <object><a class="author-link" href="/user/${post.poster}"><span class="comment-avatar author-pfp"></span><i>${post.poster}</i></a></object> | Views: ${post.views} | Active ${relativeDate(post.activeAt)}</p>
+      By: <object><a class="author-link" href="/user/${post.realposter || post.poster}"${post.realposter ? ` title="Posted anonymously by ${post.realposter}"` : ""}><span class="comment-avatar author-pfp">${focalimg(post.authoravatar || "/images/default_pfp.png", post.authorpos)}</span><i>${post.poster}</i></a></object> | Views: ${post.views} | Active ${relativeDate(post.activeAt)}</p>
       <div class="forum-tags">${tagHTML(post.tags)}</div>
       </div>`;
     list.appendChild(a);
-    authorpfp(a, post.posterId);
   };
 }
 
@@ -227,7 +213,7 @@ function userHTML(list) {
     let div = `<a class="user-panel" href="/user/${user.username}">
       <div class="comment-top">
       <span class="comment-avatar">${focalimg(user.avatar || "/images/blank_project.png", user.avatarpos)}</span>
-      <div class="comment-username">${user.username}</div>
+      <div class="comment-username">${user.username} ${verifiedmark(user.verifiedbadge)}</div>
       </div>
       ${previewContent(user.biography, 100)}
       <div>Joined on ${new Date(user.joinedAt).toUTCString().replace(/\d\d:[^]+$/, "")} | ${user.role} </div>
@@ -349,6 +335,10 @@ function tagHTML(tags) {
 
 function isadmin(role) {
   return role === "Admin" || role === "Uni Lover";
+}
+
+function verifiedmark(show) {
+  return show ? '<img src="/images/verified.png" class="verified-badge" alt="verified" title="Verified"> ' : "";
 }
 
 function clampnum(value, min, max, fallback) {
@@ -517,7 +507,7 @@ async function showpreview(anchor, username) {
     <div class="up-banner">${focalimg(u.banner, u.bannerpos)}</div>
     <div class="up-body">
       <div class="up-avatar ${avatarflair.cls}" style="${avatarflair.style}">${focalimg(u.avatar, u.avatarpos)}</div>
-      <div><span class="up-name" style="${namecss}">${makeLiteralChars(u.username)}</span>${u.revealed ? ' <span class="up-role">(anon)</span>' : ""}</div>
+      <div><span class="up-name" style="${namecss}">${makeLiteralChars(u.username)}</span> ${verifiedmark(u.verifiedbadge)}${u.revealed ? ' <span class="up-role">(anon)</span>' : ""}</div>
       <div><span class="up-role" style="${rolecss}">${makeLiteralChars(u.role)}</span></div>
       <div class="up-bio">${convertMarkdown(u.biography || "")}</div>
     </div>`;

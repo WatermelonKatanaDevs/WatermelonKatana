@@ -1,13 +1,17 @@
 async function createPost(post,data,txt,name,reload) {
-  var u = await getUser(data.posterId);
+  var dispname = data.poster;
+  var dispavatar = data.authoravatar || "/images/default_pfp.png";
+  var disppos = data.authorpos || {};
+  var displink = "/user/" + (data.realposter || data.poster);
+  var disptitle = data.realposter ? ` title="Posted anonymously by ${data.realposter}"` : "";
   post.innerHTML = `
   <div id="display">
-    <h2 class="post-name">${data.verified ? '<span class="verified-badge" title="Verified by moderators">✔</span> ' : ""}${makeLiteralChars(data.title)}</h2>
+    <h2 class="post-name">${verifiedmark(data.verified)}${makeLiteralChars(data.title)}</h2>
     <p class="comment-data">${new Date(data.postedAt).toUTCString()}</p>
     <div class="comment-top">
-      <a href="/user/${u.username}">
-        <span class="comment-avatar">${focalimg(u.avatar, u.avatarpos)}</span>
-        <p class="comment-username">${u.username}</p>
+      <a href="${displink}"${disptitle}>
+        <span class="comment-avatar">${focalimg(dispavatar, disppos)}</span>
+        <p class="comment-username">${dispname}</p>
       </a>
     </div>
     ${convertMarkdown(data.content)} <br>
@@ -78,7 +82,11 @@ async function listComments(list,comments,self,events) {
   var users = {};
   for (var i = 0; i < comments.length; i++) {
     var c = comments[i];
-    var u = await getUser(c.posterId);
+    var cname = c.poster;
+    var cavatar = c.authoravatar || "/images/default_pfp.png";
+    var cpos = c.authorpos || {};
+    var clink = "/user/" + (c.realposter || c.poster);
+    var ctitle = c.realposter ? ` title="Posted anonymously by ${c.realposter}"` : "";
     if (self) {
       var options = `<input type="button" value="reply" onclick="window.onreplybtnclick(${i});">`;
       if (self.id == c.posterId) {
@@ -98,9 +106,9 @@ async function listComments(list,comments,self,events) {
         </div>
       </div>`:""}
       <div class="comment-top">
-        <a href="/user/${u.username}">
-          <span class="comment-avatar">${focalimg(u.avatar, u.avatarpos)}</span>
-          <p class="comment-username">${u.username}</p>
+        <a href="${clink}"${ctitle}>
+          <span class="comment-avatar">${focalimg(cavatar, cpos)}</span>
+          <p class="comment-username">${cname}</p>
         </a>
         <p class="comment-data">${relativeDate(c.postedAt)}</p>
       </div>

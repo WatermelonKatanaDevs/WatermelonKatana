@@ -196,6 +196,20 @@ exports.update = async (req, res, next) => {
   };
 };
 
+exports.verifybadge = async (req, res) => {
+  const { id, value } = req.body;
+  if (!id) return res.status(400).json({ message: 'User id not present' });
+  try {
+    const user = await Users.findById(id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    user.verifiedbadge = !!value;
+    await user.save();
+    res.status(200).json({ message: 'Verification updated', user: user.pack(true) });
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating verification', error: error.message });
+  }
+};
+
 exports.updateRole = async (req, res) => {
   const { role, id } = req.body;
   if (!role || !id) return res.status(400).json({ message: 'Role or Id not present' });

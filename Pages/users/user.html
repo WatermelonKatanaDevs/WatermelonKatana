@@ -99,12 +99,12 @@
         <div class="avatar ${avatarflair.cls}" style="${roleBorderCSS}${avatarflair.style}">${focalimg(userData.avatar, userData.avatarpos)}</div>
         ${isAuthenticated && isOwnProfile ? `
           <div id="profile-actions">
-            <span class="${nameCSSClass}" style="${finalnamecss}; margin-top: 35px; width: 100%">${userData.username}</span>
+            <span class="${nameCSSClass}" style="${finalnamecss}; margin-top: 35px; width: 100%">${userData.username} ${verifiedmark(userData.verifiedbadge)}</span>
             <a class="button" href="/logout">Log Out</a>
             <a class="button" href="/profile/edit">Edit Profile</a>
             <a class="button" href="/profile/chpass">Change Password</a>
             <a class="button" href="/profile/verify">Verify Email</a>
-          </div>` : `<span class="${nameCSSClass}" style="${finalnamecss}; margin-top: 35px; width: 100%">${userData.username}</span>`
+          </div>` : `<span class="${nameCSSClass}" style="${finalnamecss}; margin-top: 35px; width: 100%">${userData.username} ${verifiedmark(userData.verifiedbadge)}</span>`
         }
       </div>
       <p class="biography">${convertMarkdown(userData.biography)}</p>

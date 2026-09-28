@@ -107,7 +107,12 @@ body {
 	background: linear-gradient(90deg, var(--spill-color1), var(--spill-color2), var(--spill-color3), var(--spill-color4));
 	background-size: 200% 200%;
 	-webkit-background-clip: text;
+	background-clip: text;
 	-webkit-text-fill-color: transparent;
+	color: transparent;
+	display: inline-block;
+	padding: 0 0.15em;
+	line-height: 1.2;
 	animation: liquidSpill 4s ease-in-out infinite;
 }
 

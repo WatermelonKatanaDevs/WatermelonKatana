@@ -358,6 +358,7 @@
       <a class="nav-btn" href="/search">Project Gallery</a>
       <a class="nav-btn" href="/forum">Forum</a>
       <a class="nav-btn" href="/dashboard">Dashboard</a>
+      <a class="nav-btn" href="/preferences">Preferences</a>
     </div>
     <div class="navbar-right">
     </div>

@@ -13,13 +13,34 @@
     .config {
       display: flex;
       align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      width: 90%;
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 6px 0;
     }
     .config div {
-      margin: 20px;
+      margin: 10px 20px;
     }
     .config h3 {
       max-width: 50vw;
       text-align: left;
+      flex: 1;
+      min-width: 220px;
+    }
+    @media (max-width: 600px) {
+      .config {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .config h3 {
+        max-width: 100%;
+      }
+      .config div {
+        margin: 5px 0;
+      }
     }
   </style>
 </head>

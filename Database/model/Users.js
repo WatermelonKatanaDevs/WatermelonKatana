@@ -88,6 +88,10 @@ const UserSchema = new Mongoose.Schema({
     type: Boolean,
     default: true,
   },
+  verifiedbadge: {
+    type: Boolean,
+    default: false,
+  },
   anonymous: {
     type: Boolean,
     default: false,
@@ -165,6 +169,7 @@ const UserSchema = new Mongoose.Schema({
       container.mature = this.mature;
       container.signedinbanner = this.signedinbanner;
       container.rolegradient = this.rolegradient;
+      container.verifiedbadge = this.verifiedbadge;
       if (full) {
         container.anonymous = this.anonymous;
         container.anonname = this.anonname;

@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const ratelimit = require("express-rate-limit");
 
-const { register, login, update, updateRole, deleteUser, deleteSelf, listUsers, userdata, check, changePassword, follow, unfollow } = require("./auth");
+const { register, login, update, updateRole, verifybadge, deleteUser, deleteSelf, listUsers, userdata, check, changePassword, follow, unfollow } = require("./auth");
 const { sendVerification, verifyUser, sendPasswordReset, resetPassword } = require("./verify");
 const { adminAuth, userAuth, checkAuth, checkFormToken } = require("../../Middleware/auth");
 
@@ -17,6 +17,7 @@ router.route("/login").post(authlimiter, login);
 router.route("/changePassword").post(authlimiter, userAuth, changePassword);
 router.route("/update").put(userAuth, update);
 router.route("/updateRole").put(adminAuth, updateRole);
+router.route("/verifybadge").put(adminAuth, verifybadge);
 router.route("/deleteUser").delete(adminAuth, deleteUser);
 router.route("/deleteSelf").delete(userAuth, deleteSelf);
 router.route("/listUsers").get(checkAuth, listUsers);
