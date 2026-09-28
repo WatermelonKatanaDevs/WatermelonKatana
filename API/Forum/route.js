@@ -1,15 +1,11 @@
 const express = require("express");
 const router = express.Router();
 
-const Projects = require("../../Database/model/Projects");
-const ProjectAPI = require("./project");
-const poster = new ProjectAPI(Projects);
+const Posts = require("../../Database/model/Posts")
+const PostAPI = require("./post");
+const poster = new PostAPI(Posts,"posts");
 const { adminAuth, userAuth, checkAuth } = require("../../Middleware/auth");
 
 poster.route(router,userAuth,adminAuth,checkAuth);
-router.route("/verify/:id").get(adminAuth, poster.verify.bind(poster));
-router.route("/unverify/:id").get(adminAuth, poster.unverify.bind(poster));
-router.route("/favorite/:id").get(userAuth, poster.favorite.bind(poster));
-router.route("/unfavorite/:id").get(userAuth, poster.unfavorite.bind(poster));
 
 module.exports = router;
