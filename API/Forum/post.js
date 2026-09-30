@@ -179,13 +179,13 @@ module.exports = class {
     }
     var entries = [].concat(data);
     var censoredData = [].concat(JSON.parse(Profanity.censorText(JSON.stringify(data))));
-    for(var i = 0; i < censoredData.length; i++) {
+    for (var i = 0; i < censoredData.length; i++) {
       censoredData[i].link = entries[i].link;
       censoredData[i].thumbnail = entries[i].thumbnail;
       censoredData[i].id = entries[i].id;
       censoredData[i].posterId = entries[i].posterId;
     }
-    return Array.isArray(data) ? censoredData: censoredData[0];
+    return Array.isArray(data) ? censoredData : censoredData[0];
   }
 
   async maskanon(data, res) {
@@ -202,8 +202,9 @@ module.exports = class {
     var map = {};
     for (const u of users) map[String(u._id)] = u;
     var resolve = (obj) => {
-        obj.authoravatar = (u && u.avatar) || "/images/default_pfp.png";
-        obj.authorpos = (u && u.avatarpos) || { x: 50, y: 50, zoom: 100 };
+      var u = map[String(obj.posterId)];
+      obj.authoravatar = (u && u.avatar) || "/images/default_pfp.png";
+      obj.authorpos = (u && u.avatarpos) || { x: 50, y: 50, zoom: 100 };
       // if (!obj || !obj.posterId) return;
       // var u = map[String(obj.posterId)];
       // if (obj.anon) {
