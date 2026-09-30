@@ -202,18 +202,20 @@ module.exports = class {
     var map = {};
     for (const u of users) map[String(u._id)] = u;
     var resolve = (obj) => {
-      if (!obj || !obj.posterId) return;
-      var u = map[String(obj.posterId)];
-      if (obj.anon) {
-        obj.poster = (u && u.anonname) || ("anon-" + String(obj.posterId).slice(-4));
-        obj.authoravatar = "/images/anon_pfp.png";
-        obj.authorpos = { x: 50, y: 50, zoom: 100 };
-        if (admin && u) {obj.realposter = u.username; obj.authoravatar = u.avatar || obj.authoravatar; obj.authorpos = u.authorpos || obj.authorpos}
-        else if (viewerid !== String(obj.posterId)) obj.posterId = "anon-" + String(obj.posterId).slice(-8);
-      } else {
         obj.authoravatar = (u && u.avatar) || "/images/default_pfp.png";
         obj.authorpos = (u && u.avatarpos) || { x: 50, y: 50, zoom: 100 };
-      }
+      // if (!obj || !obj.posterId) return;
+      // var u = map[String(obj.posterId)];
+      // if (obj.anon) {
+      //   obj.poster = (u && u.anonname) || ("anon-" + String(obj.posterId).slice(-4));
+      //   obj.authoravatar = "/images/anon_pfp.png";
+      //   obj.authorpos = { x: 50, y: 50, zoom: 100 };
+      //   if (admin && u) {obj.realposter = u.username; obj.authoravatar = u.avatar || obj.authoravatar; obj.authorpos = u.authorpos || obj.authorpos}
+      //   else if (viewerid !== String(obj.posterId)) obj.posterId = "anon-" + String(obj.posterId).slice(-8);
+      // } else {
+      //   obj.authoravatar = (u && u.avatar) || "/images/default_pfp.png";
+      //   obj.authorpos = (u && u.avatarpos) || { x: 50, y: 50, zoom: 100 };
+      // }
     };
     for (const e of entries) {
       resolve(e);
