@@ -208,7 +208,7 @@ module.exports = class {
         obj.poster = (u && u.anonname) || ("anon-" + String(obj.posterId).slice(-4));
         obj.authoravatar = "/images/anon_pfp.png";
         obj.authorpos = { x: 50, y: 50, zoom: 100 };
-        if (admin && u) obj.realposter = u.username;
+        if (admin && u) {obj.realposter = u.username; obj.authoravatar = u.avatar || obj.authoravatar; obj.authorpos = u.authorpos || obj.authorpos}
         else if (viewerid !== String(obj.posterId)) obj.posterId = "anon-" + String(obj.posterId).slice(-8);
       } else {
         obj.authoravatar = (u && u.avatar) || "/images/default_pfp.png";
