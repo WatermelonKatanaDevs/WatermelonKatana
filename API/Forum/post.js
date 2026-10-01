@@ -172,13 +172,14 @@ module.exports = class {
   };
 
   async censor(data, res) {
+    data = JSON.parse(JSON.stringify(data));
     if (res.locals.userToken) {
       const uid = res.locals.userToken.id;
       var user = await Users.findOne({ _id: uid });
       if (user && user.mature) return data;
     }
     var entries = [].concat(data);
-    var censoredData = [].concat(JSON.parse(Profanity.censorText(JSON.stringify(data))));
+    var censoredData = [].concat(Profanity.censorText(data));
     for (var i = 0; i < censoredData.length; i++) {
       censoredData[i].link = entries[i].link;
       censoredData[i].thumbnail = entries[i].thumbnail;
@@ -191,7 +192,7 @@ module.exports = class {
   async maskanon(data, res) {
     const admin = isadmin(res.locals.userToken?.role);
     const viewerid = res.locals.userToken?.id ? res.locals.userToken.id : null;
-    var entries = [].concat(JSON.parse(JSON.stringify((data))));
+    var entries = [].concat(data);
     var ids = new Set();
     for (const e of entries) {
       if (e && e.posterId) ids.add(e.posterId);
@@ -391,9 +392,8 @@ module.exports = class {
         message: "Not authorized",
         error: "Private content",
       });
-      // var data = await this.censor(post.pack(), res);
-      // data = await this.maskanon(data, res);
-      var data = await this.maskanon(post.pack(), res);
+      var data = await this.censor(post.pack(), res);
+      data = await this.maskanon(data, res);
       res.status(200).json(data);
     } catch (err) {
       res.status(401).json({ message: "Not successful", error: err.message });
