@@ -281,7 +281,7 @@ module.exports = class {
         list = await this.model.find(search);
       }
       list = list.map(e => e.pack());
-      // list = await this.censor(list, res);
+      list = await this.censor(list, res);
       list = await this.maskanon(list, res);
       if (noclient == "1" || noclient == "true") {
         list = JSON.parse(JSON.stringify(list).replace(/\</g, "&lt;").replace(/\>/g, "&gt;"));
@@ -392,8 +392,9 @@ module.exports = class {
         message: "Not authorized",
         error: "Private content",
       });
-      var data = await this.censor(post.pack(), res);
-      data = await this.maskanon(data, res);
+      // var data = await this.censor(post.pack(), res);
+      // data = await this.maskanon(data, res);
+      var data = await this.maskanon(post.pack(), res);
       res.status(200).json(data);
     } catch (err) {
       res.status(401).json({ message: "Not successful", error: err.message });
