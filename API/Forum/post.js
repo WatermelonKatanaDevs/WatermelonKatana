@@ -182,7 +182,7 @@ module.exports = class {
     for (var i = 0; i < censoredData.length; i++) {
       censoredData[i].link = entries[i].link;
       censoredData[i].thumbnail = entries[i].thumbnail;
-      censoredData[i].id = entries[i].id;
+      // censoredData[i].id = entries[i].id;
       censoredData[i].posterId = entries[i].posterId;
     }
     return Array.isArray(data) ? censoredData : censoredData[0];
