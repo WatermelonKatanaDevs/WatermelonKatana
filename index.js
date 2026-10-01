@@ -72,6 +72,10 @@ app.use((req, res, next) => {
  */
 app.use(express.static(__dirname + "/Assets"));
 
+// Add Editor
+app.use("/editor", express.static(__dirname + "/Editor"));
+app.get("/editor", (req, res) => res.sendFile(__dirname + "/Editor/index.html"));
+
 /**
  * Initialize TurboWarp with static dependencies
  */
