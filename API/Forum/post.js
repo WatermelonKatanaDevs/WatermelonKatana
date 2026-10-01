@@ -172,10 +172,11 @@ module.exports = class {
   };
 
   async censor(data, res) {
+    const dataIsArray = Array.isArray(data);
     if (res.locals.userToken) {
       const uid = res.locals.userToken.id;
       var user = await Users.findOne({ _id: uid });
-      if (user && user.mature) return JSON.parse(JSON.stringify(data));
+      if (user && user.mature) return dataIsArray ? data: JSON.parse(JSON.stringify(data));
     }
     var entries = [].concat(data);
     var censoredData = [].concat(JSON.parse(Profanity.censorText(JSON.stringify(data))));
@@ -185,7 +186,7 @@ module.exports = class {
       censoredData[i].id = entries[i].id;
       censoredData[i].posterId = entries[i].posterId;
     }
-    return Array.isArray(data) ? censoredData : censoredData[0];
+    return dataIsArray ? censoredData : censoredData[0];
   }
 
   async maskanon(data, res) {
