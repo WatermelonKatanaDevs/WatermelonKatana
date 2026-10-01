@@ -6,6 +6,7 @@ const cldir = __dirname;
 const formTokens = new Map();
 
 exports.adminAuth = (req, res, next) => {
+  if (req.get('X-From-Emulator')) return res.status(403).sendFile(cldir + "/403.html");
   const token = req.cookies.jwt;
   if (token) {
     jwt.verify(token, jwtSecret, (err, decodedToken) => {
@@ -26,6 +27,7 @@ exports.adminAuth = (req, res, next) => {
 };
 
 exports.userAuth = (req, res, next) => {
+  if (req.get('X-From-Emulator')) return res.status(403).sendFile(cldir + "/403.html");
   const token = req.cookies.jwt;
   if (token) {
     jwt.verify(token, jwtSecret, (err, decodedToken) => {
@@ -42,6 +44,11 @@ exports.userAuth = (req, res, next) => {
 };
 
 exports.checkAuth = (req, res, next) => {
+  if (req.get('X-From-Emulator')) {
+    res.locals.userToken = false;
+    next();
+    return;
+  }
   const token = req.cookies.jwt;
   if (token) {
     jwt.verify(token, jwtSecret, (err, decodedToken) => {
