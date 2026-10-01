@@ -190,17 +190,17 @@ module.exports = class {
 
   async maskanon(data, res) {
   const admin = isadmin(res.locals.userToken?.role);
-  const viewerid = res.locals.userToken?.id ? String(res.locals.userToken.id) : null;
+  const viewerid = res.locals.userToken?.id ? res.locals.userToken.id : null;
   var entries = [].concat(data);
   var ids = new Set();
   for (const e of entries) {
-    if (e && e.posterId) ids.add(String(e.posterId));
-    if (e && Array.isArray(e.comments)) for (const c of e.comments) if (c && c.posterId) ids.add(String(c.posterId));
+    if (e && e.posterId) ids.add(e.posterId);
+    if (e && Array.isArray(e.comments)) for (const c of e.comments) if (c && c.posterId) ids.add(c.posterId);
   }
   if (ids.size === 0) return data;
   var users = await Users.find({ _id: { $in: [...ids] } });
   var userMap = {};
-  for (const u of users) map[u._id] = u;
+  for (const u of users) userMap[u._id] = u;
   var resolve = (obj) => {
     if (!obj?.posterId) { return }
     var u = userMap[obj.posterId];
