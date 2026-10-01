@@ -9,21 +9,17 @@
   <style>
     html,body { margin:0; width:100%; height:100%; overflow:hidden; }
     #editorFrame { position:fixed; top:2.5em; left:0; width:100vw; height:calc(100vh - 2.5em); border:0; display:block; }
-    /* .editor-exit { position:fixed; left:20px; top:20px; z-index:1100; padding:10px 18px; border-radius:999px; text-decoration:none; background:var(--palette-button-tint,#333); color:var(--palette-button-textcolor,#fff); box-shadow:0 4px 14px rgba(0,0,0,.25); font-weight:bold; } */
   </style>
 </head>
 <body>
   <script src="/scripts/script.js"></script>
   <script src="/scripts/navbar.js"></script>
   <iframe id="editorFrame" src="EDITOR_SRC" allow="fullscreen; clipboard-read; clipboard-write"></iframe>
-  <!-- <a class="editor-exit" href="EXIT_URL">Exit</a> -->
   <script>
-    const pid = location.path[3];
     const frame = document.getElementById("editorFrame");
-    //frame.addEventListener('DOMContentLoaded',function(){
     frame.addEventListener('load',function(){
       const framedoc = frame.contentDocument;
-      framedoc.getElementsByClassName("toolbar-left")[0].innerHTML = `<button onclick="window.top.location.href='/project/${pid}'">Exit</Button>`;
+      framedoc.getElementsByClassName("toolbar-left")[0].innerHTML = `<button onclick="window.top.location.href='EXIT_URL'">Exit</Button>`;
       framedoc.getElementById("saveProjectBtn").outerHTML = '';
       framedoc.getElementById("saveZipBtn").outerHTML = '';
       
@@ -102,8 +98,6 @@ button.primary:hover:not(:disabled) { background: #02db97 !important;; border-co
 
 #tree li.selected-file { background: #003314; }
 #tree li.selected-file:hover:not(:has(li:hover)) { background: #014d1e; }
-
-
       `;
       framedoc.body.appendChild(style);
     });

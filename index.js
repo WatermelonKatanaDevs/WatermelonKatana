@@ -74,7 +74,6 @@ app.use(express.static(__dirname + "/Assets"));
 
 // Add Editor
 app.use("/editor", express.static(__dirname + "/Editor"));
-app.get("/editor", (req, res) => res.sendFile(__dirname + "/Editor/index.html"));
 
 /**
  * Initialize TurboWarp with static dependencies
@@ -143,6 +142,17 @@ function sendEditorForbidden(res) {
   return res.status(403).sendFile(__dirname + "/Middleware/403.html");
 }
 
+app.get("/editor", async (req, res) => {
+  try {
+    const project = await Projects.findOne({ _id: req.params.id });
+    const src = "/editor/index.html" ;
+    sendFileReplace(res, "./Pages/editor/project.html", s => s.replace("EDITOR_SRC", src).replace("EXIT_URL", "/"));
+  } catch (e) {
+    console.error(e);
+    res.status(404).sendFile(cldir + "/404.html");
+  }
+});
+
 app.get("/editor/project/:id/deployment", checkAuth, async (req, res) => {
   try {
     const project = await Projects.findOne({ _id: req.params.id });
@@ -166,7 +176,7 @@ app.get("/editor/project/:id", userAuth, async (req, res) => {
     const project = await Projects.findOne({ _id: req.params.id });
     const tok = res.locals.userToken;
     if (!project || !project.editorProject || (project.posterId !== tok.id && !isadmin(tok.role))) return sendEditorForbidden(res);
-    const src = "/editor?github=" + encodeURIComponent(project.editorRepository);
+    const src = "/editor/index.html?github=" + encodeURIComponent(project.editorRepository);
     sendFileReplace(res, "./Pages/editor/project.html", s => s.replace("EDITOR_SRC", src).replace("EXIT_URL", "/project/" + project._id).replace("<title>Editor | WatermelonKatana</title>", `<title>${makeLiteralChars(project.title)} | Editor</title>`));
   } catch (e) {
     console.error(e);
