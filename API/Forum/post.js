@@ -204,6 +204,7 @@ module.exports = class {
   var resolve = (obj) => {
     // if (!obj?.posterId) { return }
     var u = userMap[obj.posterId];
+    console.log(u.avatar)
     if (!admin && obj.anon) {
       obj.poster = (u && u.anonname) || ("anon-" + obj.posterId.slice(-4));
       obj.authoravatar = "/images/anon_pfp.png";
