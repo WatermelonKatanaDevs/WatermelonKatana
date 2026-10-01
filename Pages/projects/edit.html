@@ -21,8 +21,14 @@
       <br/>
       <label for="name">Name</label><br/>
       <input type="text" id="name" required/><br/>
-      <label for="link">Link</label><br/>
-      <input type="text" id="link" required/><br/>
+      <div id="editorInfo" style="display:none;">
+        <b>Node Editor project</b><br/>
+        <span id="editorRepository"></span><br/>
+      </div>
+      <div id="linkField">
+        <label for="link">Link</label><br/>
+        <input type="text" id="link" required/><br/>
+      </div>
       <label for="desc">Description</label><br/>
       <textarea id="desc"></textarea><br/>
       <label for="thumb">Thumbnail</label><br/>
@@ -52,6 +58,11 @@
       const form = document.querySelector("form");
       const name = document.querySelector("#name");
       const link = document.querySelector("#link");
+      const linkField = document.querySelector("#linkField");
+      const editorInfo = document.querySelector("#editorInfo");
+      const editorRepositoryEl = document.querySelector("#editorRepository");
+      let editorProject = false;
+      let editorRepository = "";
       const desc = document.querySelector("#desc");
       const thumb = document.querySelector("#thumb");
       const storage = document.querySelector('#storage');
@@ -85,11 +96,19 @@
         const data = await res.json();
         name.value = data.title;
         link.value = data.link;
+        editorProject = !!data.editorProject;
+        editorRepository = data.editorRepository || "";
+        if (editorProject) {
+          linkField.style.display = "none";
+          link.required = false;
+          editorInfo.style.display = "";
+          editorRepositoryEl.textContent = editorRepository || data.link || "";
+        }
         desc.value = data.content;
         thumb.src = data.thumbnail || "";
         thumb.value = data.thumbnail || "";
         // data only gets fetched once it will not try to grab other projects data if updated
-        if(isCDOStorage(link.value)) {
+        if(!editorProject && isCDOStorage(link.value)) {
           storage.textContent = "fetching data.... please wait"
           document.getElementById("storageContainer").style.display = "";
           getCDOStorage(link.value).then(json => {
@@ -116,7 +135,7 @@
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
         display.textContent = "";
-        if (!link.value.match(/^https?:\/\/[^"]+$/)) 
+        if (!editorProject && !link.value.match(/^https?:\/\/[^"]+$/)) 
           return (display.textContent = "Link is not a vaild URL");
         if (thumb.value && !thumb.value.match(/^https?:\/\/[^"]+$/) && !thumb.value.match(/^\/api\/media\/[^"]+$/)) 
           return display.textContent = 'Thumbnail is not a vaild URL';
@@ -130,13 +149,15 @@
             method: "PUT",
             body: JSON.stringify({
               title: name.value,
-              link: link.value,
+              link: editorProject ? editorRepository : link.value,
               content: desc.value,
               thumbnail: thumb.value,
               tags: taglist,
               mature: mature.checked,
               hidden: hidden.checked,
               privateRecipients: [],
+              editorProject,
+              editorRepository,
             }),
             headers: { "Content-Type": "application/json" },
           });
@@ -145,7 +166,7 @@
             return (display.textContent =
               data.message + ". " + (data.error ? data.error : ""));
           }
-          await populateCDOStorage(link.value, storage.value, true);
+          if (!editorProject) await populateCDOStorage(link.value, storage.value, true);
           location.assign("/project/" + data.id);
         } catch (err) {
           console.error(err.message);

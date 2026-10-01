@@ -10,6 +10,7 @@
   <script src="/scripts/script.js"></script>
   <script src="/scripts/EmojiPicker.js"></script>
   <script src="/scripts/markdowntextbox.js"></script>
+  <script src="/editor/editor/github.js"></script>
 </head>
 
 <body>
@@ -34,11 +35,14 @@
       <span class="checkbox"></span>
     </label><br>
     <div id="editorGithub" style="display:none;">
-      <button type="button" id="chooseGithub">Sign in with GitHub / Choose repository</button>
-      <span id="githubSelection">No repository selected</span>
+      <button type="button" id="githubSignIn">Sign in with GitHub</button>
+      <select id="githubRepo" style="display:none;"><option value="">Choose a GitHub repository</option></select>
+      <span id="githubSelection"></span>
     </div>
-    <label for="link">Link</label><br>
-    <input type="text" id="link" required><br>
+    <div id="linkField">
+      <label for="link">Link</label><br>
+      <input type="text" id="link" required><br>
+    </div>
     <label for="desc">Description</label><br>
     <textarea id="desc"></textarea><br>
     <label for="thumb">Thumbnail</label><br>
@@ -67,12 +71,14 @@
     const form = document.querySelector('form');
     const name = document.querySelector('#name');
     const link = document.querySelector('#link');
+    const linkField = document.querySelector('#linkField');
     const editorProject = document.querySelector('#editorProject');
     const editorGithub = document.querySelector('#editorGithub');
-    const chooseGithub = document.querySelector('#chooseGithub');
+    const githubSignIn = document.querySelector('#githubSignIn');
+    const githubRepo = document.querySelector('#githubRepo');
     const githubSelection = document.querySelector('#githubSelection');
     let selectedGithub = null;
-    let manualLink = link.value;
+    let manualLink = '';
     const desc = document.querySelector('#desc');
     const thumb = document.querySelector('#thumb');
     const storage = document.querySelector('#storage');
@@ -81,39 +87,117 @@
     const hidden = document.querySelector('#hidden');
     const display = document.querySelector('.error');
 
+    async function githubConfig() {
+      await fetch('/editor/workers.json',{cache:'no-store'}).then(async r => {
+        if (!r.ok) throw new Error(`Failed to load GitHub authentication configuration (${r.status}).`);
+        window.WorkerConfig = await r.json();
+      });
+      await window.GitHubService?.init?.();
+      if (!window.GitHubService) throw new Error('GitHub support is unavailable.');
+      return window.GitHubService;
+    }
+    function b64url(bytes) {
+      let binary = '';
+      for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, Math.min(i + 0x8000, bytes.length)));
+      return btoa(binary).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/g,'');
+    }
+    function randomString(bytes = 32) {
+      const data = new Uint8Array(bytes);
+      crypto.getRandomValues(data);
+      return b64url(data);
+    }
+    async function signInWithGitHub() {
+      const worker = String(window.WorkerConfig?.github || '').trim().replace(/\/$/,'');
+      if (!worker) throw new Error('GitHub authentication is not configured.');
+      const verifier = randomString(48);
+      const state = randomString(24);
+      const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+      const challenge = b64url(new Uint8Array(hash));
+      localStorage.setItem('editor.github.oauth.pending', JSON.stringify({state, verifier, createdAt:Date.now()}));
+      const redirect = new URL(location.href);
+      redirect.search = editorProject.checked ? '?editor=1' : '';
+      redirect.hash = '';
+      const url = new URL(worker + '/login');
+      url.searchParams.set('state', state);
+      url.searchParams.set('redirect_uri', redirect.href);
+      url.searchParams.set('code_challenge', challenge);
+      url.searchParams.set('code_challenge_method', 'S256');
+      location.assign(url.href);
+    }
+    function renderGithubSelection() {
+      const repo = selectedGithub;
+      githubSelection.textContent = repo ? repo.fullName : '';
+      githubSignIn.textContent = repo ? 'Change GitHub account' : 'Sign in with GitHub';
+    }
+    async function loadGithubRepositories() {
+      const github = await githubConfig();
+      if (!github.isSignedIn()) {
+        githubRepo.style.display = 'none';
+        githubRepo.innerHTML = '<option value="">Choose a GitHub repository</option>';
+        githubSignIn.hidden = false;
+        return;
+      }
+      githubSignIn.hidden = false;
+      githubSignIn.textContent = 'Change GitHub account';
+      const user = github.getUser?.();
+      const repos = (await github.listRepositories()).filter(repo => !user?.login || repo.owner.toLowerCase() === String(user.login).toLowerCase());
+      githubRepo.innerHTML = '<option value="">Choose a GitHub repository</option>' + repos.map((repo,i) => `<option value="${i}">${escapeHTML(repo.fullName)}${repo.private ? ' (Private)' : ''}</option>`).join('');
+      githubRepo.style.display = '';
+      githubRepo._repos = repos;
+      if (selectedGithub) {
+        const index = repos.findIndex(repo => repo.fullName === selectedGithub.fullName);
+        githubRepo.value = index >= 0 ? String(index) : '';
+      }
+    }
+    function escapeHTML(value) { return String(value ?? '').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+
     link.onchange = () => {
       if (editorProject.checked) return;
-      document.getElementById("storageContainer").style.display = isCDOStorage(link.value) ? "": "none";
-    }
-
-    editorProject.onchange = () => {
+      document.getElementById('storageContainer').style.display = isCDOStorage(link.value) ? '' : 'none';
+    };
+    async function applyEditorProjectMode(enabled) {
+      editorProject.checked = !!enabled;
       if (editorProject.checked) {
         manualLink = link.value;
-        editorGithub.style.display = "";
-        link.readOnly = true;
-        link.value = selectedGithub?.htmlUrl || "";
-        document.getElementById("storageContainer").style.display = "none";
+        linkField.style.display = 'none';
+        link.required = false;
+        editorGithub.style.display = '';
+        document.getElementById('storageContainer').style.display = 'none';
+        try { await loadGithubRepositories(); } catch (e) { display.textContent = e?.message || String(e); }
       } else {
-        editorGithub.style.display = "none";
+        editorGithub.style.display = 'none';
+        linkField.style.display = '';
+        link.required = true;
         link.readOnly = false;
         link.value = manualLink;
         link.onchange();
       }
+    }
+    editorProject.onchange = () => applyEditorProjectMode(editorProject.checked);
+    githubSignIn.onclick = async () => {
+      try {
+        display.textContent = '';
+        await signInWithGitHub();
+      } catch (e) {
+        display.textContent = e?.message || String(e);
+      }
+    };
+    githubRepo.onchange = () => {
+      const repos = githubRepo._repos || [];
+      selectedGithub = repos[Number(githubRepo.value)] || null;
+      githubSelection.textContent = selectedGithub?.fullName || '';
+      if (selectedGithub) link.value = selectedGithub.htmlUrl || `https://github.com/${selectedGithub.fullName}`;
     };
 
-    chooseGithub.onclick = () => {
-      const popup = window.open('/editor/github-picker', 'wk-github-picker', 'popup,width=620,height=760,resizable=yes,scrollbars=yes');
-      if (!popup) display.textContent = 'Please allow popups to choose a GitHub repository.';
-    };
-
-    window.addEventListener('message', event => {
-      if (event.origin !== location.origin || event.data?.type !== 'wk-github-repository-selected') return;
-      selectedGithub = event.data.repository || null;
-      if (!selectedGithub?.fullName) return;
-      githubSelection.textContent = selectedGithub.fullName;
-      link.value = selectedGithub.htmlUrl || `https://github.com/${selectedGithub.fullName}`;
-      display.textContent = '';
-    });
+    (async () => {
+      try {
+        await githubConfig();
+        const params = new URLSearchParams(location.search);
+        if (params.get('editor') === '1') await applyEditorProjectMode(true);
+      } catch (e) {
+        if (new URLSearchParams(location.search).get('editor') === '1') display.textContent = e?.message || String(e);
+      }
+    })();
 
     markdownTextbox('#desc');
 
@@ -138,7 +222,7 @@
       display.textContent = '';
       if (editorProject.checked && !selectedGithub)
         return (display.textContent = "Choose a GitHub repository first");
-      if (!link.value.match(/^https?:\/\/[^"]+$/))
+      if (!editorProject.checked && !link.value.match(/^https?:\/\/[^"]+$/))
         return (display.textContent = "Link is not a vaild URL");
       if (thumb.value && !thumb.value.match(/^https?:\/\/[^"]+$/) && !thumb.value.match(/^\/api\/media\/[^"]+$/))
         return display.textContent = 'Thumbnail is not a vaild URL';
@@ -153,7 +237,7 @@
           method: 'POST',
           body: JSON.stringify({
             title: name.value,
-            link: link.value,
+            link: editorProject.checked ? (selectedGithub?.htmlUrl || link.value) : link.value,
             content: desc.value,
             thumbnail: thumb.value,
             tags: taglist,
