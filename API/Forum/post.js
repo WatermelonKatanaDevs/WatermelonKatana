@@ -172,14 +172,13 @@ module.exports = class {
   };
 
   async censor(data, res) {
-    data = JSON.parse(JSON.stringify(data));
     if (res.locals.userToken) {
       const uid = res.locals.userToken.id;
       var user = await Users.findOne({ _id: uid });
-      if (user && user.mature) return data;
+      if (user && user.mature) return JSON.parse(JSON.stringify(data));
     }
     var entries = [].concat(data);
-    var censoredData = [].concat(Profanity.censorText(data));
+    var censoredData = [].concat(JSON.parse(Profanity.censorText(JSON.stringify(data))));
     for (var i = 0; i < censoredData.length; i++) {
       censoredData[i].link = entries[i].link;
       censoredData[i].thumbnail = entries[i].thumbnail;
