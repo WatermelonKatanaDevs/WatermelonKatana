@@ -87,7 +87,8 @@
                 scratch: "Scratch",
                 embed: "Unknown",
                 wk: "Watermelon Katana",
-                swf: "Flash"
+                swf: "Flash",
+                editor: "Node Editor"
               }[data.platform]
             }</a>
             <br>
@@ -95,6 +96,7 @@
             <b>Score:</b> <span id="score">${data.score}</span>
             <b>Views:</b> <span id="views">${data.views}</span>
             ${await createActionButton("edit", `onclick="window.location.href += '/edit'"`)}
+            ${data.editorProject ? await createActionButton("editor", `onclick="window.location.href = '/editor/project/${data.id}'"`, "edit") : ""}
             ${await createDeleteButton("project", "search")}
             </div>
             <br>
@@ -109,6 +111,11 @@
 
           const game = document.querySelector("#game");
           switch (data.platform) {
+            case "editor":
+              game.src = location.origin + "/editor/project/" + pid + "/deployment";
+              game.style.width = "100vw";
+              game.style.height = "calc(100vh - 2.5em)";
+              break;
             case "cdo":
               //do magic
               game.src = location.origin + "/turbowarp?u=" + data.link;

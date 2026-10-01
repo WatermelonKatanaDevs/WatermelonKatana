@@ -138,6 +138,43 @@ app.get("/gamejams", (req, res) => res.sendFile(cldir + "/projects/gamejams.html
 app.get("/search", (req, res) => res.sendFile(cldir + "/projects/search.html")); // Search page
 app.get("/publish", userAuth, makeFormToken, (req, res) => res.sendFile(cldir + "/projects/publish.html")); // Publish page, users only
 const Projects = require("./Database/model/Projects");
+
+function sendEditorForbidden(res) {
+  return res.status(403).sendFile(__dirname + "/Middleware/403.html");
+}
+
+app.get("/editor/project/:id/deployment", checkAuth, async (req, res) => {
+  try {
+    const project = await Projects.findOne({ _id: req.params.id });
+    if (!project || !project.editorProject || !project.editorRepository) return res.status(404).sendFile(cldir + "/404.html");
+    const tok = res.locals.userToken;
+    const viewer = tok ? await Users.findOne({ _id: String(tok.id) }) : null;
+    const owner = !!tok && (project.posterId === tok.id || isadmin(tok.role));
+    if (project.hidden && !owner) return res.status(404).sendFile(cldir + "/404.html");
+    if (project.privateRecipients?.length && !owner && !(tok && project.privateRecipients.includes(tok.id))) return sendEditorForbidden(res);
+    if (project.mature && !owner && !viewer?.mature) return sendEditorForbidden(res);
+    const src = "/editor/deployment.html?github=" + encodeURIComponent(project.editorRepository);
+    sendFileReplace(res, "./Pages/editor/deployment.html", s => s.replace("DEPLOYMENT_SRC", src).replace("<title>Project</title>", `<title>${makeLiteralChars(project.title)}</title>`));
+  } catch (e) {
+    console.error(e);
+    res.status(404).sendFile(cldir + "/404.html");
+  }
+});
+
+app.get("/editor/project/:id", userAuth, async (req, res) => {
+  try {
+    const project = await Projects.findOne({ _id: req.params.id });
+    const tok = res.locals.userToken;
+    if (!project || !project.editorProject || (project.posterId !== tok.id && !isadmin(tok.role))) return sendEditorForbidden(res);
+    const src = "/editor?github=" + encodeURIComponent(project.editorRepository);
+    sendFileReplace(res, "./Pages/editor/project.html", s => s.replace("EDITOR_SRC", src).replace("EXIT_URL", "/project/" + project._id).replace("<title>Editor | WatermelonKatana</title>", `<title>${makeLiteralChars(project.title)} | Editor</title>`));
+  } catch (e) {
+    console.error(e);
+    res.status(404).sendFile(cldir + "/404.html");
+  }
+});
+
+app.get("/editor/github-picker", userAuth, (req, res) => res.sendFile(cldir + "/editor/github-picker.html"));
 app.get("/project/:id", checkAuth, makeFormToken, async (req, res) => {
   // Project page with dynamic project ID
   var proj = await Projects.findOne({ _id: req.params.id });

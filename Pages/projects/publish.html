@@ -29,6 +29,14 @@
     <div class="error" style="background-color: red;"></div><br>
     <label for="name">Name</label><br>
     <input type="text" id="name" required /><br>
+    <label for="editorProject">Publish with Node Editor
+      <input type="checkbox" id="editorProject">
+      <span class="checkbox"></span>
+    </label><br>
+    <div id="editorGithub" style="display:none;">
+      <button type="button" id="chooseGithub">Sign in with GitHub / Choose repository</button>
+      <span id="githubSelection">No repository selected</span>
+    </div>
     <label for="link">Link</label><br>
     <input type="text" id="link" required><br>
     <label for="desc">Description</label><br>
@@ -59,6 +67,12 @@
     const form = document.querySelector('form');
     const name = document.querySelector('#name');
     const link = document.querySelector('#link');
+    const editorProject = document.querySelector('#editorProject');
+    const editorGithub = document.querySelector('#editorGithub');
+    const chooseGithub = document.querySelector('#chooseGithub');
+    const githubSelection = document.querySelector('#githubSelection');
+    let selectedGithub = null;
+    let manualLink = link.value;
     const desc = document.querySelector('#desc');
     const thumb = document.querySelector('#thumb');
     const storage = document.querySelector('#storage');
@@ -68,8 +82,38 @@
     const display = document.querySelector('.error');
 
     link.onchange = () => {
+      if (editorProject.checked) return;
       document.getElementById("storageContainer").style.display = isCDOStorage(link.value) ? "": "none";
     }
+
+    editorProject.onchange = () => {
+      if (editorProject.checked) {
+        manualLink = link.value;
+        editorGithub.style.display = "";
+        link.readOnly = true;
+        link.value = selectedGithub?.htmlUrl || "";
+        document.getElementById("storageContainer").style.display = "none";
+      } else {
+        editorGithub.style.display = "none";
+        link.readOnly = false;
+        link.value = manualLink;
+        link.onchange();
+      }
+    };
+
+    chooseGithub.onclick = () => {
+      const popup = window.open('/editor/github-picker', 'wk-github-picker', 'popup,width=620,height=760,resizable=yes,scrollbars=yes');
+      if (!popup) display.textContent = 'Please allow popups to choose a GitHub repository.';
+    };
+
+    window.addEventListener('message', event => {
+      if (event.origin !== location.origin || event.data?.type !== 'wk-github-repository-selected') return;
+      selectedGithub = event.data.repository || null;
+      if (!selectedGithub?.fullName) return;
+      githubSelection.textContent = selectedGithub.fullName;
+      link.value = selectedGithub.htmlUrl || `https://github.com/${selectedGithub.fullName}`;
+      display.textContent = '';
+    });
 
     markdownTextbox('#desc');
 
@@ -92,6 +136,8 @@
       e.preventDefault();
       if( form.isSubmitted ) { return prompt("you have already submitted a request please wait") }
       display.textContent = '';
+      if (editorProject.checked && !selectedGithub)
+        return (display.textContent = "Choose a GitHub repository first");
       if (!link.value.match(/^https?:\/\/[^"]+$/))
         return (display.textContent = "Link is not a vaild URL");
       if (thumb.value && !thumb.value.match(/^https?:\/\/[^"]+$/) && !thumb.value.match(/^\/api\/media\/[^"]+$/))
@@ -114,6 +160,8 @@
             mature: mature.checked,
             hidden: hidden.checked,
             privateRecipients: [],
+            editorProject: editorProject.checked,
+            editorRepository: selectedGithub?.htmlUrl || (editorProject.checked ? link.value : ""),
           }),
           headers: { 'Content-Type': 'application/json' }
         });

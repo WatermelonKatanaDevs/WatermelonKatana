@@ -2,6 +2,18 @@ const Users = require("../../Database/model/Users");
 const { isadmin } = require("../../util/js/roles");
 var PostAPI = require("../Forum/post.js");
 
+function normalizeGithubRepository(value) {
+  try {
+    const url = new URL(String(value || "").trim());
+    if (!/^https?:$/i.test(url.protocol) || !/^(www\.)?github\.com$/i.test(url.hostname)) return "";
+    const parts = url.pathname.split("/").filter(Boolean);
+    if (parts.length !== 2 || parts.some(part => !/^[A-Za-z0-9_.-]+$/.test(part))) return "";
+    return `https://github.com/${parts[0]}/${parts[1]}`;
+  } catch (_) {
+    return "";
+  }
+}
+
 module.exports = class extends PostAPI {
   constructor(model) {
     super(model,"projects")
@@ -41,7 +53,7 @@ processLink(link,thumbnail) {
 }
   
 async publish(req, res, next) {
-  var { title, link, content, thumbnail, tags, mature, hidden, privateRecipients, platform } = req.body;
+  var { title, link, content, thumbnail, tags, mature, hidden, privateRecipients, platform, editorProject, editorRepository } = req.body;
   console.log(title,link,thumbnail);
   try {
     const uid = res.locals.userToken.id;
@@ -50,6 +62,17 @@ async publish(req, res, next) {
       message: "Project not successfully published",
       error: "User not found",
     });
+    editorProject = !!editorProject;
+    if (editorProject) {
+      editorRepository = normalizeGithubRepository(editorRepository || link);
+      if (!editorRepository) return res.status(400).json({
+        message: "Project not successfully published",
+        error: "A valid GitHub repository is required for an Editor project",
+      });
+      link = editorRepository;
+    } else {
+      editorRepository = "";
+    }
     if (!link.match(/^https?:\/\/[^\s"'<>]+$/)) return res.status(400).json({
       message: "Project not successfully published",
       error: "Link is not a valid url",
@@ -68,7 +91,9 @@ async publish(req, res, next) {
       mature,
       hidden,
       privateRecipients,
-      platform: e.platform,
+      platform: editorProject ? "editor" : e.platform,
+      editorProject,
+      editorRepository,
       postedAt: Date.now(),
       activeAt: Date.now(),
       posterId: user.id,
@@ -95,7 +120,7 @@ async publish(req, res, next) {
 };
 
 async update(req, res, next) {
-  var { title, link, content, thumbnail, tags, mature, hidden, privateRecipients, platform } = req.body;
+  var { title, link, content, thumbnail, tags, mature, hidden, privateRecipients, platform, editorProject, editorRepository } = req.body;
   console.log(title,link,thumbnail);
   try {
     const pid = req.params.id;
@@ -108,6 +133,17 @@ async update(req, res, next) {
     if (project.posterId !== user.id && !isadmin(user.role)) return res.status(403).json({
       message: "Not Authorized. You do not own this project",
     });
+    editorProject = editorProject === undefined ? !!project.editorProject : !!editorProject;
+    if (editorProject) {
+      editorRepository = normalizeGithubRepository(editorRepository || project.editorRepository || link);
+      if (!editorRepository) return res.status(400).json({
+        message: "Project not successfully updated",
+        error: "A valid GitHub repository is required for an Editor project",
+      });
+      link = editorRepository;
+    } else {
+      editorRepository = "";
+    }
     if (!link.match(/^https?:\/\/[^\s"'<>]+$/)) return res.status(400).json({
       message: "Project not successfully updated",
       error: "Link is not a valid url",
@@ -125,7 +161,9 @@ async update(req, res, next) {
     project.mature = mature;
     project.hidden = hidden;
     project.privateRecipients = privateRecipients;
-    project.platform = e.platform;
+    project.platform = editorProject ? "editor" : e.platform;
+    project.editorProject = editorProject;
+    project.editorRepository = editorRepository;
     project.activeAt = Date.now();
     await project.save();
     res.status(201).json({

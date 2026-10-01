@@ -59,6 +59,14 @@ const ProjectSchema = new Mongoose.Schema({
     type: String,
     default: "embed",
   },
+  editorProject: {
+    type: Boolean,
+    default: false,
+  },
+  editorRepository: {
+    type: String,
+    default: "",
+  },
   postedAt: {
     type: Number,
     required: true,
@@ -102,6 +110,8 @@ const ProjectSchema = new Mongoose.Schema({
       container.gamejam = this.gamejam;
       container.comments = this.comments;
       container.platform = this.platform;
+      container.editorProject = this.editorProject;
+      container.editorRepository = this.editorRepository;
       container.postedAt = this.postedAt;
       container.activeAt = this.activeAt;
       container.id = this._id;
