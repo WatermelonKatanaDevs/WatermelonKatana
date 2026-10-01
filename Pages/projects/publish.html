@@ -11,6 +11,14 @@
   <script src="/scripts/EmojiPicker.js"></script>
   <script src="/scripts/markdowntextbox.js"></script>
   <script src="/editor/editor/github.js"></script>
+  <style>
+    #githubRepoPicker { margin: 6px 0 10px; }
+    #githubSearch { width: min(100%, 520px); margin: 10px 0; }
+    #githubRepoList { display: flex; flex-direction: column; gap: 6px; max-width: 520px; max-height: 260px; overflow-y: auto; }
+    .github-repo-option { width: 100%; justify-content: space-between; align-items: center; text-align: left; border-radius: 5px; padding: 9px 12px; font-weight: normal; }
+    .github-repo-option span:last-child { opacity: .65; font-size: .9em; margin-left: 12px; }
+    #githubSelection { display: block; margin: 6px 0 10px; }
+  </style>
 </head>
 
 <body>
@@ -36,7 +44,10 @@
     </label><br>
     <div id="editorGithub" style="display:none;">
       <button type="button" id="githubSignIn">Sign in with GitHub</button>
-      <select id="githubRepo" style="display:none;"><option value="">Choose a GitHub repository</option></select>
+      <div id="githubRepoPicker" style="display:none;">
+        <input type="text" id="githubSearch" placeholder="Search your GitHub repositories">
+        <div id="githubRepoList"></div>
+      </div>
       <span id="githubSelection"></span>
     </div>
     <div id="linkField">
@@ -75,9 +86,12 @@
     const editorProject = document.querySelector('#editorProject');
     const editorGithub = document.querySelector('#editorGithub');
     const githubSignIn = document.querySelector('#githubSignIn');
-    const githubRepo = document.querySelector('#githubRepo');
+    const githubRepoPicker = document.querySelector('#githubRepoPicker');
+    const githubSearch = document.querySelector('#githubSearch');
+    const githubRepoList = document.querySelector('#githubRepoList');
     const githubSelection = document.querySelector('#githubSelection');
     let selectedGithub = null;
+    let githubRepos = [];
     let manualLink = '';
     const desc = document.querySelector('#desc');
     const thumb = document.querySelector('#thumb');
@@ -126,28 +140,47 @@
     }
     function renderGithubSelection() {
       const repo = selectedGithub;
-      githubSelection.textContent = repo ? repo.fullName : '';
+      githubSelection.textContent = repo ? `Selected: ${repo.fullName}` : '';
       githubSignIn.textContent = repo ? 'Change GitHub account' : 'Sign in with GitHub';
+    }
+    function renderGithubRepoList() {
+      const query = githubSearch.value.trim().toLowerCase();
+      const filtered = githubRepos.filter(repo => {
+        const name = String(repo.fullName || '').toLowerCase();
+        const owner = String(repo.owner || '').toLowerCase();
+        return !query || name.includes(query) || owner.includes(query);
+      });
+      if (!filtered.length) {
+        githubRepoList.innerHTML = '<div style="padding:10px 0;">No repositories found.</div>';
+        return;
+      }
+      githubRepoList.innerHTML = filtered.map((repo, index) => `<button type="button" class="github-repo-option" data-repo-index="${githubRepos.indexOf(repo)}"><span>${escapeHTML(repo.fullName)}</span>${repo.private ? '<span>Private</span>' : ''}</button>`).join('');
+      githubRepoList.querySelectorAll('[data-repo-index]').forEach(button => {
+        button.onclick = () => {
+          selectedGithub = githubRepos[Number(button.dataset.repoIndex)] || null;
+          renderGithubSelection();
+          renderGithubRepoList();
+        };
+      });
     }
     async function loadGithubRepositories() {
       const github = await githubConfig();
+      githubRepoPicker.style.display = 'none';
       if (!github.isSignedIn()) {
-        githubRepo.style.display = 'none';
-        githubRepo.innerHTML = '<option value="">Choose a GitHub repository</option>';
+        githubSearch.value = '';
+        githubRepos = [];
+        githubRepoList.innerHTML = '';
         githubSignIn.hidden = false;
+        renderGithubSelection();
         return;
       }
       githubSignIn.hidden = false;
       githubSignIn.textContent = 'Change GitHub account';
       const user = github.getUser?.();
-      const repos = (await github.listRepositories()).filter(repo => !user?.login || repo.owner.toLowerCase() === String(user.login).toLowerCase());
-      githubRepo.innerHTML = '<option value="">Choose a GitHub repository</option>' + repos.map((repo,i) => `<option value="${i}">${escapeHTML(repo.fullName)}${repo.private ? ' (Private)' : ''}</option>`).join('');
-      githubRepo.style.display = '';
-      githubRepo._repos = repos;
-      if (selectedGithub) {
-        const index = repos.findIndex(repo => repo.fullName === selectedGithub.fullName);
-        githubRepo.value = index >= 0 ? String(index) : '';
-      }
+      githubRepos = (await github.listRepositories()).filter(repo => !user?.login || repo.owner.toLowerCase() === String(user.login).toLowerCase());
+      githubRepoPicker.style.display = '';
+      renderGithubRepoList();
+      renderGithubSelection();
     }
     function escapeHTML(value) { return String(value ?? '').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
 
@@ -182,12 +215,7 @@
         display.textContent = e?.message || String(e);
       }
     };
-    githubRepo.onchange = () => {
-      const repos = githubRepo._repos || [];
-      selectedGithub = repos[Number(githubRepo.value)] || null;
-      githubSelection.textContent = selectedGithub?.fullName || '';
-      if (selectedGithub) link.value = selectedGithub.htmlUrl || `https://github.com/${selectedGithub.fullName}`;
-    };
+    githubSearch.addEventListener('input', renderGithubRepoList);
 
     (async () => {
       try {

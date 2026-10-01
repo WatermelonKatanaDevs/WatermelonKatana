@@ -113,8 +113,8 @@
           switch (data.platform) {
             case "editor":
               game.src = location.origin + "/editor/project/" + pid + "/deployment";
-              game.style.width = "100vw";
-              game.style.height = "calc(100vh - 2.5em)";
+              game.style.width = "calc(100vw - 30px - 2.5em)";
+              game.style.height = "calc(100vh - 15px - 2.5em)";
               break;
             case "cdo":
               //do magic
