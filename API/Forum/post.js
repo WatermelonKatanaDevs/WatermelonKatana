@@ -179,47 +179,50 @@ module.exports = class {
     }
     var entries = [].concat(data);
     var censoredData = [].concat(JSON.parse(Profanity.censorText(JSON.stringify(data))));
-    for(var i = 0; i < censoredData.length; i++) {
+    for (var i = 0; i < censoredData.length; i++) {
       censoredData[i].link = entries[i].link;
       censoredData[i].thumbnail = entries[i].thumbnail;
       censoredData[i].id = entries[i].id;
       censoredData[i].posterId = entries[i].posterId;
     }
-    return Array.isArray(data) ? censoredData: censoredData[0];
+    return Array.isArray(data) ? censoredData : censoredData[0];
   }
 
   async maskanon(data, res) {
-  const admin = isadmin(res.locals.userToken?.role);
-  const viewerid = res.locals.userToken?.id ? res.locals.userToken.id : null;
-  var entries = [].concat(data);
-  var ids = new Set();
-  for (const e of entries) {
-    if (e && e.posterId) ids.add(e.posterId);
-    if (e && Array.isArray(e.comments)) for (const c of e.comments) if (c && c.posterId) ids.add(c.posterId);
-  }
-  if (ids.size === 0) return data;
-  var users = await Users.find({ _id: { $in: [...ids] } });
-  var userMap = {};
-  for (const u of users) userMap[u._id] = u;
-  var resolve = (obj) => {
-    if (!obj?.posterId) { return }
-    var u = userMap[obj.posterId];
-    if (!admin && obj.anon) {
-      obj.poster = (u && u.anonname) || ("anon-" + obj.posterId.slice(-4));
-      obj.authoravatar = "/images/anon_pfp.png";
-      obj.authorpos = { x: 50, y: 50, zoom: 100 };
-      obj.posterId = viewerid !== obj.posterId ? "anon-" + obj.posterId.slice(-8) : viewerid;
-    } else {
+    const admin = isadmin(res.locals.userToken?.role);
+    const viewerid = res.locals.userToken?.id ? res.locals.userToken.id : null;
+    var entries = [].concat(data);
+    var ids = new Set();
+    for (const e of entries) {
+      if (e && e.posterId) ids.add(e.posterId);
+      if (e && Array.isArray(e.comments)) for (const c of e.comments) if (c && c.posterId) ids.add(c.posterId);
+    }
+    if (ids.size === 0) return data;
+    var users = await Users.find({ _id: { $in: [...ids] } });
+    var userMap = {};
+    for (const u of users) userMap[u._id] = u;
+    var resolve = (obj) => {
+      // if (!obj?.posterId) { return }
+      // var u = userMap[obj.posterId];
+      // if (!admin && obj.anon) {
+      //   obj.poster = (u && u.anonname) || ("anon-" + obj.posterId.slice(-4));
+      //   obj.authoravatar = "/images/anon_pfp.png";
+      //   obj.authorpos = { x: 50, y: 50, zoom: 100 };
+      //   obj.posterId = viewerid !== obj.posterId ? "anon-" + obj.posterId.slice(-8) : viewerid;
+      // } else {
+      //   obj.authoravatar = (u && u.avatar) || "/images/default_pfp.png";
+      //   obj.authorpos = (u && u.avatarpos) || { x: 50, y: 50, zoom: 100 };
+      // }
       obj.authoravatar = (u && u.avatar) || "/images/default_pfp.png";
       obj.authorpos = (u && u.avatarpos) || { x: 50, y: 50, zoom: 100 };
+      return obj;
+    };
+    for (const e of entries) {
+      resolve(e);
+      if (e && Array.isArray(e.comments)) e.comments = e.comments.map(c => { return resolve(c) });
     }
-  };
-  for (const e of entries) {
-    resolve(e);
-    if (e && Array.isArray(e.comments)) e.comments = e.comments.map(c => resolve(c));
+    return Array.isArray(data) ? entries : entries[0];
   }
-  return Array.isArray(data) ? entries : entries[0];
-}
 
   async list(req, res, next) {
     try {
