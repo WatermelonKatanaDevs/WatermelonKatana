@@ -76,10 +76,11 @@
           const postdiv = document.querySelector("#post");
           const res = await fetch("/api/project/data/" + pid);
           const data = await res.json();
+          const link = data.platform == "editor" ? (location.origin + "/editor/project/" + pid + "/deployment") : data.link;
           await createPost(
             postdiv,
             data,`   
-            <b>URL</b> => <a href="${data.link}">${data.link}</a> <br>
+            <b>URL</b> => <a href="${link}">${link}</a> <br>
             <b>Platform</b>: <a href="/search?platform=${data.platform}">${
               {
                 cdo: "code.org",
