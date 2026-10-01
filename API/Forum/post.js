@@ -201,26 +201,28 @@ module.exports = class {
     // var users = await Users.find({ _id: { $in: [...ids] } });
     // var userMap = {};
     // for (const u of users) userMap[u._id] = u;
-    var resolve = async (obj) => {
-      // if (!obj?.posterId) { return }
-      var u = await Users.findOne({_id: obj.posterId});
-      // var u = userMap[obj.posterId];
-      // if (!admin && obj.anon) {
-      //   obj.poster = (u && u.anonname) || ("anon-" + obj.posterId.slice(-4));
-      //   obj.authoravatar = "/images/anon_pfp.png";
-      //   obj.authorpos = { x: 50, y: 50, zoom: 100 };
-      //   obj.posterId = viewerid !== obj.posterId ? "anon-" + obj.posterId.slice(-8) : viewerid;
-      // } else {
-      //   obj.authoravatar = (u && u.avatar) || "/images/default_pfp.png";
-      //   obj.authorpos = (u && u.avatarpos) || { x: 50, y: 50, zoom: 100 };
-      // }
-      obj.authoravatar = u.avatar;
-      obj.authorpos = u.avatarpos;
-      return obj;
+    var resolve = (obj) => {
+      return new Promise(async (res) => {
+        // if (!obj?.posterId) { return }
+        var u = await Users.findOne({_id: obj.posterId});
+        // var u = userMap[obj.posterId];
+        // if (!admin && obj.anon) {
+        //   obj.poster = (u && u.anonname) || ("anon-" + obj.posterId.slice(-4));
+        //   obj.authoravatar = "/images/anon_pfp.png";
+        //   obj.authorpos = { x: 50, y: 50, zoom: 100 };
+        //   obj.posterId = viewerid !== obj.posterId ? "anon-" + obj.posterId.slice(-8) : viewerid;
+        // } else {
+        //   obj.authoravatar = (u && u.avatar) || "/images/default_pfp.png";
+        //   obj.authorpos = (u && u.avatarpos) || { x: 50, y: 50, zoom: 100 };
+        // }
+        obj.authoravatar = u.avatar;
+        obj.authorpos = u.avatarpos;
+        res(obj)
+      })
     };
     for (const e of entries) {
       resolve(e);
-      if (e && Array.isArray(e.comments)) e.comments = e.comments.map(c => { return resolve(c) });
+      if (e && Array.isArray(e.comments)) e.comments = e.comments.map(async c => { return await resolve(c) });
     }
     return Array.isArray(data) ? entries : entries[0];
   }
