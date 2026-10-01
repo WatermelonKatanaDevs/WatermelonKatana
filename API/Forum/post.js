@@ -198,12 +198,13 @@ module.exports = class {
     if (e && Array.isArray(e.comments)) for (const c of e.comments) if (c && c.posterId) ids.add(c.posterId);
   }
   if (ids.size === 0) return data;
-  var users = await Users.find({ _id: { $in: [...ids] } });
-  var userMap = {};
-  for (const u of users) userMap[u._id] = u;
-  var resolve = (obj) => {
-    // if (!obj?.posterId) { return }
-    var u = userMap[obj.posterId];
+  // var users = await Users.find({ _id: { $in: [...ids] } });
+  // var userMap = {};
+  // for (const u of users) userMap[u._id] = u;
+  var resolve = async (obj) => {
+    if (!obj?.posterId) { return }
+    // var u = userMap[obj.posterId];
+    var u = await Users.find({_id: obj.posterId})
     if (!admin && obj.anon) {
       obj.poster = (u && u.anonname) || ("anon-" + obj.posterId.slice(-4));
       obj.authoravatar = "/images/anon_pfp.png";
