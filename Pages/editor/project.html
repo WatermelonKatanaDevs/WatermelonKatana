@@ -16,12 +16,18 @@
   <script src="/scripts/navbar.js"></script>
   <iframe id="editorFrame" src="EDITOR_SRC" allow="fullscreen; clipboard-read; clipboard-write"></iframe>
   <script>
+    const pid = location.path[3];
     const frame = document.getElementById("editorFrame");
     frame.addEventListener('load',function(){
       const framedoc = frame.contentDocument;
-      framedoc.getElementsByClassName("toolbar-left")[0].innerHTML = `<button onclick="window.top.location.href='EXIT_URL'">Exit</Button>`;
-      framedoc.getElementById("saveProjectBtn").outerHTML = '';
-      framedoc.getElementById("saveZipBtn").outerHTML = '';
+      if (pid) {
+        framedoc.getElementsByClassName("toolbar-left")[0].innerHTML = `<a href="/project/${pid}" target="_top"><Button>Exit</Button></a>`;
+        framedoc.getElementById("saveProjectBtn").outerHTML = '';
+        framedoc.getElementById("saveZipBtn").outerHTML = '';
+      } else {
+        let d = framedoc.getElementsByClassName("toolbar-left")[0];
+        d.innerHTML = `<a href="/" target="_top"><Button>Exit</Button></a>` + d.innerHTML;
+      }
       
       var old = frame.contentWindow.__sharedBrowserNetwork._requestObject;
       frame.contentWindow.__sharedBrowserNetwork._requestObject = function(request, ...args) {

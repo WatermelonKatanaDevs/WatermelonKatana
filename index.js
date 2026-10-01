@@ -146,7 +146,7 @@ app.get("/editor", async (req, res) => {
   try {
     const project = await Projects.findOne({ _id: req.params.id });
     const src = "/editor/index.html" ;
-    sendFileReplace(res, "./Pages/editor/project.html", s => s.replace("EDITOR_SRC", src).replace("EXIT_URL", "/"));
+    sendFileReplace(res, "./Pages/editor/project.html", s => s.replace("EDITOR_SRC", src));
   } catch (e) {
     console.error(e);
     res.status(404).sendFile(cldir + "/404.html");
@@ -177,7 +177,7 @@ app.get("/editor/project/:id", userAuth, async (req, res) => {
     const tok = res.locals.userToken;
     if (!project || !project.editorProject || (project.posterId !== tok.id && !isadmin(tok.role))) return sendEditorForbidden(res);
     const src = "/editor/index.html?github=" + encodeURIComponent(project.editorRepository);
-    sendFileReplace(res, "./Pages/editor/project.html", s => s.replace("EDITOR_SRC", src).replace("EXIT_URL", "/project/" + project._id).replace("<title>Editor | WatermelonKatana</title>", `<title>${makeLiteralChars(project.title)} | Editor</title>`));
+    sendFileReplace(res, "./Pages/editor/project.html", s => s.replace("EDITOR_SRC", src).replace("<title>Editor | WatermelonKatana</title>", `<title>${makeLiteralChars(project.title)} | Editor</title>`));
   } catch (e) {
     console.error(e);
     res.status(404).sendFile(cldir + "/404.html");
