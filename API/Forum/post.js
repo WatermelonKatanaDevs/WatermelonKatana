@@ -202,9 +202,8 @@ module.exports = class {
   var userMap = {};
   for (const u of users) userMap[u._id] = u;
   var resolve = (obj) => {
-    // if (!obj?.posterId) { return }
+    if (!obj?.posterId) { return }
     var u = userMap[obj.posterId];
-    console.log(u.avatar)
     if (!admin && obj.anon) {
       obj.poster = (u && u.anonname) || ("anon-" + obj.posterId.slice(-4));
       obj.authoravatar = "/images/anon_pfp.png";
@@ -218,7 +217,7 @@ module.exports = class {
   };
   for (const e of entries) {
     resolve(e);
-    if (e && Array.isArray(e.comments)) e.comments.map(c => resolve(c));
+    if (e && Array.isArray(e.comments)) e.comments = e.comments.map(c => resolve(c));
   }
   return Array.isArray(data) ? entries : entries[0];
 }
