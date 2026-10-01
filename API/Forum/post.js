@@ -204,7 +204,6 @@ module.exports = class {
     var resolve = (obj) => {
       if (!obj?.posterId) { return }
       var u = userMap[obj.posterId];
-      console.log(u)
       if (!admin && obj.anon) {
         obj.poster = (u && u.anonname) || ("anon-" + obj.posterId.slice(-4));
         obj.authoravatar = "/images/anon_pfp.png";
@@ -214,6 +213,7 @@ module.exports = class {
         obj.authoravatar = (u && u.avatar) || "/images/default_pfp.png";
         obj.authorpos = (u && u.avatarpos) || { x: 50, y: 50, zoom: 100 };
       }
+      console.log(obj)
       return obj;
     };
     for (const e of entries) {
