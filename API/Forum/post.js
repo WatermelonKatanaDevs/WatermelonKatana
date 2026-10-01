@@ -216,7 +216,7 @@ module.exports = class {
   };
   for (const e of entries) {
     resolve(e);
-    if (e && Array.isArray(e.comments)) for (const c of e.comments) resolve(c);
+    if (e && Array.isArray(e.comments)) e.comments = e.comments.map(c => resolve(c));
   }
   return Array.isArray(data) ? entries : entries[0];
 }
