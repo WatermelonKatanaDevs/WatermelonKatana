@@ -213,10 +213,11 @@ module.exports = class {
       obj.authoravatar = (u && u.avatar) || "/images/default_pfp.png";
       obj.authorpos = (u && u.avatarpos) || { x: 50, y: 50, zoom: 100 };
     }
+    return obj;
   };
   for (const e of entries) {
     resolve(e);
-    if (e && Array.isArray(e.comments)) e.comments = e.comments.map(c => resolve(c));
+    if (e && Array.isArray(e.comments)) e.comments = e.comments.map(c => {return resolve(c)});
   }
   return Array.isArray(data) ? entries : entries[0];
 }
