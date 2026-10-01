@@ -189,6 +189,7 @@ module.exports = class {
   }
 
   async maskanon(data, res) {
+    data = JSON.parse(JSON.stringify(data));
     const admin = isadmin(res.locals.userToken?.role);
     const viewerid = res.locals.userToken?.id ? res.locals.userToken.id : null;
     var entries = [].concat(data);
