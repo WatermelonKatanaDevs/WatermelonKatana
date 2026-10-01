@@ -182,7 +182,7 @@ module.exports = class {
     for (var i = 0; i < censoredData.length; i++) {
       censoredData[i].link = entries[i].link;
       censoredData[i].thumbnail = entries[i].thumbnail;
-      // censoredData[i].id = entries[i].id;
+      censoredData[i].id = entries[i].id;
       censoredData[i].posterId = entries[i].posterId;
     }
     return Array.isArray(data) ? censoredData : censoredData[0];
@@ -281,7 +281,7 @@ module.exports = class {
         list = await this.model.find(search);
       }
       list = list.map(e => e.pack());
-      list = await this.censor(list, res);
+      // list = await this.censor(list, res);
       list = await this.maskanon(list, res);
       if (noclient == "1" || noclient == "true") {
         list = JSON.parse(JSON.stringify(list).replace(/\</g, "&lt;").replace(/\>/g, "&gt;"));
