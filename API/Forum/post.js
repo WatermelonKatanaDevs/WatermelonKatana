@@ -392,7 +392,7 @@ module.exports = class {
         error: "Private content",
       });
       var data = await this.censor(post.pack(), res);
-      data = await this.maskanon(data, res);
+      // data = await this.maskanon(data, res);
       res.status(200).json(data);
     } catch (err) {
       res.status(401).json({ message: "Not successful", error: err.message });
