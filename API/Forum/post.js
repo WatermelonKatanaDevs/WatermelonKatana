@@ -172,7 +172,7 @@ module.exports = class {
   };
 
   async censor(data, res) {
-    const dataIsArray = Array.isArray(data);
+    const dataIsArray = data instanceof Array;
     if (res.locals.userToken) {
       const uid = res.locals.userToken.id;
       var user = await Users.findOne({ _id: uid });
@@ -196,7 +196,7 @@ module.exports = class {
     var ids = new Set();
     for (const e of entries) {
       if (e && e.posterId) ids.add(e.posterId);
-      if (e && Array.isArray(e.comments)) for (const c of e.comments) if (c && c.posterId) ids.add(c.posterId);
+      if (e && e.comments instanceof Array) for (const c of e.comments) if (c && c.posterId) ids.add(c.posterId);
     }
     if (ids.size === 0) return data;
     var users = await Users.find({ _id: { $in: [...ids] } });
@@ -218,9 +218,9 @@ module.exports = class {
     };
     for (const e of entries) {
       resolve(e);
-      if (e && Array.isArray(e.comments)) e.comments = e.comments.map(c => { return resolve(c) });
+      if (e && e.comments instanceof Array) e.comments = e.comments.map(c => { return resolve(c) });
     }
-    return Array.isArray(data) ? entries : entries[0];
+    return data instanceof Array ? entries : entries[0];
   }
 
   async list(req, res, next) {
