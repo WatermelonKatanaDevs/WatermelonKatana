@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -22,6 +22,37 @@
   </div>
   <script>
     document.querySelector("#unigif").src = "/images/uni/" + (Math.floor(Math.random() * 16) + 1) + ".gif";
+    var login = document.querySelector("#login-redirect");
+    login.href = "/login?redir="+location.pathname;
+    var register = document.querySelector("#register-redirect");
+    register.href = "/register?redir="+location.pathname;
+  </script>
+  </body>
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>403 | Watermelon Katana</title>
+  <link rel="stylesheet" type="text/css" href="/styles/style.css">
+  <link rel="stylesheet" type="text/css" href="/styles/error.css">
+  <script src="/scripts/HtmlSanitizer.js"></script>
+  <script src="/scripts/script.js"></script>
+</head>
+<body>
+  <script src="/scripts/navbar.js"></script>
+  <div class="container">
+    <h1 class="error-title">403: Not Authorized</h1>
+    <p class="error-message">You must be logged in and authorized to view this page.</p>
+    <a class="home-link" href="/register" id="register-redirect">Register</a>
+    <a class="home-link" href="/login" id="login-redirect">Login</a>
+  </div>
+  <div id="footer">
+  </div>
+  <script>
     var login = document.querySelector("#login-redirect");
     login.href = "/login?redir="+location.pathname;
     var register = document.querySelector("#register-redirect");
