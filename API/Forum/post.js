@@ -202,7 +202,7 @@ module.exports = class {
   var userMap = {};
   for (const u of users) userMap[u._id] = u;
   var resolve = (obj) => {
-    if (!obj?.posterId) { return }
+    // if (!obj?.posterId) { return }
     var u = userMap[obj.posterId];
     if (!admin && obj.anon) {
       obj.poster = (u && u.anonname) || ("anon-" + obj.posterId.slice(-4));
