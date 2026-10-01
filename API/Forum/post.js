@@ -175,7 +175,7 @@ module.exports = class {
     const dataIsArray = data instanceof Array;
     if (res.locals.userToken) {
       const uid = res.locals.userToken.id;
-      var user = await Users.findOne({ _id: uid }).lean();
+      var user = await Users.findOne({ _id: uid });
       if (user && user.mature) return dataIsArray ? data: JSON.parse(JSON.stringify(data));
     }
     var entries = [].concat(data);
@@ -199,7 +199,7 @@ module.exports = class {
       if (e && e.comments instanceof Array) for (const c of e.comments) if (c && c.posterId) ids.add(c.posterId);
     }
     if (ids.size === 0) return data;
-    var users = await Users.find({ _id: { $in: [...ids] } }).lean();
+    var users = await Users.find({ _id: { $in: [...ids] } }, { anonname: 1, avatar: 1, avatarpos: 1 }).lean();
     var userMap = {};
     for (const u of users) userMap[u._id] = u;
     var resolve = (obj) => {
