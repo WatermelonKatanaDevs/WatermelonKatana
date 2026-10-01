@@ -72,9 +72,6 @@ app.use((req, res, next) => {
  */
 app.use(express.static(__dirname + "/Assets"));
 
-// Add Editor
-app.use("/editor", express.static(__dirname + "/Editor"));
-
 /**
  * Initialize TurboWarp with static dependencies
  */
@@ -144,7 +141,6 @@ function sendEditorForbidden(res) {
 
 app.get("/editor", async (req, res) => {
   try {
-    const project = await Projects.findOne({ _id: req.params.id });
     const src = "/editor/index.html" ;
     sendFileReplace(res, "./Pages/editor/project.html", s => s.replace("EDITOR_SRC", src));
   } catch (e) {
@@ -223,6 +219,9 @@ app.get("/project/:id/edit", userAuth, async (req, res) => {
   res.sendFile(cldir + "/projects/edit.html");
 }); // Edit project page, users only
 app.get("/project/:id/delete", userAuth, (req, res) => res.redirect("/api/project/delete/" + req.params.id)); // Delete project route, users only
+
+// Add Editor
+app.use("/editor", express.static(__dirname + "/Editor"));
 
 // Authors
 app.get("/authors", (req, res) => { res.sendFile(cldir + "/authors.html") });
