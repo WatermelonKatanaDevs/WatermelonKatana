@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="en">
 <head>
@@ -35,58 +34,197 @@
 
       const TEST_EXTENSION = {
         id: 'watermelonkatanatest',
-        title: 'Test Extension',
-        description: 'A test extension for experimenting with the editor extension API.',
-        icon: '/images/icon.png'
+        name: 'WatermelonKatana',
+        description: 'A WatermelonKatana test extension.',
+        icon: '<img src="/images/watermelon.png" alt="WatermelonKatana" style="width:100%;height:100%;object-fit:contain">'
       };
 
-      // Register the actual editor page.
-      // This is intentionally different from the extension overview page.
-      editor.EditorBuiltinFactories =
+      const factories =
+        editor.EditorBuiltinFactories =
         editor.EditorBuiltinFactories || {};
 
-      editor.EditorBuiltinFactories.test = function () {
+      // --------------------------------------------------------------------------
+      // Extension sidebar page
+      // --------------------------------------------------------------------------
+
+      factories.watermelonkatanatest = function () {
         return {
-          title: TEST_EXTENSION.title,
+          title: TEST_EXTENSION.name,
           icon: TEST_EXTENSION.icon,
 
-          render(group) {
-            group.viewBody.innerHTML = '';
+          render(g) {
+            g.viewBody.innerHTML = '';
 
             const page = framedoc.createElement('div');
 
+            page.className = 'watermelonkatanatest-page';
+
             page.style.cssText = `
-              width: 100%;
               height: 100%;
+              box-sizing: border-box;
               display: flex;
               align-items: center;
               justify-content: center;
-              font-size: 32px;
-              color: #e5e7eb;
+              padding: 48px;
+              overflow: auto;
             `;
 
-            page.textContent = '<Edit goes here>';
+            page.innerHTML = `
+              <div style="
+                max-width: 760px;
+                width: 100%;
+                text-align: center;
+              ">
+                <img
+                  src="/images/watermelon.png"
+                  alt="WatermelonKatana"
+                  style="
+                    display:block;
+                    width:220px;
+                    height:220px;
+                    object-fit:contain;
+                    margin:0 auto 28px;
+                  "
+                >
 
-            group.viewBody.appendChild(page);
+                <h1 style="
+                  margin:0 0 14px;
+                  font-size:32px;
+                ">WatermelonKatana</h1>
+
+                <p style="
+                  margin:0 0 24px;
+                  color:#aaa;
+                  font-size:16px;
+                  line-height:1.6;
+                ">
+                  ${TEST_EXTENSION.description}
+                </p>
+
+                <button
+                  id="openWatermelonKatanaEditor"
+                  type="button"
+                  style="
+                    padding:10px 18px;
+                    border:1px solid #555;
+                    border-radius:8px;
+                    background:#242424;
+                    color:#eee;
+                    cursor:pointer;
+                    font-size:15px;
+                  "
+                >
+                  Open WatermelonKatana Editor
+                </button>
+              </div>
+            `;
+
+            g.viewBody.appendChild(page);
+
+            page
+              .querySelector('#openWatermelonKatanaEditor')
+              ?.addEventListener('click', () => {
+                editor.EditorApp.openBuiltin('watermelonkatanatestWelcome');
+              });
           }
         };
       };
 
+      // --------------------------------------------------------------------------
+      // Separate custom editor page
+      // This is NOT part of EditorExtensionAPI.
+      // --------------------------------------------------------------------------
 
-      // Register the extension itself with the global extension API.
+      factories.watermelonkatanatestWelcome = function () {
+        return {
+          title: 'WatermelonKatana Editor',
+          icon: TEST_EXTENSION.icon,
+
+          render(g) {
+            g.viewBody.innerHTML = '';
+
+            const page = framedoc.createElement('div');
+
+            page.style.cssText = `
+              height:100%;
+              box-sizing:border-box;
+              display:flex;
+              align-items:center;
+              justify-content:center;
+              padding:48px;
+              overflow:auto;
+            `;
+
+            page.innerHTML = `
+              <div style="
+                max-width:760px;
+                width:100%;
+                text-align:center;
+              ">
+                <img
+                  src="/images/watermelon.png"
+                  alt="WatermelonKatana"
+                  style="
+                    display:block;
+                    width:220px;
+                    height:220px;
+                    object-fit:contain;
+                    margin:0 auto 28px;
+                  "
+                >
+
+                <h1 style="
+                  margin:0 0 14px;
+                  font-size:32px;
+                ">
+                  WatermelonKatana Editor
+                </h1>
+
+                <p style="
+                  margin:0;
+                  color:#aaa;
+                  font-size:16px;
+                  line-height:1.6;
+                ">
+                  This is the custom editor page registered by the
+                  WatermelonKatana extension.
+                </p>
+              </div>
+            `;
+
+            g.viewBody.appendChild(page);
+          }
+        };
+      };
+
+      // --------------------------------------------------------------------------
+      // Register the extension itself.
+      // --------------------------------------------------------------------------
+
       if (editor.EditorExtensionAPI) {
         editor.EditorExtensionAPI.register({
           id: TEST_EXTENSION.id,
-          title: TEST_EXTENSION.title,
+          name: TEST_EXTENSION.name,
           description: TEST_EXTENSION.description,
           icon: TEST_EXTENSION.icon,
 
           // Clicking the extension in the Extensions sidebar opens
-          // the extension's OWN overview page.
+          // the extension's own page.
           open() {
-            editor.openBuiltin('browser', '/extension.html');
+            editor.EditorApp.openBuiltin('watermelonkatanatest');
           }
         });
+      }
+
+      // --------------------------------------------------------------------------
+      // Add the separate custom page to Welcome.
+      // --------------------------------------------------------------------------
+
+      if (editor.EditorApp?.addWelcomeBuiltin) {
+        editor.EditorApp.addWelcomeBuiltin(
+          'watermelonkatanatestWelcome',
+          'WatermelonKatana Editor'
+        );
       }
 
       // ---------------------------------------------------------------------------
