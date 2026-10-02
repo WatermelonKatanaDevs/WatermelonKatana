@@ -28,6 +28,68 @@
         let d = framedoc.getElementsByClassName("toolbar-left")[0];
         d.innerHTML = `<a href="/" target="_top"><Button>Exit</Button></a>` + d.innerHTML;
       }
+
+      // --- WatermelonKatana Test Extension ---------------------------------------
+
+      const editor = frame.contentWindow;
+
+      const TEST_EXTENSION = {
+        id: 'watermelonkatanatest',
+        title: 'Test Extension',
+        description: 'A test extension for experimenting with the editor extension API.',
+        icon: '/images/watermelon.png'
+      };
+
+      // Register the actual editor page.
+      // This is intentionally different from the extension overview page.
+      editor.EditorBuiltinFactories =
+        editor.EditorBuiltinFactories || {};
+
+      editor.EditorBuiltinFactories.test = function () {
+        return {
+          title: TEST_EXTENSION.title,
+          icon: TEST_EXTENSION.icon,
+
+          render(group) {
+            group.viewBody.innerHTML = '';
+
+            const page = framedoc.createElement('div');
+
+            page.style.cssText = `
+              width: 100%;
+              height: 100%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 32px;
+              color: #e5e7eb;
+            `;
+
+            page.textContent = '<Edit goes here>';
+
+            group.viewBody.appendChild(page);
+          }
+        };
+      };
+
+
+      // Register the extension itself with the global extension API.
+      if (editor.EditorExtensionAPI) {
+        editor.EditorExtensionAPI.register({
+          id: TEST_EXTENSION.id,
+          title: TEST_EXTENSION.title,
+          description: TEST_EXTENSION.description,
+          icon: TEST_EXTENSION.icon,
+
+          // Clicking the extension in the Extensions sidebar opens
+          // the extension's OWN overview page.
+          open() {
+            editor.openBuiltin('browser', '/extension.html');
+          }
+        });
+      }
+
+      // ---------------------------------------------------------------------------
       
       var old = frame.contentWindow.__sharedBrowserNetwork._requestObject;
       frame.contentWindow.__sharedBrowserNetwork._requestObject = function(request, ...args) {
