@@ -170,11 +170,16 @@ function previewContent(str, len) {
 function projHTML(list, tok) {
   return function (proj) {
     let classes = (proj.featured ? " featured" : "") + (proj.posterId == tok?.user?.id ? " published" : "") + (tok?.user?.favorites.includes(proj.id) ? " favorited" : "");
-    const a = document.createElement("a");
-    a.className = "project-panel";
-    a.href = "/project/" + proj.id;
-    if (proj.viewers.includes(tok?.user?.id)) a.style.color = "var(--palette-text-viewed)";
-    a.innerHTML = `
+    const div = document.createElement("div");
+    div.className = "project-panel";
+    div.style.cursor = "pointer";
+    div.onclick = (e) => {
+      if (!e.target.closest('.author-link')) {
+        window.location.href = "/project/" + proj.id;
+      }
+    };
+    if (proj.viewers.includes(tok?.user?.id)) div.style.color = "var(--palette-text-viewed)";
+    div.innerHTML = `
       <div class="thumbnail-border ${classes}">
         <div class="panel-overlay">
           <div>Score: ${proj.score} Views: ${proj.views}</div>
@@ -183,9 +188,9 @@ function projHTML(list, tok) {
         <img class="project-thumbnail" src="${proj.thumbnail || "/images/blank_project.png"}" alt="">
       </div>
       <div class="project-link">${verifiedmark(proj.verified)}${previewContent(proj.title, 100)}</div>
-      <div>By: <object><a class="author-link" href="/user/${proj.realposter || proj.poster}"${proj.realposter ? ` title="Posted anonymously by ${proj.realposter}"` : ""}><span class="comment-avatar author-pfp">${focalimg(proj.authoravatar || "/images/default_pfp.png", proj.authorpos)}</span><i>${proj.poster}</i></a></object></div>`;
-    list.appendChild(a);
-    const thumb = a.querySelector(".project-thumbnail");
+      <div>By: <a class="author-link" href="/user/${proj.realposter || proj.poster}"${proj.realposter ? ` title="Posted anonymously by ${proj.realposter}"` : ""}><span class="comment-avatar author-pfp">${focalimg(proj.authoravatar || "/images/default_pfp.png", proj.authorpos)}</span><i>${proj.poster}</i></a></div>`;
+    list.appendChild(div);
+    const thumb = div.querySelector(".project-thumbnail");
     if (!thumb.getAttribute("src")) thumb.src = "/images/blank_project.png";
   };
 }
@@ -527,9 +532,9 @@ function hidepreview() {
 }
 
 document.addEventListener("mouseover", (e) => {
-  if (!e.target || !e.target.closest) return;
-  const a = e.target.closest('a[href^="/user/"]');
+  const a = e.target.closest?.('a[href^="/user/"]');
   if (!a) return;
+  if (e.relatedTarget && a.contains(e.relatedTarget)) return;
   const m = a.getAttribute("href").match(/^\/user\/([^\/?#]+)/);
   if (!m) return;
   clearTimeout(_previewtimer);
@@ -537,7 +542,8 @@ document.addEventListener("mouseover", (e) => {
 });
 
 document.addEventListener("mouseout", (e) => {
-  if (!e.target || !e.target.closest) return;
-  if (!e.target.closest('a[href^="/user/"]')) return;
+  const a = e.target.closest?.('a[href^="/user/"]');
+  if (!a) return;
+  if (e.relatedTarget && a.contains(e.relatedTarget)) return;
   hidepreview();
 });
