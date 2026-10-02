@@ -19,18 +19,38 @@
     const frame = document.getElementById("editorFrame");
     frame.addEventListener('load',function(){
       const framedoc = frame.contentDocument;
+      const editor = frame.contentWindow;
       if (pid) {
         framedoc.getElementsByClassName("toolbar-left")[0].innerHTML = `<a href="/project/${pid}" target="_top"><Button>Exit</Button></a>`;
         framedoc.getElementById("saveProjectBtn").outerHTML = '';
         framedoc.getElementById("saveZipBtn").outerHTML = '';
+        framedoc.getElementById("projectName").style['font-weight'] = "bold";
+        framedoc.getElementById("projectName").id = "";
+        var repoSelect = framedoc.querySelector('[data-repo]');
+        repoSelect.innerHTML = `<option value=${repoSelect.value}>${repoSelect.value}</option>`;
+
+        const logSidebarChange = (event) => {
+          const sidebar =
+            event?.sidebar ||
+            event?.name ||
+            event?.id ||
+            sidebarNames[event?.buttonId] ||
+            'Unknown';
+
+          console.log('[WatermelonKatana] Sidebar changed:', sidebar, event);
+        };
+
+        if (typeof editor.EditorApp?.onSidebarChange === 'function') {
+          editor.EditorApp.onSidebarChange(logSidebarChange);
+        } else if (typeof editor.EditorApp?.on === 'function') {
+          editor.EditorApp.on('sidebarChange', logSidebarChange);
+        }
       } else {
         let d = framedoc.getElementsByClassName("toolbar-left")[0];
         d.innerHTML = `<a href="/" target="_top"><Button>Exit</Button></a>` + d.innerHTML;
       }
 
       // --- WatermelonKatana Test Extension ---------------------------------------
-
-      const editor = frame.contentWindow;
 
       const TEST_EXTENSION = {
         id: 'watermelonkatanatest',
@@ -42,6 +62,134 @@
       const factories =
         editor.EditorBuiltinFactories =
         editor.EditorBuiltinFactories || {};
+
+
+      // --- WatermelonKatana Monaco theme -----------------------------------------
+
+      const WK_MONACO_THEME = {
+        name: 'watermelonkatanatest-theme',
+        base: 'vs-dark',
+        inherit: true,
+
+        colors: {
+          'editor.background': '#202124',
+          'editor.foreground': '#e5e7eb',
+          'editorCursor.foreground': '#3cdfa9',
+          'editor.selectionBackground': '#3cdfa955',
+          'editor.inactiveSelectionBackground': '#3cdfa930',
+          'editor.lineHighlightBackground': '#dd6d7f12',
+          'editorLineNumber.foreground': '#777777',
+          'editorLineNumber.activeForeground': '#3cdfa9',
+          'editorIndentGuide.background': '#ffffff10',
+          'editorIndentGuide.activeBackground': '#dd6d7f55',
+          'editorWhitespace.foreground': '#ffffff18',
+          'editorBracketMatch.background': '#dd6d7f22',
+          'editorBracketMatch.border': '#dd6d7f88',
+          'editor.findMatchBackground': '#3cdfa944',
+          'editor.findMatchHighlightBackground': '#3cdfa922',
+          'editorOverviewRuler.border': '#00000000',
+          'editorGutter.background': '#202124',
+          'editorWidget.background': '#202124',
+          'editorWidget.border': '#dd6d7f55',
+          'editorHoverWidget.background': '#202124',
+          'editorHoverWidget.border': '#dd6d7f55',
+          'peekViewEditor.background': '#202124',
+          'peekViewResult.background': '#202124',
+          'peekViewBorder': '#dd6d7f55'
+        },
+
+        rules: [
+          { token: 'comment', foreground: '777777', fontStyle: 'italic' },
+          { token: 'keyword', foreground: 'dd6d7f' },
+          { token: 'keyword.control', foreground: 'dd6d7f' },
+          { token: 'keyword.operator', foreground: 'dd6d7f' },
+          { token: 'string', foreground: '3cdfa9' },
+          { token: 'string.escape', foreground: '82e0c0' },
+          { token: 'number', foreground: 'f0c674' },
+          { token: 'type', foreground: '82aaff' },
+          { token: 'type.identifier', foreground: '82aaff' },
+          { token: 'variable', foreground: 'e5e7eb' },
+          { token: 'variable.predefined', foreground: '82aaff' },
+          { token: 'function', foreground: '3cdfa9' },
+          { token: 'function.declaration', foreground: '3cdfa9' },
+          { token: 'operator', foreground: 'dd6d7f' },
+          { token: 'delimiter', foreground: 'b8bcc4' },
+          { token: 'constant', foreground: 'f0c674' }
+        ]
+      };
+
+      editor.EditorTheme = editor.EditorTheme || {};
+      editor.EditorTheme.monaco = {
+        ...(editor.EditorTheme.monaco || {}),
+        ...WK_MONACO_THEME
+      };
+
+      function applyWatermelonKatanaMonacoTheme() {
+        const monaco = editor.monaco || window.monaco;
+        if (!monaco?.editor) return false;
+
+        monaco.editor.defineTheme(WK_MONACO_THEME.name, {
+          base: WK_MONACO_THEME.base,
+          inherit: WK_MONACO_THEME.inherit,
+          colors: WK_MONACO_THEME.colors,
+          rules: WK_MONACO_THEME.rules
+        });
+
+        monaco.editor.setTheme(WK_MONACO_THEME.name);
+
+        // Re-apply to every existing editor after theme changes.
+        for (const instance of monaco.editor.getEditors()) {
+          try {
+            instance.updateOptions({});
+            instance.layout();
+          } catch (_) {}
+        }
+
+        return true;
+      }
+
+      // If the editor exposes the shared theme API, use it as the global source
+      // of truth while keeping the built-in editor theme values otherwise intact.
+      if (typeof editor.EditorTheme?.set === 'function') {
+        editor.EditorTheme.set({
+          monaco: WK_MONACO_THEME
+        });
+      }
+
+      // Monaco may finish loading after the outer editor frame does.
+      if (!applyWatermelonKatanaMonacoTheme()) {
+        const stopThemeObserver = framedoc.addEventListener
+          ? null
+          : null;
+
+        let attempts = 0;
+        const themeTimer = setInterval(() => {
+          attempts++;
+          if (applyWatermelonKatanaMonacoTheme() || attempts >= 60) {
+            clearInterval(themeTimer);
+          }
+        }, 250);
+      }
+
+      if (editor.EditorApp?.on) {
+        editor.EditorApp.on('builtinRender', applyWatermelonKatanaMonacoTheme);
+        editor.EditorApp.on('viewRender', applyWatermelonKatanaMonacoTheme);
+        editor.EditorApp.on('tabActivate', applyWatermelonKatanaMonacoTheme);
+      }
+
+      // ---------------------------------------------------------------------------
+      // Sidebar change logging
+      // ---------------------------------------------------------------------------
+
+      const sidebarNames = {
+        activityExplorer: 'Explorer',
+        activitySearch: 'Search',
+        activitySourceControl: 'Source Control',
+        activityRun: 'Run and Debug',
+        activityExtensions: 'Extensions',
+        activitySettings: 'Settings',
+        activityProfile: 'Profile'
+      };
 
       // --------------------------------------------------------------------------
       // Extension sidebar page
@@ -242,7 +390,7 @@
       
       var style = framedoc.createElement('style');
       style.innerHTML = `
-  /* WatermelonKatana-inspired accent skin for Node Editor. Add AFTER existing styles. */
+   /* WatermelonKatana-inspired accent skin for Node Editor. Add AFTER existing styles. */
 :root{--wk-pink:rgb(221,109,127);--wk-pink-soft:rgba(221,109,127,.18);--wk-pink-faint:rgba(221,109,127,.08);--wk-green:rgb(60,223,169);--wk-green-hover:rgb(82,232,181);--wk-green-soft:rgba(60,223,169,.16);}
 
 /* Pink = structure, borders, edges */
@@ -273,7 +421,7 @@ button.bg-indigo-600:hover,button.bg-indigo-500:hover{border-color:var(--wk-gree
 .workbench-tab:hover {background:rgba(221,109,127,.33) !important;}
 
 /* Keep controls dark */
-input,select,textarea{background:#202124!important;color:#e5e7eb!important}
+input:not[type=checkbox],select,textarea{background:#202124!important;color:#e5e7eb!important}
 .address-bar,.browser-address{border-color:rgba(221,109,127,.45)!important}
 .browser-tab.active{border-color:var(--wk-pink)!important}
 .browser-tab.active::after{background:var(--wk-green)!important}
@@ -293,17 +441,19 @@ input,select,textarea{background:#202124!important;color:#e5e7eb!important}
 .ring-indigo-500,.focus\:ring-indigo-500:focus{--tw-ring-color:var(--wk-green)!important}
 
 #statusBar { background-color: #00d18f; }
-button.primary { background: #08a372 !important;; border-color: #00d18f !important;; }
-button.primary:hover:not(:disabled) { background: #02db97 !important;; border-color: #00d18f !important; }
+button.primary { background: #08a372 !important; border-color: #00d18f !important; }
+button.primary:hover:not(:disabled) { background: #02db97 !important; border-color: #00d18f !important; }
 
-.welcome-group-create button { background: #08a372 !important;; border-color: #00d18f !important;; }
-.welcome-group-create button:hover:not(:disabled) { background: #02db97 !important;; border-color: #00d18f !important; }
+.welcome-group-create button { background: #08a372 !important; border-color: #00d18f !important; }
+.welcome-group-create button:hover:not(:disabled) { background: #02db97 !important; border-color: #00d18f !important; }
 
-.source-control-commit { background: #08a372 !important;; border-color: #00d18f !important;; }
-.source-control-commit:hover:not(:disabled) { background: #02db97 !important;; border-color: #00d18f !important; }
+.source-control-commit { background: #08a372 !important; border-color: #00d18f !important; }
+.source-control-commit:hover:not(:disabled) { background: #02db97 !important; border-color: #00d18f !important; }
 
 #tree li.selected-file { background: #003314; }
 #tree li.selected-file:hover:not(:has(li:hover)) { background: #014d1e; }
+input[type=checkbox]:checked { background-color: #08a372 !important; border-color: #00d18f !important; }
+.ai-user .ai-bubble { background: #003314 !important; }
       `;
       framedoc.body.appendChild(style);
     });
