@@ -110,4 +110,5 @@ async function replaceSelectedText(el, text) {
   var seltext = val.slice(sel.start,sel.end);
   if (typeof text == 'function') text = await text(seltext);
   el.value = val.slice(0, sel.start) + text + val.slice(sel.end);
+  el.dispatchEvent(new Event('input', { bubbles: true }));
 }

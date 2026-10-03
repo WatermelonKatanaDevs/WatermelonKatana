@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>Editor | WatermelonKatana</title>
+  <title>Editor Preview | WatermelonKatana</title>
   <link rel="stylesheet" type="text/css" href="/styles/style.css">
   <style>
     html,body { margin:0; width:100%; height:100%; overflow:hidden; }
@@ -75,55 +75,132 @@
 
 
       // --- WatermelonKatana Monaco theme -----------------------------------------
+      // Keep the code editor aligned with the Node Editor surface and use a
+      // higher-specificity palette so language grammars retain useful contrast.
       const WK_MONACO_THEME = {
         name: 'watermelonkatana-theme',
         base: 'vs-dark',
         inherit: true,
 
         colors: {
-          'editor.background': '#202124',
-          'editor.foreground': '#e5e7eb',
-          'editorCursor.foreground': '#3cdfa9',
-          'editor.selectionBackground': '#3cdfa955',
-          'editor.inactiveSelectionBackground': '#3cdfa930',
-          'editor.lineHighlightBackground': '#dd6d7f12',
-          'editorLineNumber.foreground': '#777777',
-          'editorLineNumber.activeForeground': '#3cdfa9',
-          'editorIndentGuide.background': '#ffffff10',
-          'editorIndentGuide.activeBackground': '#dd6d7f55',
-          'editorWhitespace.foreground': '#ffffff18',
-          'editorBracketMatch.background': '#dd6d7f22',
-          'editorBracketMatch.border': '#dd6d7f88',
-          'editor.findMatchBackground': '#3cdfa944',
-          'editor.findMatchHighlightBackground': '#3cdfa922',
+          // Editor + Monaco UI surfaces.
+          'editor.background': '#181818',
+          'editor.foreground': '#eeeeee',
+          'editorGutter.background': '#181818',
+          'editorWidget.background': '#181818',
+          'editorHoverWidget.background': '#181818',
+          'peekViewEditor.background': '#181818',
+          'peekViewResult.background': '#181818',
+          'minimap.background': '#181818',
+          'sideBar.background': '#181818',
+          'sideBarSectionHeader.background': '#181818',
+          'activityBar.background': '#181818',
+
+          // Green / pink / blue interaction colors.
+          'editorCursor.foreground': '#4bd37b',
+          'editor.selectionBackground': '#de6c8350',
+          'editor.inactiveSelectionBackground': '#de6c8330',
+          'editor.lineHighlightBackground': '#de6c8310',
+          'editorLineNumber.foreground': '#676767',
+          'editorLineNumber.activeForeground': '#4bd37b',
+          'editorIndentGuide.background': '#ffffff0d',
+          'editorIndentGuide.activeBackground': '#de6c8360',
+          'editorWhitespace.foreground': '#ffffff14',
+          'editorBracketMatch.background': '#4bd37b20',
+          'editorBracketMatch.border': '#4bd37b90',
+          'editor.findMatchBackground': '#4bd37b45',
+          'editor.findMatchHighlightBackground': '#de6c8330',
           'editorOverviewRuler.border': '#00000000',
-          'editorGutter.background': '#202124',
-          'editorWidget.background': '#202124',
-          'editorWidget.border': '#dd6d7f55',
-          'editorHoverWidget.background': '#202124',
-          'editorHoverWidget.border': '#dd6d7f55',
-          'peekViewEditor.background': '#202124',
-          'peekViewResult.background': '#202124',
-          'peekViewBorder': '#dd6d7f55'
+          'editorOverviewRuler.findMatchForeground': '#4bd37b',
+          'editorOverviewRuler.selectionHighlightForeground': '#de6c83',
+          'editorWidget.border': '#de6c8360',
+          'editorHoverWidget.border': '#de6c8360',
+          'peekViewBorder': '#de6c8360',
+          'scrollbarSlider.background': '#ffffff18',
+          'scrollbarSlider.hoverBackground': '#de6c8340',
+          'scrollbarSlider.activeBackground': '#4bd37b50'
         },
 
         rules: [
-          { token: 'comment', foreground: '777777', fontStyle: 'italic' },
-          { token: 'keyword', foreground: 'dd6d7f' },
-          { token: 'keyword.control', foreground: 'dd6d7f' },
-          { token: 'keyword.operator', foreground: 'dd6d7f' },
-          { token: 'string', foreground: '3cdfa9' },
-          { token: 'string.escape', foreground: '82e0c0' },
-          { token: 'number', foreground: 'f0c674' },
+          // General comments / documentation.
+          { token: 'comment', foreground: '6f7f73', fontStyle: 'italic' },
+          { token: 'comment.doc', foreground: '789080', fontStyle: 'italic' },
+
+          // Keywords and control flow: pink / red.
+          { token: 'keyword', foreground: 'de6c83' },
+          { token: 'keyword.control', foreground: 'de6c83' },
+          { token: 'keyword.operator', foreground: 'f09aaa' },
+          { token: 'keyword.flow', foreground: 'de6c83' },
+          { token: 'keyword.new', foreground: 'de6c83' },
+          { token: 'keyword.return', foreground: 'de6c83' },
+
+          // Functions / declarations: green.
+          { token: 'function', foreground: '4bd37b' },
+          { token: 'function.declaration', foreground: '4bd37b' },
+          { token: 'function.call', foreground: '4bd37b' },
+          { token: 'method', foreground: '4bd37b' },
+          { token: 'method.declaration', foreground: '4bd37b' },
+
+          // Types / classes / built-ins: blue.
           { token: 'type', foreground: '82aaff' },
           { token: 'type.identifier', foreground: '82aaff' },
-          { token: 'variable', foreground: 'e5e7eb' },
+          { token: 'type.class', foreground: '82aaff' },
+          { token: 'class', foreground: '82aaff' },
+          { token: 'class.name', foreground: '82aaff' },
+          { token: 'namespace', foreground: '82aaff' },
+          { token: 'interface', foreground: '82aaff' },
+
+          // Strings: hot pink / red.
+          { token: 'string', foreground: 'ef476f' },
+          { token: 'string.escape', foreground: 'ff7a98' },
+          { token: 'string.regexp', foreground: 'ef476f' },
+          { token: 'regexp', foreground: 'ef476f' },
+
+          // Numbers / constants: blue-green / pink.
+          { token: 'number', foreground: '63c7a5' },
+          { token: 'number.hex', foreground: '63c7a5' },
+          { token: 'constant', foreground: 'f09aaa' },
+          { token: 'constant.language', foreground: 'f09aaa' },
+          { token: 'constant.numeric', foreground: '63c7a5' },
+
+          // Variables and properties.
+          { token: 'variable', foreground: 'eeeeee' },
           { token: 'variable.predefined', foreground: '82aaff' },
-          { token: 'function', foreground: '3cdfa9' },
-          { token: 'function.declaration', foreground: '3cdfa9' },
-          { token: 'operator', foreground: 'dd6d7f' },
-          { token: 'delimiter', foreground: 'b8bcc4' },
-          { token: 'constant', foreground: 'f0c674' }
+          { token: 'property', foreground: 'f2a8bb' },
+          { token: 'property.name', foreground: 'f2a8bb' },
+          { token: 'variable.property', foreground: 'f2a8bb' },
+          { token: 'key', foreground: 'f2a8bb' },
+          { token: 'key.json', foreground: 'f2a8bb' },
+
+          // Operators / punctuation.
+          { token: 'operator', foreground: 'f2a8bb' },
+          { token: 'operator.logical', foreground: 'de6c83' },
+          { token: 'operator.assignment', foreground: 'f2a8bb' },
+          { token: 'delimiter', foreground: 'aeb6b2' },
+          { token: 'delimiter.bracket', foreground: '8fd9b0' },
+          { token: 'delimiter.parenthesis', foreground: '8fd9b0' },
+
+          // ---------------------------------------------------------------------
+          // HTML-specific highlighting.
+          // Tag names      -> dark green
+          // Properties     -> light pink
+          // Strings        -> hot pink / red
+          // ---------------------------------------------------------------------
+          { token: 'tag', foreground: '2f9e59' },
+          { token: 'tag.html', foreground: '2f9e59' },
+          { token: 'tag.name', foreground: '2f9e59' },
+          { token: 'tag.name.html', foreground: '2f9e59' },
+          { token: 'metatag', foreground: '2f9e59' },
+          { token: 'metatag.html', foreground: '2f9e59' },
+          { token: 'attribute', foreground: 'f2a8bb' },
+          { token: 'attribute.name', foreground: 'f2a8bb' },
+          { token: 'attribute.name.html', foreground: 'f2a8bb' },
+          { token: 'attribute.value', foreground: 'ef476f' },
+          { token: 'attribute.value.html', foreground: 'ef476f' },
+          { token: 'string.html', foreground: 'ef476f' },
+          { token: 'delimiter.html', foreground: '2f9e59' },
+          { token: 'delimiter.tag', foreground: '2f9e59' },
+          { token: 'delimiter.tag.html', foreground: '2f9e59' }
         ]
       };
 
@@ -146,7 +223,6 @@
 
         monaco.editor.setTheme(WK_MONACO_THEME.name);
 
-        // Re-apply to every existing editor after theme changes.
         for (const instance of monaco.editor.getEditors()) {
           try {
             instance.updateOptions({});
@@ -157,8 +233,6 @@
         return true;
       }
 
-      // If the editor exposes the shared theme API, use it as the global source
-      // of truth while keeping the built-in editor theme values otherwise intact.
       if (typeof editor.EditorTheme?.set === 'function') {
         editor.EditorTheme.set({
           monaco: WK_MONACO_THEME
@@ -167,8 +241,6 @@
 
       // Monaco may finish loading after the outer editor frame does.
       if (!applyWatermelonKatanaMonacoTheme()) {
-        const stopThemeObserver = framedoc.addEventListener ? null : null;
-
         let attempts = 0;
         const themeTimer = setInterval(() => {
           attempts++;
@@ -283,6 +355,184 @@
       const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, ch => ({
         '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
       }[ch]));
+
+      function installWKProjectEditorHostStyles() {
+        framedoc.body.classList.add('wk-editor-extension-host');
+        if (framedoc.getElementById('wk-project-editor-host-style')) return;
+        const style = framedoc.createElement('style');
+        style.id = 'wk-project-editor-host-style';
+        style.textContent = `
+          /* The real /edit page receives these styles from WatermelonKatana's site CSS.
+             The Node Editor deliberately has its own CSS, so the project editor needs
+             a small scoped copy of the relevant controls instead of importing the
+             entire website stylesheet into the workbench. */
+          body.wk-editor-extension-host #upload-container {
+            box-sizing:border-box !important;
+            width:min(520px, calc(100vw - 32px)) !important;
+            padding:10px !important;
+            top:50% !important;
+            left:50% !important;
+            transform:translate(-50%, -50%) !important;
+            background:#222 !important;
+            color:#e0e0e0 !important;
+            border:2px solid #de6c83 !important;
+            border-radius:10px !important;
+            box-shadow:0 14px 40px rgba(0,0,0,.55) !important;
+            z-index:2147483000 !important;
+            overflow:visible !important;
+          }
+          body.wk-editor-extension-host #upload-container input[type="text"],
+          body.wk-editor-extension-host #upload-container input[type="file"] {
+            box-sizing:border-box !important;
+            width:100% !important;
+            margin:0 0 8px 0 !important;
+            padding:9px 10px !important;
+            border:2px solid #de6c83 !important;
+            border-radius:5px !important;
+            background:#272727 !important;
+            background-image:none !important;
+            color:#e0e0e0 !important;
+            font:14px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif !important;
+          }
+          body.wk-editor-extension-host #upload-container button {
+            width:auto !important;
+            min-width:0 !important;
+            height:auto !important;
+            display:inline-flex !important;
+            align-items:center !important;
+            justify-content:center !important;
+            margin:4px 6px 0 0 !important;
+            padding:8px 16px !important;
+            border:0 !important;
+            border-radius:50px !important;
+            background-color:#00000080 !important;
+            background-image:url("/images/button.png") !important;
+            background-blend-mode:darken !important;
+            color:#e0e0e0 !important;
+            font:700 14px Tahoma,sans-serif !important;
+            cursor:pointer !important;
+          }
+          body.wk-editor-extension-host #upload-container button:hover {
+            background-color:#0000004d !important;
+          }
+          body.wk-editor-extension-host #upload-preview {
+            display:block !important;
+            max-width:100% !important;
+            max-height:55vh !important;
+            margin:0 auto 8px !important;
+            object-fit:contain !important;
+          }
+
+          body.wk-editor-extension-host .fg-emoji-container {
+            box-sizing:border-box !important;
+            background:#222 !important;
+            color:#eee !important;
+            border:1px solid #555 !important;
+            box-shadow:0 14px 40px rgba(0,0,0,.6) !important;
+            z-index:2147483000 !important;
+          }
+          body.wk-editor-extension-host .fg-emoji-picker-category-title {
+            color:#ddd !important;
+            border-bottom-color:#444 !important;
+          }
+          body.wk-editor-extension-host .fg-emoji-nav {
+            background:#3a3a3a !important;
+          }
+          /* EmojiPicker.js uses orange for its external move/close controls.
+             Keep those controls visually consistent with WatermelonKatana. */
+          body.wk-editor-extension-host .fg-picker-special-buttons a {
+            background-color:#de6c83 !important;
+          }
+          body.wk-editor-extension-host .fg-emoji-nav ul {
+            border-bottom-color:#444 !important;
+          }
+          body.wk-editor-extension-host .fg-emoji-nav li a:hover,
+          body.wk-editor-extension-host .fg-emoji-nav li.active a,
+          body.wk-editor-extension-host .fg-emoji-nav li.emoji-picker-nav-active a {
+            background:#555 !important;
+          }
+          body.wk-editor-extension-host .fg-emoji-list li a {
+            background:#2d2d2d !important;
+            color:#eee !important;
+          }
+          body.wk-editor-extension-host .fg-emoji-list li a:hover {
+            background:#404040 !important;
+          }
+          body.wk-editor-extension-host .fg-emoji-picker-search input {
+            width:calc(100% - 30px) !important;
+            box-sizing:border-box !important;
+            margin:0 !important;
+            border:0 !important;
+            border-radius:0 !important;
+            background:#272727 !important;
+            background-image:none !important;
+            color:#eee !important;
+          }
+
+          .wk-description-layout { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; align-items:start; }
+          .wk-description-pane { min-width:0; }
+          .wk-description-pane-title { color:#aaa; font-size:11px; text-transform:uppercase; letter-spacing:.08em; margin:0 0 7px; }
+          .wk-description-edit { display:flex; flex-direction:column; min-width:0; }
+          .wk-description-edit textarea.mk-textbox { margin:0 !important; min-height:240px !important; resize:vertical !important; }
+          .wk-markdown-toolbar { display:flex !important; flex-wrap:wrap !important; align-items:center !important; gap:6px !important; margin-top:8px !important; }
+          .wk-markdown-toolbar > button {
+            flex:0 0 auto !important;
+            width:auto !important;
+            min-width:0 !important;
+            height:auto !important;
+            display:inline-flex !important;
+            align-items:center !important;
+            justify-content:center !important;
+            margin:0 !important;
+            padding:8px 12px !important;
+            border:0 !important;
+            border-radius:50px !important;
+            background-color:#00000080 !important;
+            background-image:url("/images/button.png") !important;
+            background-blend-mode:darken !important;
+            color:#e0e0e0 !important;
+            cursor:pointer !important;
+            font:700 14px Tahoma,sans-serif !important;
+          }
+          .wk-markdown-toolbar > button:hover { background-color:#0000004d !important; }
+          .wk-markdown-toolbar > button svg { width:18px !important; height:18px !important; display:block !important; }
+          .wk-description-preview {
+            min-height:240px;
+            max-height:420px;
+            overflow:auto;
+            box-sizing:border-box;
+            padding:12px;
+            border:2px solid #444;
+            border-radius:6px;
+            background:#151515;
+            color:#e0e0e0;
+            font:14px/1.5 Tahoma,sans-serif;
+          }
+          .wk-description-preview:empty::before { content:'Nothing to preview yet.'; color:#777; }
+          .wk-description-preview a { color:#ff9c9c; text-decoration:none; }
+          .wk-description-preview a:hover { color:#39ff14; }
+          .wk-description-preview img { max-width:100%; height:auto; }
+          .wk-description-preview h1,.wk-description-preview h2,.wk-description-preview h3 { color:#fff; }
+          .wk-description-preview p { margin:0 0 10px; }
+          .wk-description-preview p:last-child { margin-bottom:0; }
+          @media (max-width:800px) {
+            .wk-description-layout { grid-template-columns:1fr; }
+            .wk-description-preview { max-height:none; }
+          }
+        `;
+        framedoc.head.appendChild(style);
+      }
+
+      function renderWKDescriptionPreview(preview, value) {
+        const text = String(value ?? '');
+        try {
+          if (typeof convertMarkdown === 'function') {
+            preview.innerHTML = convertMarkdown(text);
+            return;
+          }
+        } catch (_) {}
+        preview.innerHTML = escapeHTML(text).replace(/\n/g, '<br>');
+      }
 
       function normalizeWKRepository(value) {
         try {
@@ -407,12 +657,7 @@
             .wk-checks { display:flex; gap:18px; flex-wrap:wrap; margin-top:16px; }
             .wk-check { display:inline-flex; gap:8px; align-items:center; color:#ddd; font-size:13px; }
             .wk-form-actions { display:flex; justify-content:space-between; gap:12px; align-items:center; margin-top:20px; padding-top:18px; border-top:1px solid #2b2b2b; }
-            .wk-markdown-tools { margin-bottom:8px; }
             .wk-field textarea.mk-textbox { min-height:220px; }
-            .wk-field textarea.mk-textbox + br { display:none; }
-            .wk-field textarea.mk-textbox + br ~ button { appearance:none; border:1px solid #444; background:#252526; color:#ccc; border-radius:5px; min-width:30px; height:30px; margin:6px 4px 0 0; padding:5px 7px; cursor:pointer; }
-            .wk-field textarea.mk-textbox + br ~ button:hover { background:#303030; border-color:#555; }
-            .wk-field textarea.mk-textbox + br ~ button svg { vertical-align:middle; }
             @media (max-width:720px) {
               .wk-editor-heading { flex-direction:column; }
               .wk-editor-form-row { grid-template-columns:1fr; }
@@ -597,7 +842,20 @@
             <div class="wk-editor-form-row">
               <div>
                 <div class="wk-field"><label for="wk-project-name">Name</label><input id="wk-project-name" type="text" required></div>
-                <div class="wk-field"><label for="wk-project-description">Description</label><textarea id="wk-project-description"></textarea></div>
+                <div class="wk-field wk-description-field">
+                  <label for="wk-project-description">Description</label>
+                  <div class="wk-description-layout">
+                    <div class="wk-description-pane wk-description-edit">
+                      <div class="wk-description-pane-title">Edit</div>
+                      <textarea id="wk-project-description"></textarea>
+                      <div class="wk-markdown-toolbar" data-description-toolbar></div>
+                    </div>
+                    <div class="wk-description-pane">
+                      <div class="wk-description-pane-title">Preview</div>
+                      <div class="wk-description-preview" data-description-preview></div>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div>
                 <div class="wk-field"><label>Thumbnail</label>
@@ -626,6 +884,8 @@
         const form = card.querySelector('[data-wk-project-form]');
         const nameInput = card.querySelector('#wk-project-name');
         const descInput = card.querySelector('#wk-project-description');
+        const descriptionToolbar = card.querySelector('[data-description-toolbar]');
+        const descriptionPreview = card.querySelector('[data-description-preview]');
         const tagsInput = card.querySelector('#wk-project-tags');
         const matureInput = card.querySelector('#wk-project-mature');
         const hiddenInput = card.querySelector('#wk-project-hidden');
@@ -637,6 +897,10 @@
         const reloadButton = card.querySelector('[data-reload-project]');
         let thumbValue = '';
         let loadedProject = null;
+
+        descInput.addEventListener('input', () => {
+          renderWKDescriptionPreview(descriptionPreview, descInput.value);
+        });
 
         function setThumbnail(url) {
           thumbValue = String(url || '');
@@ -665,9 +929,26 @@
             status.remove();
             form.style.display = '';
             await ensureWKProjectEditorTools();
-            if (!descInput.parentElement.querySelector('.mk-textbox')) {
-              editor.markdownTextbox?.('#wk-project-description');
+            if (!descInput.classList.contains('mk-textbox')) {
+              editor.markdownTextbox?.('#wk-project-description', true);
             }
+            if (descriptionToolbar && !descriptionToolbar.children.length) {
+              let node = descInput.nextSibling;
+              while (node) {
+                const next = node.nextSibling;
+                if (node.nodeType === 3 && !node.textContent.trim()) {
+                  node.remove();
+                } else if (node.nodeType === 1 && node.tagName === 'BUTTON') {
+                  descriptionToolbar.appendChild(node);
+                } else if (node.nodeType === 1 && node.tagName === 'BR') {
+                  node.remove();
+                } else {
+                  break;
+                }
+                node = next;
+              }
+            }
+            renderWKDescriptionPreview(descriptionPreview, descInput.value);
           } catch (e) {
             status.className = 'wk-editor-status wk-editor-error';
             status.textContent = e?.message || String(e);
@@ -749,6 +1030,7 @@
       }
 
       async function renderWatermelonKatanaEditor(g) {
+        installWKProjectEditorHostStyles();
         g.viewBody.innerHTML = '';
         const page = framedoc.createElement('div');
         g.viewBody.appendChild(page);
