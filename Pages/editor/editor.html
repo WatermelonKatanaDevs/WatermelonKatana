@@ -1383,18 +1383,170 @@
       // --------------------------------------------------------------------------
 
       if (editor.EditorExtensionAPI) {
-        editor.EditorExtensionAPI.register({
-          id: WK_EXTENSION.id,
-          name: WK_EXTENSION.name,
-          description: WK_EXTENSION.description,
-          icon: WK_EXTENSION.icon,
+        // The AI-enabled registration above is the extension's canonical
+        // registration. Keep the sidebar opener on the same extension entry.
+        const existing = editor.EditorExtensionAPI.get?.(WK_EXTENSION.id);
+        if (existing) {
+          editor.EditorExtensionAPI.get?.(WK_EXTENSION.id);
+          editor.EditorExtensionAPI.register({
+            ...WK_EXTENSION,
+            ai:{tools:wkAITools},
+            open() {
+              editor.EditorApp.openBuiltin('watermelonkatana');
+            }
+          });
+        } else {
+          editor.EditorExtensionAPI.register({
+            ...WK_EXTENSION,
+            ai:{tools:wkAITools},
+            open() {
+              editor.EditorApp.openBuiltin('watermelonkatana');
+            }
+          });
+        }
+      }
 
-          // Clicking the extension in the Extensions sidebar opens
-          // the extension's own page.
-          open() {
-            editor.EditorApp.openBuiltin('watermelonkatana');
-          }
+      // --------------------------------------------------------------------------
+      // WatermelonKatana AI tools.
+      // These are exposed to the Editor's built-in AI through the extension API.
+      // Mutating operations use the Editor's extensionActions permission.
+      // --------------------------------------------------------------------------
+
+      async function wkAIAuth() {
+        const auth = await getWKAuth();
+        if (!auth?.user) throw new Error('Sign in to WatermelonKatana before using WatermelonKatana publication tools.');
+        return auth;
+      }
+
+      async function wkAIRequest(path, options = {}) {
+        const response = await fetch(path, {...options, cache:'no-store'});
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          const detail = data?.error ? `${data.message || 'WatermelonKatana request failed'}. ${data.error}` : (data?.message || data?.error || `WatermelonKatana request failed (${response.status}).`);
+          throw new Error(detail);
+        }
+        return data;
+      }
+
+      async function wkAIListPublications() {
+        const auth = await wkAIAuth();
+        const repo = workspaceRepository();
+        if (!repo) throw new Error('Open a GitHub repository before using WatermelonKatana publication tools.');
+        const projects = await loadWKProjects(repo, auth.user.username);
+        return projects.map(project => ({
+          id:String(project.id),
+          title:project.title || '',
+          description:project.content || '',
+          thumbnail:project.thumbnail || '',
+          tags:Array.isArray(project.tags) ? project.tags : [],
+          mature:!!project.mature,
+          hidden:!!project.hidden,
+          repository:project.editorRepository || project.link || repo.url
+        }));
+      }
+
+      async function wkAIPublishRepository(args = {}) {
+        await wkAIAuth();
+        const repo = workspaceRepository();
+        if (!repo) throw new Error('Open a GitHub repository before publishing it to WatermelonKatana.');
+        const data = await wkAIRequest('/api/project/publish', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            title:String(args.title || repo.name),
+            link:repo.url,
+            content:String(args.description || ''),
+            thumbnail:String(args.thumbnail || ''),
+            tags:Array.isArray(args.tags) ? args.tags : [],
+            mature:!!args.mature,
+            hidden:!!args.hidden,
+            privateRecipients:[],
+            editorProject:true,
+            editorRepository:repo.url
+          })
         });
+        WK_EDITOR_STATE.currentProjectId = String(data.id || '');
+        return {id:String(data.id || ''),title:data.title || args.title || repo.name,repository:repo.url,published:true};
+      }
+
+      async function wkAIUpdatePublication(args = {}) {
+        await wkAIAuth();
+        const projectId = String(args.projectId || '').trim();
+        if (!projectId) throw new Error('projectId is required.');
+        const current = await wkAIRequest('/api/project/data/' + encodeURIComponent(projectId));
+        if (!current?.editorProject) throw new Error('The selected project is not a WatermelonKatana Editor publication.');
+        const repository = normalizeWKRepository(args.repository || current.editorRepository || current.link || workspaceRepository()?.url);
+        if (!repository) throw new Error('The publication does not have a valid GitHub repository.');
+        const tags = args.tags == null ? (Array.isArray(current.tags) ? current.tags : []) : args.tags;
+        const data = await wkAIRequest('/api/project/update/' + encodeURIComponent(projectId), {
+          method:'PUT',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            title:args.title == null ? (current.title || '') : String(args.title),
+            link:repository,
+            content:args.description == null ? (current.content || '') : String(args.description),
+            thumbnail:args.thumbnail == null ? (current.thumbnail || '') : String(args.thumbnail),
+            tags:Array.isArray(tags) ? tags : [],
+            mature:args.mature == null ? !!current.mature : !!args.mature,
+            hidden:args.hidden == null ? !!current.hidden : !!args.hidden,
+            privateRecipients:[],
+            editorProject:true,
+            editorRepository:repository
+          })
+        });
+        WK_EDITOR_STATE.currentProjectId = projectId;
+        return {id:projectId,title:data.title || args.title || current.title || '',updated:true};
+      }
+
+      if (editor.EditorExtensionAPI) {
+        const wkAIExtension = editor.EditorExtensionAPI.get?.(WK_EXTENSION.id);
+        const wkAITools = [
+          {
+            name:'wk_list_publications',
+            description:'List the current user\'s WatermelonKatana publications attached to the open GitHub repository.',
+            permission:'extensionActions',
+            parameters:{type:'object',properties:{},additionalProperties:false},
+            execute:async () => ({publications:await wkAIListPublications()})
+          },
+          {
+            name:'wk_publish_project',
+            description:'Publish the currently open GitHub repository as a WatermelonKatana project. This creates a publication.',
+            permission:'extensionActions',
+            parameters:{type:'object',properties:{
+              title:{type:'string',description:'Publication title. Defaults to the repository name.'},
+              description:{type:'string'},
+              thumbnail:{type:'string'},
+              tags:{type:'array',items:{type:'string'}},
+              mature:{type:'boolean'},
+              hidden:{type:'boolean'}
+            },additionalProperties:false},
+            execute:wkAIPublishRepository
+          },
+          {
+            name:'wk_update_project',
+            description:'Edit an existing WatermelonKatana Editor publication. Only WatermelonKatana Editor publications can be changed with this tool.',
+            permission:'extensionActions',
+            parameters:{type:'object',required:['projectId'],properties:{
+              projectId:{type:'string'},
+              title:{type:'string'},
+              description:{type:'string'},
+              thumbnail:{type:'string'},
+              tags:{type:'array',items:{type:'string'}},
+              mature:{type:'boolean'},
+              hidden:{type:'boolean'},
+              repository:{type:'string'}
+            },additionalProperties:false},
+            execute:wkAIUpdatePublication
+          }
+        ];
+        const wkAI = wkAIExtension?.ai || null;
+        // Register through the public API so this remains an ordinary extension
+        // capability rather than a special case in the Editor's AI implementation.
+        const handle = editor.EditorExtensionAPI.register({
+          ...WK_EXTENSION,
+          ai:{tools:wkAITools}
+        });
+        void handle;
       }
 
       // --------------------------------------------------------------------------
