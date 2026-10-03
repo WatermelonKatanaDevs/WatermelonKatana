@@ -17,7 +17,10 @@
   <script>
     const pid = location.path[3];
     const frame = document.getElementById("editorFrame");
-    frame.addEventListener('load',()=>setTimeout(function(){
+    var wait = t => new Promise(r => setTimeout(r, t));
+    frame.addEventListener('load',async () => {
+      while (!editor?.__sharedBrowserNetwork?._requestObject) await wait(10);
+
       const framedoc = frame.contentDocument;
       const editor = frame.contentWindow;
       var nameplate = framedoc.getElementById("projectName");
@@ -30,13 +33,7 @@
         nameplate.innerText = "WORKSPACE_NAME";
         
         const logSidebarChange = (event) => {
-          const sidebar =
-            event?.sidebar ||
-            event?.name ||
-            event?.id ||
-            sidebarNames[event?.buttonId] ||
-            'Unknown';
-
+          const sidebar = event?.sidebar || event?.name || event?.id || sidebarNames[event?.buttonId] || 'Unknown';
           var repoSelect = framedoc.querySelector('[data-repo]');
           if (repoSelect) repoSelect.innerHTML = `<option value=${repoSelect.value}>${repoSelect.value}</option>`;
         };
@@ -51,12 +48,12 @@
         d.innerHTML = `<a href="/" target="_top"><Button>Exit</Button></a>` + d.innerHTML;
       }
 
-      // --- WatermelonKatana Test Extension ---------------------------------------
+      // --- WatermelonKatana Extension ---------------------------------------
 
-      const TEST_EXTENSION = {
-        id: 'watermelonkatanatest',
+      const WK_EXTENSION = {
+        id: 'watermelonkatana',
         name: 'WatermelonKatana',
-        description: 'A WatermelonKatana test extension.',
+        description: 'A WatermelonKatana extension. Allows you to edit and publish your projects from within the editor.',
         icon: '<img src="/images/icon.png" alt="WatermelonKatana" style="width:100%;height:100%;object-fit:contain">'
       };
 
@@ -66,9 +63,8 @@
 
 
       // --- WatermelonKatana Monaco theme -----------------------------------------
-
       const WK_MONACO_THEME = {
-        name: 'watermelonkatanatest-theme',
+        name: 'watermelonkatana-theme',
         base: 'vs-dark',
         inherit: true,
 
@@ -159,9 +155,7 @@
 
       // Monaco may finish loading after the outer editor frame does.
       if (!applyWatermelonKatanaMonacoTheme()) {
-        const stopThemeObserver = framedoc.addEventListener
-          ? null
-          : null;
+        const stopThemeObserver = framedoc.addEventListener ? null : null;
 
         let attempts = 0;
         const themeTimer = setInterval(() => {
@@ -196,17 +190,17 @@
       // Extension sidebar page
       // --------------------------------------------------------------------------
 
-      factories.watermelonkatanatest = function () {
+      factories.watermelonkatana = function () {
         return {
-          title: TEST_EXTENSION.name,
-          icon: TEST_EXTENSION.icon,
+          title: WK_EXTENSION.name,
+          icon: WK_EXTENSION.icon,
 
           render(g) {
             g.viewBody.innerHTML = '';
 
             const page = framedoc.createElement('div');
 
-            page.className = 'watermelonkatanatest-page';
+            page.className = 'watermelonkatana-page';
 
             page.style.cssText = `
               height: 100%;
@@ -219,50 +213,27 @@
             `;
 
             page.innerHTML = `
-              <div style="
-                max-width: 760px;
-                width: 100%;
-                text-align: center;
-              ">
-                <img
-                  src="/images/icon.png"
-                  alt="WatermelonKatana"
-                  style="
-                    display:block;
-                    width:220px;
-                    height:220px;
-                    object-fit:contain;
-                    margin:0 auto 28px;
-                  "
-                >
+              <style>
+                #openWatermelonKatanaEditor {
+                  padding:10px 18px; 
+                  border:1px solid #555;
+                  border-radius:8px;
+                  background:#242424;
+                  color:#eee;
+                  cursor:pointer;
+                  font-size:15px;
+                }
+              </style>
+              <div style="max-width: 760px; width: 100%; text-align: center;">
+                <img src="/images/icon.png" alt="WatermelonKatana" style="display:block; width:220px; height:220px; object-fit:contain; margin:0 auto 28px;">
 
-                <h1 style="
-                  margin:0 0 14px;
-                  font-size:32px;
-                ">WatermelonKatana</h1>
+                <h1 style="margin:0 0 14px; font-size:32px;">WatermelonKatana</h1>
 
-                <p style="
-                  margin:0 0 24px;
-                  color:#aaa;
-                  font-size:16px;
-                  line-height:1.6;
-                ">
-                  ${TEST_EXTENSION.description}
+                <p style="margin:0 0 24px; color:#aaa; font-size:16px; line-height:1.6;">
+                  ${WK_EXTENSION.description}
                 </p>
 
-                <button
-                  id="openWatermelonKatanaEditor"
-                  type="button"
-                  style="
-                    padding:10px 18px;
-                    border:1px solid #555;
-                    border-radius:8px;
-                    background:#242424;
-                    color:#eee;
-                    cursor:pointer;
-                    font-size:15px;
-                  "
-                >
+                <button id="openWatermelonKatanaEditor" type="button">
                   Open WatermelonKatana Editor
                 </button>
               </div>
@@ -270,11 +241,9 @@
 
             g.viewBody.appendChild(page);
 
-            page
-              .querySelector('#openWatermelonKatanaEditor')
-              ?.addEventListener('click', () => {
-                editor.EditorApp.openBuiltin('watermelonkatanatestWelcome');
-              });
+            page.querySelector('#openWatermelonKatanaEditor')?.addEventListener('click', () => {
+              editor.EditorApp.openBuiltin('watermelonkatanaEditor');
+            });
           }
         };
       };
@@ -284,10 +253,10 @@
       // This is NOT part of EditorExtensionAPI.
       // --------------------------------------------------------------------------
 
-      factories.watermelonkatanatestWelcome = function () {
+      factories.watermelonkatanaEditor = function () {
         return {
           title: 'WatermelonKatana Editor',
-          icon: TEST_EXTENSION.icon,
+          icon: WK_EXTENSION.icon,
 
           render(g) {
             g.viewBody.innerHTML = '';
@@ -305,36 +274,14 @@
             `;
 
             page.innerHTML = `
-              <div style="
-                max-width:760px;
-                width:100%;
-                text-align:center;
-              ">
-                <img
-                  src="/images/icon.png"
-                  alt="WatermelonKatana"
-                  style="
-                    display:block;
-                    width:220px;
-                    height:220px;
-                    object-fit:contain;
-                    margin:0 auto 28px;
-                  "
-                >
+              <div style=" max-width:760px; width:100%; text-align:center;">
+                <img src="/images/icon.png" alt="WatermelonKatana" style="display:block; width:220px; height:220px; object-fit:contain; margin:0 auto 28px;">
 
-                <h1 style="
-                  margin:0 0 14px;
-                  font-size:32px;
-                ">
+                <h1 style="margin:0 0 14px; font-size:32px;">
                   WatermelonKatana Editor
                 </h1>
 
-                <p style="
-                  margin:0;
-                  color:#aaa;
-                  font-size:16px;
-                  line-height:1.6;
-                ">
+                <p style="margin:0; color:#aaa; font-size:16px; line-height:1.6;">
                   This is the custom editor page registered by the
                   WatermelonKatana extension.
                 </p>
@@ -352,15 +299,15 @@
 
       if (editor.EditorExtensionAPI) {
         editor.EditorExtensionAPI.register({
-          id: TEST_EXTENSION.id,
-          name: TEST_EXTENSION.name,
-          description: TEST_EXTENSION.description,
-          icon: TEST_EXTENSION.icon,
+          id: WK_EXTENSION.id,
+          name: WK_EXTENSION.name,
+          description: WK_EXTENSION.description,
+          icon: WK_EXTENSION.icon,
 
           // Clicking the extension in the Extensions sidebar opens
           // the extension's own page.
           open() {
-            editor.EditorApp.openBuiltin('watermelonkatanatest');
+            editor.EditorApp.openBuiltin('watermelonkatana');
           }
         });
       }
@@ -371,15 +318,15 @@
 
       if (editor.EditorApp?.addWelcomeBuiltin) {
         editor.EditorApp.addWelcomeBuiltin(
-          'watermelonkatanatestWelcome',
+          'watermelonkatanaEditor',
           'WatermelonKatana Editor'
         );
       }
 
       // ---------------------------------------------------------------------------
       
-      var old = frame.contentWindow.__sharedBrowserNetwork._requestObject;
-      frame.contentWindow.__sharedBrowserNetwork._requestObject = function(request, ...args) {
+      var old = editor.__sharedBrowserNetwork._requestObject;
+      editor.__sharedBrowserNetwork._requestObject = function(request, ...args) {
         if (!request.url.startsWith(window.origin)) return old.call(this, request, ...args);
         const newHeaders = new request.headers.constructor(request.headers);
         newHeaders.append('X-From-Emulator', '1');
@@ -457,7 +404,7 @@ input[type=checkbox]:checked { background-color: #08a372 !important; border-colo
 .ai-user .ai-bubble { background: #003314 !important; }
       `;
       framedoc.body.appendChild(style);
-    },1));
+    });
   </script>
 </body>
 </html>
