@@ -1379,20 +1379,6 @@
       };
 
       // --------------------------------------------------------------------------
-      // Register the extension itself.
-      // --------------------------------------------------------------------------
-
-      if (editor.EditorExtensionAPI) {
-        editor.EditorExtensionAPI.register({
-          ...WK_EXTENSION,
-          ai:{tools:wkAITools},
-          open() {
-            editor.EditorApp.openBuiltin('watermelonkatana');
-          }
-        });
-      }
-
-      // --------------------------------------------------------------------------
       // WatermelonKatana AI tools.
       // These are exposed to the Editor's built-in AI through the extension API.
       // Mutating operations use the Editor's extensionActions permission.
@@ -1484,7 +1470,7 @@
         return {id:projectId,title:data.title || args.title || current.title || '',updated:true};
       }
 
-      wkAITools = [
+      const wkAITools = [
                 {
                   name:'wk_list_publications',
                   description:'List the current user\'s WatermelonKatana publications attached to the open GitHub repository.',
@@ -1523,9 +1509,16 @@
                   execute:wkAIUpdatePublication
                 }
               ];
-              const wkAI = wkAIExtension?.ai || null;
-              // Register through the public API so this remains an ordinary extension
-              // capability rather than a special case in the Editor's AI implementation.
+
+      if (editor.EditorExtensionAPI) {
+        editor.EditorExtensionAPI.register({
+          ...WK_EXTENSION,
+          ai:{tools:wkAITools},
+          open() {
+            editor.EditorApp.openBuiltin('watermelonkatana');
+          }
+        });
+      }
 
       // --------------------------------------------------------------------------
       // Add the separate custom page to Welcome.
