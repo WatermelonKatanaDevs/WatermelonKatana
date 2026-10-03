@@ -139,7 +139,7 @@ exports.login = async (req, res, next) => {
 };
 
 exports.update = async (req, res, next) => {
-  const { username, avatar, banner, biography, mature, avatarpos, bannerpos, flair, signedinbanner, rolegradient, anonymous, allowuserdata } = req.body;
+  const { username, avatar, banner, biography, mature, avatarpos, bannerpos, flair, signedinbanner, rolegradient, anonymous, showEmail, allowuserdata } = req.body;
   if (!username.match(/^[\w\d_-]+$/)) return res.status(400).json({ message: "Username can only contain letters, numbers, and underscores" });
   if (Profanity.isProfane(username)) { return res.status(400).json({ message: "Oh no! This violates our TOS, please try another name" }) }
   const mediapattern = /^(https?:\/\/|\/)[^"'<>]+$/;
@@ -182,6 +182,7 @@ exports.update = async (req, res, next) => {
       user.anonymous = anonymous;
       if (anonymous && !user.anonname) user.anonname = "anon-" + crypto.randomBytes(3).toString("hex");
     }
+    if (typeof showEmail === "boolean") user.showEmail = showEmail;
     // if (typeof allowuserdata === "boolean") user.allowuserdata = allowuserdata;
     await user.save();
     res.status(201).json({
@@ -204,7 +205,7 @@ exports.verifybadge = async (req, res) => {
     if (!user) return res.status(404).json({ message: 'User not found' });
     user.verifiedbadge = !!value;
     await user.save();
-    res.status(200).json({ message: 'Verification updated', user: user.pack(true) });
+    res.status(200).json({ message: 'Blue-check verification updated', user: user.pack(true) });
   } catch (error) {
     res.status(500).json({ message: 'Error updating verification', error: error.message });
   }
