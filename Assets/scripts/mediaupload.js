@@ -1,7 +1,9 @@
 (function(){
-  document.body.innerHTML += `
-<style>
+  if (document.getElementById("upload-container")) return;
 
+  var style = document.createElement('style');
+  style.id = 'media-upload-style';
+  style.textContent = `
 #upload-container {
   color: #fff;
   text-decoration: none;
@@ -36,15 +38,46 @@
   max-width: 72vmin;
   max-height: 72vmin;
 }
+`;
+  (document.head || document.documentElement).appendChild(style);
 
-</style>
-<div id="upload-container">
-  <input id="link-insert" type="text" onchange="setPreviewLink()"><br>
-  <input id="file-upload" type="file" accept="image/*" onchange="setPreview()"><br>
-  <img id="upload-preview" onerror="cancelImagePreview(this);">
-  <button id="file-upload-submit" onclick="uploadMedia()">Upload</button>
-  <button id="file-upload-cancel" onclick="fileUploaded(null)">Cancel</button>
-</div>`;
+  var container = document.createElement('div');
+  container.id = 'upload-container';
+
+  var link = document.createElement('input');
+  link.id = 'link-insert';
+  link.type = 'text';
+
+  var file = document.createElement('input');
+  file.id = 'file-upload';
+  file.type = 'file';
+  file.accept = 'image/*';
+
+  var preview = document.createElement('img');
+  preview.id = 'upload-preview';
+
+  var submit = document.createElement('button');
+  submit.id = 'file-upload-submit';
+  submit.textContent = 'Upload';
+
+  var cancel = document.createElement('button');
+  cancel.id = 'file-upload-cancel';
+  cancel.textContent = 'Cancel';
+
+  container.appendChild(link);
+  container.appendChild(document.createElement('br'));
+  container.appendChild(file);
+  container.appendChild(document.createElement('br'));
+  container.appendChild(preview);
+  container.appendChild(submit);
+  container.appendChild(cancel);
+  document.body.appendChild(container);
+
+  link.addEventListener('change', setPreviewLink);
+  file.addEventListener('change', setPreview);
+  preview.addEventListener('error', function(){ cancelImagePreview(preview); });
+  submit.addEventListener('click', uploadMedia);
+  cancel.addEventListener('click', function(){ fileUploaded(null); });
 })();
 
 function getFileUpload(url) {
@@ -67,7 +100,7 @@ async function uploadMedia() {
   var b64 = _arrayBufferToBase64(buf);
   var params = new URLSearchParams();
   params.set("image",b64);
-  params.set("name",file.name.replace(/\.[^.]+$/,""));
+  params.set("name",file.name.replace(/\.[^.]+$/,"") );
   try {
     var res = await fetch("/api/media/upload",{
       method: 'POST',
@@ -79,17 +112,16 @@ async function uploadMedia() {
   } catch (error) {
     alert(JSON.stringify(error));
     console.log(error);
-    fileUploadCancel();
+    fileUploaded(null);
   }
 }
 async function setPreview() {
   var link = document.querySelector('#link-insert');
   var elem = document.querySelector('#file-upload');
   var img = document.querySelector('#upload-preview');
-  
   var file = elem.files[0];
+  if (!file) return;
   var buf = await file.arrayBuffer();
-
   var b64 = _arrayBufferToBase64(buf);
   var url = "data:"+file.type+";base64,"+b64;
   img.src = url;
@@ -118,7 +150,11 @@ function fileUploaded(url) {
   container.style.display = "none";
   cancelImagePreview(img);
   elem.value = "";
-  window.onfileupload(url);
+  if (typeof window.onfileupload === 'function') {
+    var resolve = window.onfileupload;
+    window.onfileupload = null;
+    resolve(url);
+  }
 }
 function _arrayBufferToBase64( buffer ) {
   var binary = '';

@@ -321,13 +321,16 @@
       async function ensureWKProjectEditorTools() {
         if (editor.__wkProjectEditorToolsPromise) return editor.__wkProjectEditorToolsPromise;
         editor.__wkProjectEditorToolsPromise = (async () => {
+          // Reuse the existing WatermelonKatana editing tools inside this iframe.
+          // mediaupload.js is now DOM-safe and builds its UI with appendChild, so it
+          // no longer rebuilds the Node Editor workbench while loading.
           const sources = [
             '/scripts/EmojiPicker.js',
             '/scripts/markdowntextbox.js',
             '/scripts/mediaupload.js'
           ];
           for (const src of sources) {
-            const exists = framedoc.querySelector(`script[data-wk-project-tool="${CSS.escape(src)}"]`);
+            const exists = Array.from(framedoc.scripts).find(script => script.dataset?.wkProjectTool === src);
             if (exists) continue;
             await new Promise((resolve, reject) => {
               const script = framedoc.createElement('script');
@@ -338,6 +341,9 @@
               script.onerror = () => reject(new Error(`Failed to load ${src}`));
               framedoc.head.appendChild(script);
             });
+          }
+          if (typeof editor.getFileUpload !== 'function') {
+            throw new Error('WatermelonKatana media uploader is unavailable.');
           }
         })();
         try {
@@ -580,8 +586,8 @@
 
       async function renderEditMode(g, page, projectId, repo) {
         const token = ++WK_EDITOR_STATE.renderToken;
-        await ensureWKProjectEditorTools();
-        if (token !== WK_EDITOR_STATE.renderToken) return;
+        // Render the shell immediately so tool-loading/API failures are visible
+        // instead of leaving a blank builtin page.
         const wrap = wkEditorShell(page, 'Edit WatermelonKatana project', 'Edit the project metadata without leaving the editor.');
         const card = framedoc.createElement('div');
         card.className = 'wk-editor-card';
@@ -731,6 +737,14 @@
           }
         });
 
+        try {
+          await ensureWKProjectEditorTools();
+        } catch (e) {
+          status.className = 'wk-editor-status wk-editor-error';
+          status.textContent = e?.message || String(e);
+          return;
+        }
+        if (token !== WK_EDITOR_STATE.renderToken) return;
         await loadProject();
       }
 
