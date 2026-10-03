@@ -1,4 +1,5 @@
 const Users = require("../../Database/model/Users");
+const crypto = require("crypto");
 const { isadmin } = require("../../util/js/roles");
 var PostAPI = require("../Forum/post.js");
 
@@ -273,10 +274,15 @@ async play(req, res, next) {
       error: "Project not found",
     });
 
-    const uid = String(res.locals.userToken.id);
     const now = Date.now();
     const cooldown = 5 * 60 * 1000;
-    const lastPlayed = Number(project.playCooldowns?.get(uid) || 0);
+    const forwarded = req.headers["x-forwarded-for"];
+    const ip = String(Array.isArray(forwarded) ? forwarded[0] : (forwarded || req.socket?.remoteAddress || "")).split(",")[0].trim();
+    const accountId = res.locals.userToken?.id ? String(res.locals.userToken.id) : "";
+    const identity = crypto.createHash("sha256")
+      .update(accountId ? "user:" + accountId + "|ip:" + ip : "ip:" + ip)
+      .digest("hex");
+    const lastPlayed = Number(project.playCooldowns?.get(identity) || 0);
 
     if (now - lastPlayed < cooldown) {
       return res.status(200).json({
@@ -292,7 +298,7 @@ async play(req, res, next) {
     for (const [playerId, timestamp] of project.playCooldowns) {
       if (now - Number(timestamp) >= cooldown) project.playCooldowns.delete(playerId);
     }
-    project.playCooldowns.set(uid, now);
+    project.playCooldowns.set(identity, now);
     await project.save();
 
     res.status(201).json({
