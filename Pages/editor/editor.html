@@ -37,7 +37,14 @@
       
       var nameplate = framedoc.getElementById("projectName");
        if (pid) {
-        framedoc.getElementsByClassName("toolbar-left")[0].innerHTML = `<a href="/project/${pid}" target="_top"><Button>Exit</Button></a>`;
+        const toolbarLeft = framedoc.getElementsByClassName("toolbar-left")[0];
+        const exitLink = framedoc.createElement("a");
+        exitLink.href = "/project/" + pid;
+        exitLink.target = "_top";
+        const exitButton = framedoc.createElement("button");
+        exitButton.textContent = "Exit";
+        exitLink.appendChild(exitButton);
+        toolbarLeft.prepend(exitLink);
         framedoc.getElementById("saveProjectBtn").outerHTML = '';
         framedoc.getElementById("saveZipBtn").outerHTML = '';
         nameplate.style['font-weight'] = "bold";
@@ -63,8 +70,14 @@
           editor.EditorApp.on('sidebarChange', logSidebarChange);
         }
       } else {
-        let d = framedoc.getElementsByClassName("toolbar-left")[0];
-        d.innerHTML = `<a href="/" target="_top"><Button>Exit</Button></a>` + d.innerHTML;
+        const toolbarLeft = framedoc.getElementsByClassName("toolbar-left")[0];
+        const exitLink = framedoc.createElement("a");
+        exitLink.href = "/";
+        exitLink.target = "_top";
+        const exitButton = framedoc.createElement("button");
+        exitButton.textContent = "Exit";
+        exitLink.appendChild(exitButton);
+        toolbarLeft.prepend(exitLink);
       }
 
       // --- WatermelonKatana Extension ---------------------------------------
