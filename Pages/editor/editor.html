@@ -254,6 +254,13 @@
         ]
       };
 
+      // EditorTheme is the public extension override point. Assigning here intentionally
+      // replaces the active theme while the base Editor remains WK-agnostic.
+      editor.EditorTheme = {
+        id: WK_MONACO_THEME.name,
+        monaco: WK_MONACO_THEME
+      };
+
       // Apply the WK palette locally to Monaco after the extension has loaded.
       // Do not assign editor.EditorTheme: that API belongs to the neutral base Editor.
       function applyWKMonacoTheme() {
