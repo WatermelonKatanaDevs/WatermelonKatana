@@ -95,6 +95,11 @@
         <input type="checkbox" id="rolegradient">
         <span class="checkbox"></span>
       </label><br>
+      <label for="show-email">Show email on my public profile
+        <input type="checkbox" id="show-email">
+        <span class="checkbox"></span>
+      </label>
+      <div class="hint">Your email is hidden from other users by default.</div><br>
       <input type="submit" value="update"/><br>
     </form>
     <br/>
@@ -110,6 +115,7 @@
       const bio = document.querySelector("#bio");
       const mature = document.querySelector("#mature");
       const rolegradienttoggle = document.querySelector("#rolegradient");
+      const showemailtoggle = document.querySelector("#show-email");
       const display = document.querySelector(".error");
 
       const avatarframe = document.querySelector("#avatar-frame");
@@ -312,6 +318,7 @@
         bannerzoom.value = bannerpos.zoom;
         mature.checked = user.mature;
         rolegradienttoggle.checked = user.rolegradient !== false;
+        showemailtoggle.checked = user.showEmail === true;
         refreshavatar();
         refreshbanner();
 
@@ -358,6 +365,7 @@
               banner: bannerurl,
               mature: mature.checked,
               rolegradient: rolegradienttoggle.checked,
+              showEmail: showemailtoggle.checked,
               avatarpos,
               bannerpos,
               flair: flairstate,
