@@ -17,18 +17,18 @@
   <script>
     const pid = location.path[3];
     const frame = document.getElementById("editorFrame");
-    frame.addEventListener('load',function(){
+    frame.addEventListener('load',()=>setTimeout(function(){
       const framedoc = frame.contentDocument;
       const editor = frame.contentWindow;
+      var nameplate = framedoc.getElementById("projectName");
       if (pid) {
         framedoc.getElementsByClassName("toolbar-left")[0].innerHTML = `<a href="/project/${pid}" target="_top"><Button>Exit</Button></a>`;
         framedoc.getElementById("saveProjectBtn").outerHTML = '';
         framedoc.getElementById("saveZipBtn").outerHTML = '';
-        framedoc.getElementById("projectName").style['font-weight'] = "bold";
-        framedoc.getElementById("projectName").id = "";
-        var repoSelect = framedoc.querySelector('[data-repo]');
-        repoSelect.innerHTML = `<option value=${repoSelect.value}>${repoSelect.value}</option>`;
-
+        nameplate.style['font-weight'] = "bold";
+        nameplate.id = "";
+        nameplate.innerText = "WORKSPACE_NAME";
+        
         const logSidebarChange = (event) => {
           const sidebar =
             event?.sidebar ||
@@ -37,7 +37,8 @@
             sidebarNames[event?.buttonId] ||
             'Unknown';
 
-          console.log('[WatermelonKatana] Sidebar changed:', sidebar, event);
+          var repoSelect = framedoc.querySelector('[data-repo]');
+          if (repoSelect) repoSelect.innerHTML = `<option value=${repoSelect.value}>${repoSelect.value}</option>`;
         };
 
         if (typeof editor.EditorApp?.onSidebarChange === 'function') {
@@ -456,7 +457,7 @@ input[type=checkbox]:checked { background-color: #08a372 !important; border-colo
 .ai-user .ai-bubble { background: #003314 !important; }
       `;
       framedoc.body.appendChild(style);
-    });
+    },1));
   </script>
 </body>
 </html>

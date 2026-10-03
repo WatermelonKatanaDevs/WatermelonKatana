@@ -44,11 +44,11 @@ exports.userAuth = (req, res, next) => {
 };
 
 exports.checkAuth = (req, res, next) => {
-  if (req.get('X-From-Emulator')) {
-    res.locals.userToken = false;
-    next();
-    return;
-  }
+  // if (req.get('X-From-Emulator')) {
+  //   res.locals.userToken = false;
+  //   next();
+  //   return;
+  // }
   const token = req.cookies.jwt;
   if (token) {
     jwt.verify(token, jwtSecret, (err, decodedToken) => {

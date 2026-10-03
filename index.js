@@ -160,7 +160,7 @@ app.get("/editor/project/:id/deployment", checkAuth, async (req, res) => {
     if (project.privateRecipients?.length && !owner && !(tok && project.privateRecipients.includes(tok.id))) return sendEditorForbidden(res);
     if (project.mature && !owner && !viewer?.mature) return sendEditorForbidden(res);
     const src = "/editor/deployment.html?github=" + encodeURIComponent(project.editorRepository);
-    sendFileReplace(res, "./Pages/editor/deployment.html", s => s.replace("DEPLOYMENT_SRC", src).replace("<title>Project</title>", `<title>${makeLiteralChars(project.title)}</title>`));
+    sendFileReplace(res, "./Pages/editor/deployment.html", s => s.replace("DEPLOYMENT_SRC", src).replace("WORKSPACE_NAME", makeLiteralChars(project.title)).replace("<title>Project</title>", `<title>${makeLiteralChars(project.title)}</title>`));
   } catch (e) {
     console.error(e);
     res.status(404).sendFile(cldir + "/404.html");
