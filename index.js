@@ -142,7 +142,7 @@ function sendEditorForbidden(res) {
 app.get("/editor", makeFormToken, async (req, res) => {
   try {
     const src = "/editor/index.html" ;
-    sendFileReplace(res, "./Pages/editor/project.html", s => s.replace("EDITOR_SRC", src));
+    sendFileReplace(res, "./Pages/editor/editor.html", s => s.replace("EDITOR_SRC", src));
   } catch (e) {
     console.error(e);
     res.status(404).sendFile(cldir + "/404.html");
@@ -173,7 +173,7 @@ app.get("/editor/project/:id", userAuth, async (req, res) => {
     const tok = res.locals.userToken;
     if (!project || !project.editorProject || (project.posterId !== tok.id && !isadmin(tok.role))) return sendEditorForbidden(res);
     const src = "/editor/index.html?github=" + encodeURIComponent(project.editorRepository);
-    sendFileReplace(res, "./Pages/editor/project.html", s => s.replace("EDITOR_SRC", src).replace("WORKSPACE_NAME", makeLiteralChars(project.title)).replace("<title>Editor | WatermelonKatana</title>", `<title>${makeLiteralChars(project.title)} | Editor</title>`));
+    sendFileReplace(res, "./Pages/editor/editor.html", s => s.replace("EDITOR_SRC", src).replace("WORKSPACE_NAME", makeLiteralChars(project.title)).replace("<title>Editor | WatermelonKatana</title>", `<title>${makeLiteralChars(project.title)} | Editor</title>`));
   } catch (e) {
     console.error(e);
     res.status(404).sendFile(cldir + "/404.html");
@@ -194,7 +194,7 @@ app.get("/project/:id", checkAuth, makeFormToken, async (req, res) => {
   } 
   // keep this in until all posts and projects are at the correct number of views
   proj.views = proj.viewers.length;
-  sendFileReplace(res, "./Pages/projects/project.html", (s) => s.replace("<!--og:meta-->", () => `
+  sendFileReplace(res, "./Pages/projects/editor.html", (s) => s.replace("<!--og:meta-->", () => `
     <meta property="og:title" content="${makeLiteralChars(proj.title)}"/>
     <meta property="og:type" content="website"/>
     <meta property="og:image" content="${makeLiteralChars(proj.thumbnail)}"/>
