@@ -375,7 +375,11 @@
 
           if (p?.value === 'class') { add('wk-monaco-class-token'); continue; }
           if (p?.value === 'new' || isWKNewExpression(tokens, i)) {
-            if (n?.value === '(' || p?.value === 'new' || p?.value === '.' || p?.value === '?.') {
+            // In `new ns.Class()`, only Class is the constructor; ns remains
+            // an ordinary qualifier rather than becoming a class token.
+            if ((p?.value === 'new' && n?.value !== '.' && n?.value !== '?.') ||
+                (p?.value === '.' || p?.value === '?.') ||
+                (isWKNewExpression(tokens, i) && n?.value === '(')) {
               add('wk-monaco-class-token');
               continue;
             }
