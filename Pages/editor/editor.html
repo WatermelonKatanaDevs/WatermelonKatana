@@ -256,160 +256,226 @@
 
       // EditorTheme is the public extension override point. Assigning here intentionally
       // replaces the active theme while the base Editor remains WK-agnostic.
+      // EditorTheme is the public extension override point.
       editor.EditorTheme = {
         id: WK_MONACO_THEME.name,
         monaco: WK_MONACO_THEME
       };
 
-      // EditorTheme is the public extension override point. Assigning here intentionally
-      // replaces the active theme while the base Editor remains WK-agnostic.
-      editor.EditorTheme = {
-        id: WK_MONACO_THEME.name,
-        monaco: WK_MONACO_THEME
-      };
-
-      // Monaco exposes object-literal keys and member-access names through the
-      // same semantic `property` class. Keep this tiny override only for keys in
-      // object literals; member names remain the Monaco property color.
-      // Monaco's semantic-token pipeline is not guaranteed to expose function
-      // classifications in this embedded TypeScript build, so WK owns the visual
-      // function highlighting as decorations. This is deliberately extension-local.
-      function installWKFunctionStyle() {
-        if (framedoc.getElementById('wk-function-token-style')) return;
+      function installWKHighlightStyles() {
+        if (framedoc.getElementById('wk-monaco-semantic-styles')) return;
         const style = framedoc.createElement('style');
-        style.id = 'wk-function-token-style';
-        style.textContent = '.wk-function-token{color:#3cdfa9 !important;}';
+        style.id = 'wk-monaco-semantic-styles';
+        style.textContent = [
+          '.wk-monaco-function-token{color:#3cdfa9 !important;}',
+          '.wk-monaco-class-token{color:#00c23a !important;}',
+          '.wk-monaco-object-key-token{color:#afcc8f !important;}',
+          '.wk-monaco-property-token{color:#c98f9c !important;}'
+        ].join('');
         framedoc.head?.appendChild(style);
       }
 
-      function attachWKFunctionOverride(instance) {
-        if (!instance || instance.__wkFunctionOverride) return;
-        const monaco = editor.monaco;
-        const model = instance.getModel?.();
-        if (!monaco?.Range || !model) return;
-        installWKFunctionStyle();
+      function isWKCodeModel(model) {
+        const id = model?.getLanguageId?.();
+        return id === 'javascript' || id === 'typescript' ||
+          id === 'javascriptreact' || id === 'typescriptreact';
+      }
 
-        const refresh = () => {
-          const ranges = [];
-          for (let line = 1; line <= model.getLineCount(); line++) {
-            const source = model.getLineContent(line);
-            let m;
-
-            // Named function declarations / expressions, including async forms.
-            const functions = /\\b(?:async\\s+)?function\\s*([A-Za-z_$][\\w$]*)\\s*\\(/g;
-            while ((m = functions.exec(source))) {
-              const start = m.index + m[0].lastIndexOf(m[1]);
-              ranges.push({
-                range: new monaco.Range(line, start + 1, line, start + m[1].length + 1),
-                options: { inlineClassName: 'wk-function-token', inlineClassNameAffectsLetterSpacing: false }
-              });
-            }
-
-            // Class/object methods. Avoid control-flow keywords and property keys.
-            const methods = /(?:^|[,{;}]|\\b(?:static|get|set|async)\\s+)\\s*([A-Za-z_$][\\w$]*)\\s*\\(/g;
-            while ((m = methods.exec(source))) {
-              const name = m[1];
-              if (/^(?:if|for|while|switch|catch|with|function)$/.test(name)) continue;
-              const before = source.slice(0, m.index + m[0].length - name.length - 1);
-              if (/\\bfunction\\s*$/.test(before)) continue;
-              const start = m.index + m[0].lastIndexOf(name);
-              ranges.push({
-                range: new monaco.Range(line, start + 1, line, start + name.length + 1),
-                options: { inlineClassName: 'wk-function-token', inlineClassNameAffectsLetterSpacing: false }
-              });
-            }
-
-            // Named arrow functions: const foo = (...) => / const foo = x =>
-            const arrows = /\\b(?:const|let|var)\\s+([A-Za-z_$][\\w$]*)\\s*=\\s*(?:\\([^\\n]*\\)|[A-Za-z_$][\\w$]*)\\s*=>/g;
-            while ((m = arrows.exec(source))) {
-              const start = m.index + m[0].indexOf(m[1]);
-              ranges.push({
-                range: new monaco.Range(line, start + 1, line, start + m[1].length + 1),
-                options: { inlineClassName: 'wk-function-token', inlineClassNameAffectsLetterSpacing: false }
-              });
-            }
-          }
-          instance.__wkFunctionDecorationIds = instance.deltaDecorations(
-            instance.__wkFunctionDecorationIds || [], ranges
-          );
-        };
-
-        const contentListener = model.onDidChangeContent?.(refresh);
-        const modelListener = instance.onDidChangeModel?.(() => {
-          contentListener?.dispose?.();
-          instance.__wkFunctionOverride = null;
-          attachWKFunctionOverride(instance);
+      function addWKRange(ranges, monaco, model, start, end, className) {
+        if (end <= start) return;
+        const a = model.getPositionAt(start);
+        const b = model.getPositionAt(end);
+        ranges.push({
+          range: new monaco.Range(a.lineNumber, a.column, b.lineNumber, b.column),
+          options: { inlineClassName: className, inlineClassNameAffectsLetterSpacing: false }
         });
-        instance.__wkFunctionOverride = { model, contentListener, modelListener, refresh };
-        refresh();
       }
 
-      function installWKFunctionOverride() {
-        const monaco = editor.monaco;
-        if (!monaco?.editor?.getEditors) return false;
-        installWKFunctionStyle();
-        for (const instance of monaco.editor.getEditors()) attachWKFunctionOverride(instance);
-        if (!monaco.editor.__wkFunctionCreateHook && typeof monaco.editor.onDidCreateEditor === 'function') {
-          monaco.editor.__wkFunctionCreateHook = monaco.editor.onDidCreateEditor(instance => {
-            attachWKFunctionOverride(instance);
-          });
+      function lexWKCode(text) {
+        const tokens = [];
+        let i = 0;
+        while (i < text.length) {
+          const ch = text[i], next = text[i + 1];
+          if (/\s/.test(ch)) { i++; continue; }
+          if (ch === '/' && next === '/') {
+            const nl = text.indexOf('\n', i + 2);
+            i = nl < 0 ? text.length : nl;
+            continue;
+          }
+          if (ch === '/' && next === '*') {
+            const close = text.indexOf('*/', i + 2);
+            i = close < 0 ? text.length : close + 2;
+            continue;
+          }
+          if (ch === '"' || ch === "'" || ch === String.fromCharCode(96)) {
+            const quote = ch;
+            i++;
+            while (i < text.length) {
+              if (text[i] === '\\') { i += 2; continue; }
+              if (text[i] === quote) { i++; break; }
+              i++;
+            }
+            continue;
+          }
+          if (/[A-Za-z_$]/.test(ch)) {
+            const start = i++;
+            while (i < text.length && /[A-Za-z0-9_$]/.test(text[i])) i++;
+            tokens.push({value:text.slice(start,i),start,end:i,type:'id'});
+            continue;
+          }
+          const two = text.slice(i, i + 2);
+          const three = text.slice(i, i + 3);
+          const multi = ['===','!==','>>>','=>','==','!=','<=','>=','++','--','+=','-=','*=','/=','%=','**','&&','||','??','?.','<<','>>','...'];
+          const value = multi.includes(three) ? three : multi.includes(two) ? two : ch;
+          tokens.push({value,start:i,end:i+value.length,type:'punct'});
+          i += value.length;
         }
-        return true;
+        return tokens;
       }
 
-      installWKFunctionOverride();
-
-      function installWKObjectKeyStyle() {
-        if (framedoc.getElementById('wk-object-key-style')) return;
-        const style = framedoc.createElement('style');
-        style.id = 'wk-object-key-style';
-        style.textContent = '.wk-object-key-token{color:#afcc8f !important;}';
-        framedoc.head?.appendChild(style);
+      function isWKControlWord(value) {
+        return new Set(['if','else','for','while','do','switch','case','catch','finally','try',
+          'throw','return','break','continue','default','yield','await','with']).has(value);
       }
 
-      function attachWKObjectKeyOverride(instance) {
-        if (!instance || instance.__wkObjectKeyOverride) return;
-        const monaco = editor.monaco;
-        const model = instance.getModel?.();
-        if (!monaco?.Range || !model) return;
-        installWKObjectKeyStyle();
-        const refresh = () => {
-          const ranges = [];
-          for (let line = 1; line <= model.getLineCount(); line++) {
-            const text = model.getLineContent(line);
-            const re = /(?:^|[,{])\s*([A-Za-z_$][\w$]*)\s*(?=:)/g;
-            let m;
-            while ((m = re.exec(text))) {
-              const start = m.index + m[0].indexOf(m[1]);
-              ranges.push({
-                range: new monaco.Range(line, start + 1, line, start + m[1].length + 1),
-                options: { inlineClassName: 'wk-object-key-token', inlineClassNameAffectsLetterSpacing: false }
-              });
+      function isWKNewExpression(tokens, index) {
+        let i = index - 1;
+        if (tokens[i]?.value === 'new') return true;
+        while (i >= 0 && (tokens[i].type === 'id' || tokens[i].value === '.' || tokens[i].value === '?.')) {
+          if (tokens[i].value === 'new') return true;
+          i--;
+        }
+        return false;
+      }
+
+      function classifyWKCode(text) {
+        const tokens = lexWKCode(text);
+        const ranges = [];
+        const braces = [];
+        const prev = i => tokens[i - 1];
+        const next = i => tokens[i + 1];
+
+        for (let i = 0; i < tokens.length; i++) {
+          const token = tokens[i], p = prev(i), n = next(i);
+
+          if (token.value === '{') {
+            const pv = p?.value;
+            const beforeP = prev(i - 1)?.value;
+            let kind = 'object';
+            if (!p || pv === '}' || pv === ')' || pv === '=>' || pv === ';' ||
+                pv === 'else' || pv === 'try' || pv === 'finally' || pv === 'do' ||
+                pv === 'catch' || (p?.type === 'id' && beforeP === 'class')) kind = 'block';
+            braces.push(kind);
+            continue;
+          }
+          if (token.value === '}') { braces.pop(); continue; }
+          if (token.type !== 'id') continue;
+
+          const add = className => ranges.push({start:token.start,end:token.end,className});
+
+          if (p?.value === 'class') { add('wk-monaco-class-token'); continue; }
+          if (p?.value === 'new' || isWKNewExpression(tokens, i)) {
+            if (n?.value === '(' || p?.value === 'new' || p?.value === '.' || p?.value === '?.') {
+              add('wk-monaco-class-token');
+              continue;
             }
           }
-          instance.__wkObjectKeyDecorationIds = instance.deltaDecorations(
-            instance.__wkObjectKeyDecorationIds || [], ranges
-          );
-        };
-        const listener = model.onDidChangeContent?.(refresh);
-        instance.__wkObjectKeyOverride = { model, listener, refresh };
-        refresh();
+          if (p?.value === 'extends' || p?.value === 'implements' || p?.value === 'instanceof') {
+            add('wk-monaco-class-token');
+            continue;
+          }
+
+          if (n?.value === '(' && !isWKControlWord(token.value)) {
+            add('wk-monaco-function-token');
+            continue;
+          }
+
+          if (p?.value === '.' || p?.value === '?.') {
+            add('wk-monaco-property-token');
+            continue;
+          }
+
+          if (n?.value === ':' && braces[braces.length - 1] === 'object' && p?.value !== '?') {
+            add('wk-monaco-object-key-token');
+            continue;
+          }
+
+          if (n?.value === '=' && tokens[i + 2]?.value === '(') {
+            let depth = 0;
+            for (let j = i + 2; j < tokens.length && j < i + 24; j++) {
+              if (tokens[j].value === '(') depth++;
+              else if (tokens[j].value === ')') {
+                depth--;
+                if (depth === 0 && tokens[j + 1]?.value === '=>') {
+                  add('wk-monaco-function-token');
+                  break;
+                }
+              }
+            }
+          } else if (n?.value === '=' && tokens[i + 2]?.type === 'id' && tokens[i + 3]?.value === '=>') {
+            add('wk-monaco-function-token');
+          }
+        }
+        return ranges;
       }
 
-      function installWKObjectKeyOverride() {
+      function collectWKCodeDecorations(monaco, model) {
+        return classifyWKCode(model.getValue()).map(item => {
+          const ranges = [];
+          addWKRange(ranges, monaco, model, item.start, item.end, item.className);
+          return ranges[0];
+        });
+      }
+
+      const wkEditorDecorations = new WeakMap();
+      const wkEditorDisposables = new WeakMap();
+
+      function updateWKEditorDecorations(instance) {
+        const model = instance?.getModel?.();
+        if (!model) return;
+        installWKHighlightStyles();
+        const monaco = editor.monaco;
+        const ranges = isWKCodeModel(model) ? collectWKCodeDecorations(monaco, model) : [];
+        const old = wkEditorDecorations.get(instance) || [];
+        wkEditorDecorations.set(instance, instance.deltaDecorations(old, ranges));
+      }
+
+      function attachWKEditor(instance) {
+        if (!instance || wkEditorDisposables.has(instance)) return;
+        const store = [];
+        store.push(instance.onDidChangeModel?.(() => {
+          const old = wkEditorDisposables.get(instance) || [];
+          for (const disposable of old) disposable?.dispose?.();
+          wkEditorDisposables.delete(instance);
+          attachWKEditor(instance);
+        }));
+        const model = instance.getModel?.();
+        store.push(model?.onDidChangeContent?.(() => updateWKEditorDecorations(instance)));
+        wkEditorDisposables.set(instance, store);
+        updateWKEditorDecorations(instance);
+      }
+
+      function installWKHighlightPass() {
         const monaco = editor.monaco;
         if (!monaco?.editor?.getEditors) return false;
-        installWKObjectKeyStyle();
-        for (const instance of monaco.editor.getEditors()) attachWKObjectKeyOverride(instance);
-        if (!monaco.editor.__wkObjectKeyCreateHook && typeof monaco.editor.onDidCreateEditor === 'function') {
-          monaco.editor.__wkObjectKeyCreateHook = monaco.editor.onDidCreateEditor(instance => {
-            attachWKObjectKeyOverride(instance);
-          });
+        installWKHighlightStyles();
+        for (const instance of monaco.editor.getEditors()) attachWKEditor(instance);
+        if (!monaco.editor.__wkCreateDecorationsHook &&
+            typeof monaco.editor.onDidCreateEditor === 'function') {
+          monaco.editor.__wkCreateDecorationsHook =
+            monaco.editor.onDidCreateEditor(instance => attachWKEditor(instance));
         }
         return true;
       }
 
-      installWKObjectKeyOverride();
+      if (!installWKHighlightPass()) {
+        let attempts = 0;
+        const wkHighlightTimer = setInterval(() => {
+          attempts++;
+          if (installWKHighlightPass() || attempts >= 120) clearInterval(wkHighlightTimer);
+        }, 100);
+      }
+
       // ---------------------------------------------------------------------------
       // Sidebar change logging
       // ---------------------------------------------------------------------------
