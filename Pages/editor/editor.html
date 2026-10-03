@@ -271,7 +271,8 @@
           '.wk-monaco-class-token{color:#00c23a !important;}',
           '.wk-monaco-object-key-token{color:#afcc8f !important;}',
           '.wk-monaco-property-token{color:#c98f9c !important;}',
-          '.wk-monaco-operator-token{color:#c7c7c7 !important;}'
+          '.wk-monaco-operator-token{color:#c7c7c7 !important;}',
+          '.wk-monaco-argument-token{color:#de6c83 !important;}'
         ].join('');
         framedoc.head?.appendChild(style);
       }
@@ -335,7 +336,7 @@
       }
 
       function isWKOperator(value) {
-        return new Set(['=','+','-','*','/','%','**','++','--','+=','-=','*=','/=','%=','==','===','!=','!==','<','>','<=','>=','&&','||','??','!','~','&','|','^','<<','>>','>>>','=>','?.','?']).has(value);
+        return new Set(['=','+','-','*','/','%','**','++','--','+=','-=','*=','/=','%=','==','===','!=','!==','<','>','<=','>=','&&','||','??','!','~','&','|','^','<<','>>','>>>','=>','?.','?',';',':']).has(value);
       }
 
       function isWKControlWord(value) {
@@ -384,6 +385,27 @@
           if (token.type !== 'id') continue;
 
           const add = className => ranges.push({start:token.start,end:token.end,className});
+
+          // Color identifiers in function parameter lists and call argument lists.
+          // Stronger contextual rules below still win for functions/classes/properties.
+          let parenDepth = 0;
+          for (let j = 0; j < i; j++) {
+            if (tokens[j].value === '(') parenDepth++;
+            else if (tokens[j].value === ')') parenDepth--;
+          }
+          if (parenDepth > 0 &&
+              !isWKControlWord(token.value) &&
+              p?.value !== '.' && p?.value !== '?.' &&
+              p?.value !== 'class' && p?.value !== 'new') {
+            let open = i - 1;
+            while (open >= 0 && tokens[open].value !== '(') open--;
+            const openerPrev = open > 0 ? tokens[open - 1] : null;
+            const isCallList = openerPrev?.type === 'id' || openerPrev?.value === ')' ||
+              openerPrev?.value === ']' || openerPrev?.value === '.' || openerPrev?.value === '?.';
+            const isFunctionList = openerPrev?.value === 'function' ||
+              (open > 1 && tokens[open - 2]?.value === 'function');
+            if (isCallList || isFunctionList) add('wk-monaco-argument-token');
+          }
 
           if (p?.value === 'class') { add('wk-monaco-class-token'); continue; }
           if (p?.value === 'new' || isWKNewExpression(tokens, i)) {
