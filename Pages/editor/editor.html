@@ -75,29 +75,12 @@
 
 
       // --- WatermelonKatana Monaco theme -----------------------------------------
-      // WatermelonKatana replaces the editor's shared Monaco theme when the
-      // extension loads. EditorTheme remains the single source of truth after that.
+      // This theme belongs to the WatermelonKatana extension. It deliberately does
+      // not mutate EditorTheme, so the Node Editor's own defaults remain untouched.
       const WK_MONACO_THEME = {
         name: 'watermelonkatana-theme',
         base: 'vs-dark',
         inherit: true,
-        semanticHighlighting: true,
-        semanticTokenColors: {
-          class: '#3f9b67',
-          type: '#3f9b67',
-          interface: '#3f9b67',
-          enum: '#3f9b67',
-          namespace: '#3f9b67',
-          function: '#86e6ad',
-          method: '#86e6ad',
-          parameter: '#f0a05a',
-          number: '#82aaff',
-          property: '#ffb0bd',
-          variable: '#d7eee0',
-          keyword: '#ff4f63',
-          operator: '#c97a86',
-          string: '#d9536f'
-        },
 
         colors: {
           // Keep the Monaco workbench visually aligned with the Node Editor.
@@ -110,10 +93,6 @@
           'panel.background': '#181818',
           'terminal.background': '#181818',
           'editorGroupHeader.tabsBackground': '#181818',
-          'editorGroupHeader.tabsBorder': '#262626',
-          'tab.border': '#242424',
-          'tab.activeBorder': '#de6c8366',
-          'tab.unfocusedActiveBorder': '#de6c8340',
           'editorWidget.background': '#181818',
           'editorHoverWidget.background': '#181818',
           'editorHoverWidget.border': '#de6c83aa',
@@ -152,12 +131,11 @@
           { token: 'comment', foreground: '6f7d74', fontStyle: 'italic' },
           { token: 'comment.doc', foreground: '789187', fontStyle: 'italic' },
 
-          // Control statements: bright red
-
-          { token: 'keyword', foreground: 'ff4f63' },
-          { token: 'keyword.control', foreground: 'ff4f63' },
-          { token: 'keyword.operator', foreground: 'c97a86' },
-          { token: 'keyword.flow', foreground: 'ff4f63' },
+          // Keywords / control flow: pink-red
+          { token: 'keyword', foreground: 'de6c83' },
+          { token: 'keyword.control', foreground: 'de6c83' },
+          { token: 'keyword.operator', foreground: 'ef7890' },
+          { token: 'keyword.flow', foreground: 'de6c83' },
 
           // Strings: darker hot pink / red
           { token: 'string', foreground: 'd9536f' },
@@ -165,33 +143,33 @@
           { token: 'string.html', foreground: 'd9536f' },
           { token: 'string.css', foreground: 'd9536f' },
 
-          // Numbers / constants: blue
-          { token: 'number', foreground: '82aaff' },
-          { token: 'number.hex', foreground: '82aaff' },
-          { token: 'constant', foreground: '82aaff' },
-          { token: 'constant.language', foreground: '82aaff' },
-          { token: 'boolean', foreground: '82aaff' },
+          // Numbers / constants: green
+          { token: 'number', foreground: '69d99a' },
+          { token: 'number.hex', foreground: '59c98b' },
+          { token: 'constant', foreground: '69d99a' },
+          { token: 'constant.language', foreground: '69d99a' },
+          { token: 'boolean', foreground: '69d99a' },
 
-          // Types / classes: dark green
-          { token: 'type', foreground: '3f9b67' },
-          { token: 'type.identifier', foreground: '3f9b67' },
-          { token: 'class', foreground: '3f9b67' },
-          { token: 'interface', foreground: '3f9b67' },
-          { token: 'namespace', foreground: '3f9b67' },
-          { token: 'module', foreground: '3f9b67' },
-          { token: 'enum', foreground: '3f9b67' },
+          // Types / classes: blue
+          { token: 'type', foreground: '82aaff' },
+          { token: 'type.identifier', foreground: '82aaff' },
+          { token: 'class', foreground: '82aaff' },
+          { token: 'interface', foreground: '8fb7ff' },
+          { token: 'namespace', foreground: '82aaff' },
+          { token: 'module', foreground: '82aaff' },
+          { token: 'enum', foreground: '8fb7ff' },
 
-          // Variables: light green; parameters: orange
+          // Variables / parameters: light green
           { token: 'variable', foreground: 'd7eee0' },
           { token: 'variable.predefined', foreground: '8fe5b3' },
           { token: 'variable.readonly', foreground: '8fe5b3' },
-          { token: 'parameter', foreground: 'f0a05a' },
+          { token: 'parameter', foreground: 'bfe9cf' },
 
-          // Functions / methods: light green
-          { token: 'function', foreground: '86e6ad' },
-          { token: 'function.declaration', foreground: '86e6ad' },
-          { token: 'method', foreground: '86e6ad' },
-          { token: 'method.declaration', foreground: '86e6ad' },
+          // Functions / methods: bright green
+          { token: 'function', foreground: '69d99a' },
+          { token: 'function.declaration', foreground: '69d99a' },
+          { token: 'method', foreground: '69d99a' },
+          { token: 'method.declaration', foreground: '69d99a' },
 
           // Properties / members: light pink
           { token: 'property', foreground: 'ffb0bd' },
@@ -200,24 +178,24 @@
           { token: 'attribute.name', foreground: 'ffb0bd' },
           { token: 'attribute.value', foreground: 'd9536f' },
 
-          // Operators / punctuation: faded red / grey-green
-          { token: 'operator', foreground: 'c97a86' },
-          { token: 'delimiter', foreground: '8d998f' },
-          { token: 'delimiter.bracket', foreground: '8d998f' },
+          // Operators / punctuation
+          { token: 'operator', foreground: 'ef7890' },
+          { token: 'delimiter', foreground: 'aeb7b2' },
+          { token: 'delimiter.bracket', foreground: '82aaff' },
           { token: 'identifier', foreground: 'e8e8e8' },
 
           // HTML: tag names dark green, attributes light pink, strings hot pink/red.
           { token: 'tag', foreground: '3f9b67' },
           { token: 'tag.html', foreground: '3f9b67' },
           { token: 'tag.xml', foreground: '3f9b67' },
-          { token: 'delimiter.html', foreground: '829a8a' },
-          { token: 'delimiter.xml', foreground: '829a8a' },
+          { token: 'delimiter.html', foreground: '6bb98a' },
+          { token: 'delimiter.xml', foreground: '6bb98a' },
           { token: 'attribute.name.html', foreground: 'ffb0bd' },
           { token: 'attribute.name.xml', foreground: 'ffb0bd' },
           { token: 'attribute.value.html', foreground: 'd9536f' },
           { token: 'attribute.value.xml', foreground: 'd9536f' },
-          { token: 'metatag.html', foreground: '3f9b67' },
-          { token: 'metatag.content.html', foreground: '3f9b67' },
+          { token: 'metatag.html', foreground: '82aaff' },
+          { token: 'metatag.content.html', foreground: '82aaff' },
 
           // CSS / JSON-ish structures where Monaco exposes property tokens.
           { token: 'type.css', foreground: '3f9b67' },
@@ -226,12 +204,82 @@
         ]
       };
 
-      // Replace the editor's shared Monaco theme with the WatermelonKatana theme.
-      // EditorTheme remains the single source of truth after the extension loads.
-      editor.EditorTheme = editor.EditorTheme || {};
-      editor.EditorTheme.monaco = WK_MONACO_THEME;
-      editor.EditorTheme.apply?.();
+      let wkMonacoThemeActive = false;
 
+      function applyWatermelonKatanaMonacoTheme() {
+        const monaco = editor.monaco || window.monaco;
+        if (!monaco?.editor) return false;
+
+        monaco.editor.defineTheme(WK_MONACO_THEME.name, {
+          base: WK_MONACO_THEME.base,
+          inherit: WK_MONACO_THEME.inherit,
+          colors: WK_MONACO_THEME.colors,
+          rules: WK_MONACO_THEME.rules
+        });
+
+        monaco.editor.setTheme(WK_MONACO_THEME.name);
+        wkMonacoThemeActive = true;
+
+        for (const instance of monaco.editor.getEditors()) {
+          try {
+            instance.updateOptions({});
+            instance.layout();
+          } catch (_) {}
+        }
+
+        return true;
+      }
+
+      function restoreEditorMonacoTheme() {
+        if (!wkMonacoThemeActive) return;
+        wkMonacoThemeActive = false;
+        try {
+          editor.EditorTheme?.apply?.();
+        } catch (_) {}
+      }
+
+      let wkThemeRetryTimer = null;
+
+      function ensureWatermelonKatanaMonacoTheme() {
+        if (applyWatermelonKatanaMonacoTheme()) {
+          if (wkThemeRetryTimer) {
+            clearInterval(wkThemeRetryTimer);
+            wkThemeRetryTimer = null;
+          }
+          return;
+        }
+        if (wkThemeRetryTimer) return;
+        let attempts = 0;
+        wkThemeRetryTimer = setInterval(() => {
+          attempts++;
+          if (applyWatermelonKatanaMonacoTheme() || attempts >= 60) {
+            clearInterval(wkThemeRetryTimer);
+            wkThemeRetryTimer = null;
+          }
+        }, 250);
+      }
+
+      function handleWatermelonKatanaThemeEvent(detail = {}) {
+        if (detail?.builtin === 'watermelonkatanaEditor') {
+          ensureWatermelonKatanaMonacoTheme();
+        } else {
+          restoreEditorMonacoTheme();
+        }
+      }
+
+      // Monaco may finish loading after the outer editor frame does. The theme is
+      // applied by the extension itself; EditorTheme remains unchanged.
+      if (editor.EditorApp?.on) {
+        editor.EditorApp.on('builtinRender', handleWatermelonKatanaThemeEvent);
+        editor.EditorApp.on('viewRender', restoreEditorMonacoTheme);
+      }
+
+      // Do not change the editor's global theme object. If Monaco is already ready
+      // while the extension is being loaded, we can apply the extension theme now;
+      // otherwise the active extension page will retry when its builtin renders.
+      if (editor.monaco || window.monaco) {
+        ensureWatermelonKatanaMonacoTheme();
+      }
       // ---------------------------------------------------------------------------
       // Sidebar change logging
       // ---------------------------------------------------------------------------
@@ -379,17 +427,18 @@
             justify-content:center !important;
             margin:4px 6px 0 0 !important;
             padding:8px 16px !important;
-            border:0 !important;
-            border-radius:50px !important;
-            background-color:#00000080 !important;
-            background-image:url("/images/button.png") !important;
-            background-blend-mode:darken !important;
+            border:1px solid #444 !important;
+            border-radius:6px !important;
+            background-color:#272727 !important;
+            background-image:none !important;
+            background-blend-mode:normal !important;
             color:#e0e0e0 !important;
             font:700 14px Tahoma,sans-serif !important;
             cursor:pointer !important;
           }
           body.wk-editor-extension-host #upload-container button:hover {
-            background-color:#0000004d !important;
+            background-color:#303030 !important;
+            border-color:#555 !important;
           }
           body.wk-editor-extension-host #upload-preview {
             display:block !important;
@@ -445,7 +494,7 @@
             color:#eee !important;
           }
 
-          .wk-description-layout { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; align-items:start; }
+          .wk-description-layout { display:grid; grid-template-columns:minmax(0,1fr); gap:14px; align-items:start; }
           .wk-description-pane { min-width:0; }
           .wk-description-pane-title { color:#aaa; font-size:11px; text-transform:uppercase; letter-spacing:.08em; margin:0 0 7px; }
           .wk-description-edit { display:flex; flex-direction:column; min-width:0; }
@@ -461,16 +510,16 @@
             justify-content:center !important;
             margin:0 !important;
             padding:8px 12px !important;
-            border:0 !important;
-            border-radius:50px !important;
-            background-color:#00000080 !important;
-            background-image:url("/images/button.png") !important;
-            background-blend-mode:darken !important;
+            border:1px solid #444 !important;
+            border-radius:6px !important;
+            background-color:#272727 !important;
+            background-image:none !important;
+            background-blend-mode:normal !important;
             color:#e0e0e0 !important;
             cursor:pointer !important;
             font:700 14px Tahoma,sans-serif !important;
           }
-          .wk-markdown-toolbar > button:hover { background-color:#0000004d !important; }
+          .wk-markdown-toolbar > button:hover { background-color:#303030 !important; border-color:#555 !important; }
           .wk-markdown-toolbar > button svg { width:18px !important; height:18px !important; display:block !important; }
           .wk-description-preview {
             min-height:240px;
@@ -492,7 +541,6 @@
           .wk-description-preview p { margin:0 0 10px; }
           .wk-description-preview p:last-child { margin-bottom:0; }
           @media (max-width:800px) {
-            .wk-description-layout { grid-template-columns:1fr; }
             .wk-description-preview { max-height:none; }
           }
         `;
@@ -809,7 +857,7 @@
         const token = ++WK_EDITOR_STATE.renderToken;
         // Render the shell immediately so tool-loading/API failures are visible
         // instead of leaving a blank builtin page.
-        const wrap = wkEditorShell(page, 'Edit WatermelonKatana project', 'Edit the project metadata without leaving the editor.');
+        const wrap = wkEditorShell(page, 'Edit WatermelonKatana project', 'Edit the project metadata that is saved and displayed by WatermelonKatana.');
         const card = framedoc.createElement('div');
         card.className = 'wk-editor-card';
         card.innerHTML = `
@@ -1133,9 +1181,7 @@
 .border-indigo-500,.border-indigo-600{border-color:var(--wk-pink)!important}
 .border-gray-500,.border-gray-600,.border-gray-700{border-color:rgba(221,109,127,.38)!important}
 .modal-box,.modal-content,.dialog,.card,.panel,.welcome-card,.project-card{border-color:rgba(221,109,127,.38)!important}
-.tab.active,.editor-tab.active,.tab[aria-selected="true"],.editor-tab[aria-selected="true"]{border-bottom-color:rgba(221,109,127,.42)!important}
-.workbench-tab,.editor-tab,.tab{border-color:rgba(255,255,255,.055)!important}
-.workbench-tab + .workbench-tab{border-left:1px solid rgba(255,255,255,.045)!important}
+.tab.active,.editor-tab.active,.tab[aria-selected="true"],.editor-tab[aria-selected="true"]{border-bottom-color:var(--wk-pink)!important}
 .resizer:hover,.resize-handle:hover,.splitter:hover{background:var(--wk-pink)!important}
 
 /* Green = actions and interactive accents */
@@ -1156,7 +1202,7 @@ a{color:var(--wk-green)!important}a:hover{color:var(--wk-green-hover)!important}
 button:hover:not(:disabled){border-color:rgba(221,109,127,.65) !important; background:rgba(221,109,127,.33) !important;}
 button.bg-indigo-600:hover,button.bg-indigo-500:hover{border-color:var(--wk-green-hover)!important}
 
-.workbench-tab:hover {background:rgba(221,109,127,.08) !important;}
+.workbench-tab:hover {background:rgba(221,109,127,.33) !important;}
 
 /* Keep controls dark */
 input:not[type=checkbox],select,textarea{background:#202124!important;color:#e5e7eb!important}
