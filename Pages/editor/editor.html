@@ -82,7 +82,8 @@
 
 
       // --- WatermelonKatana Monaco theme -----------------------------------------
-      // WatermelonKatana replaces the shared EditorTheme when this extension loads.
+      // WatermelonKatana applies its own Monaco theme only after this extension loads.
+      // The base Editor keeps its default theme; WK does not mutate EditorTheme.
       // This Monaco build styles semantic tokens through its token-theme `rules`
       // table (it does not consume `semanticTokenColors`), so semantic token
       // categories are deliberately represented as rules below.
@@ -178,7 +179,7 @@
           { token: 'variable', foreground: 'd7eee0' },
           { token: 'number', foreground: '82aaff' },
           { token: 'boolean', foreground: 'ff465d' },
-          { token: 'operator', foreground: 'b8737f' },
+          { token: 'operator', foreground: 'c7c7c7' },
           { token: 'keyword', foreground: 'de6c83' },
           { token: 'comment', foreground: '6f7d74', fontStyle: 'italic' },
           { token: 'string', foreground: 'd9536f' },
@@ -193,9 +194,9 @@
           { token: 'keyword.control.flow', foreground: 'ff465d' },
           { token: 'keyword.control.conditional', foreground: 'ff465d' },
           { token: 'keyword.control.loop', foreground: 'ff465d' },
-          { token: 'keyword.operator.logical', foreground: 'b8737f' },
-          { token: 'keyword.operator.comparison', foreground: 'b8737f' },
-          { token: 'keyword.operator.arithmetic', foreground: 'b8737f' },
+          { token: 'keyword.operator.logical', foreground: 'c7c7c7' },
+          { token: 'keyword.operator.comparison', foreground: 'c7c7c7' },
+          { token: 'keyword.operator.arithmetic', foreground: 'c7c7c7' },
           { token: 'keyword.declaration', foreground: 'de6c83' },
           { token: 'storage.type', foreground: 'de6c83' },
           { token: 'storage.type.function', foreground: 'de6c83' },
@@ -217,7 +218,7 @@
           { token: 'constant.numeric', foreground: '82aaff' },
           { token: 'number', foreground: '82aaff' },
           { token: 'boolean', foreground: 'ff465d' },
-          { token: 'keyword.operator', foreground: 'b8737f' },
+          { token: 'keyword.operator', foreground: 'c7c7c7' },
           { token: 'operator', foreground: 'b8737f' },
           { token: 'string', foreground: 'd9536f' },
           { token: 'string.escape', foreground: 'ff8097' },
@@ -253,28 +254,25 @@
         ]
       };
 
-      // Replace the editor's shared theme. This is intentionally a replacement
-      // of the theme values, with no restore path.
-      editor.EditorTheme = editor.EditorTheme || {};
-      editor.EditorTheme.id = WK_MONACO_THEME.name;
-      editor.EditorTheme.monaco = WK_MONACO_THEME;
-      editor.EditorTheme.apply?.();
+      // Apply the WK palette locally to Monaco after the extension has loaded.
+      // Do not assign editor.EditorTheme: that API belongs to the neutral base Editor.
+      function applyWKMonacoTheme() {
+        const monaco = editor.monaco;
+        if (!monaco?.editor?.defineTheme || !monaco?.editor?.setTheme) return false;
+        monaco.editor.defineTheme(WK_MONACO_THEME.name, WK_MONACO_THEME);
+        monaco.editor.setTheme(WK_MONACO_THEME.name);
+        return true;
+      }
 
-      // Monaco may finish loading after this embedding page. Re-apply the shared
-      // theme once it becomes available, without replacing Monaco's own editor
-      // classification or syntax/highlighting pipeline.
+      applyWKMonacoTheme();
+
+      // Monaco may finish loading after the embedding page. Re-apply the WK theme
+      // once Monaco exists, without changing the Editor's default theme machinery.
       if (!editor.monaco?.editor) {
         let attempts = 0;
         const wkThemeTimer = setInterval(() => {
           attempts++;
-          if (editor.monaco?.editor) {
-            editor.EditorTheme.id = WK_MONACO_THEME.name;
-            editor.EditorTheme.monaco = WK_MONACO_THEME;
-            editor.EditorTheme.apply?.();
-            clearInterval(wkThemeTimer);
-          } else if (attempts >= 120) {
-            clearInterval(wkThemeTimer);
-          }
+          if (applyWKMonacoTheme() || attempts >= 120) clearInterval(wkThemeTimer);
         }, 100);
       }
 
