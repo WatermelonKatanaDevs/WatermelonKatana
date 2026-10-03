@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>Editor Preview | WatermelonKatana</title>
+  <title>Editor | WatermelonKatana</title>
   <link rel="stylesheet" type="text/css" href="/styles/style.css">
   <style>
     html,body { margin:0; width:100%; height:100%; overflow:hidden; }
@@ -75,186 +75,140 @@
 
 
       // --- WatermelonKatana Monaco theme -----------------------------------------
-      // Keep the code editor aligned with the Node Editor surface and use a
-      // higher-specificity palette so language grammars retain useful contrast.
+      // WatermelonKatana replaces the editor's shared Monaco theme when the
+      // extension loads. EditorTheme remains the single source of truth after that.
       const WK_MONACO_THEME = {
         name: 'watermelonkatana-theme',
         base: 'vs-dark',
         inherit: true,
 
         colors: {
-          // Editor + Monaco UI surfaces.
+          // Keep the Monaco workbench visually aligned with the Node Editor.
           'editor.background': '#181818',
-          'editor.foreground': '#eeeeee',
+          'editor.foreground': '#e8e8e8',
           'editorGutter.background': '#181818',
-          'editorWidget.background': '#181818',
-          'editorHoverWidget.background': '#181818',
-          'peekViewEditor.background': '#181818',
-          'peekViewResult.background': '#181818',
-          'minimap.background': '#181818',
           'sideBar.background': '#181818',
           'sideBarSectionHeader.background': '#181818',
           'activityBar.background': '#181818',
+          'panel.background': '#181818',
+          'terminal.background': '#181818',
+          'editorGroupHeader.tabsBackground': '#181818',
+          'editorWidget.background': '#181818',
+          'editorHoverWidget.background': '#181818',
+          'editorHoverWidget.border': '#de6c83aa',
+          'editorWidget.border': '#de6c83aa',
+          'input.background': '#181818',
+          'inputOption.activeBackground': '#de6c8328',
+          'inputOption.activeBorder': '#de6c83',
+          'dropdown.background': '#181818',
+          'dropdown.border': '#444444',
+          'peekViewEditor.background': '#181818',
+          'peekViewResult.background': '#181818',
+          'peekViewBorder': '#de6c83aa',
 
-          // Green / pink / blue interaction colors.
-          'editorCursor.foreground': '#4bd37b',
-          'editor.selectionBackground': '#de6c8350',
-          'editor.inactiveSelectionBackground': '#de6c8330',
-          'editor.lineHighlightBackground': '#de6c8310',
-          'editorLineNumber.foreground': '#676767',
-          'editorLineNumber.activeForeground': '#4bd37b',
-          'editorIndentGuide.background': '#ffffff0d',
-          'editorIndentGuide.activeBackground': '#de6c8360',
-          'editorWhitespace.foreground': '#ffffff14',
-          'editorBracketMatch.background': '#4bd37b20',
-          'editorBracketMatch.border': '#4bd37b90',
-          'editor.findMatchBackground': '#4bd37b45',
-          'editor.findMatchHighlightBackground': '#de6c8330',
+          'editorCursor.foreground': '#69d99a',
+          'editor.selectionBackground': '#69d99a38',
+          'editor.inactiveSelectionBackground': '#69d99a22',
+          'editor.lineHighlightBackground': '#69d99a0d',
+          'editorLineNumber.foreground': '#666666',
+          'editorLineNumber.activeForeground': '#69d99a',
+          'editorIndentGuide.background': '#ffffff12',
+          'editorIndentGuide.activeBackground': '#de6c8355',
+          'editorWhitespace.foreground': '#ffffff18',
+          'editorBracketMatch.background': '#de6c8322',
+          'editorBracketMatch.border': '#de6c83aa',
+          'editor.findMatchBackground': '#69d99a44',
+          'editor.findMatchHighlightBackground': '#69d99a22',
           'editorOverviewRuler.border': '#00000000',
-          'editorOverviewRuler.findMatchForeground': '#4bd37b',
-          'editorOverviewRuler.selectionHighlightForeground': '#de6c83',
-          'editorWidget.border': '#de6c8360',
-          'editorHoverWidget.border': '#de6c8360',
-          'peekViewBorder': '#de6c8360',
+          'minimap.background': '#181818',
           'scrollbarSlider.background': '#ffffff18',
-          'scrollbarSlider.hoverBackground': '#de6c8340',
-          'scrollbarSlider.activeBackground': '#4bd37b50'
+          'scrollbarSlider.hoverBackground': '#ffffff2b',
+          'scrollbarSlider.activeBackground': '#de6c8388'
         },
 
         rules: [
-          // General comments / documentation.
-          { token: 'comment', foreground: '6f7f73', fontStyle: 'italic' },
-          { token: 'comment.doc', foreground: '789080', fontStyle: 'italic' },
+          // Core text / comments
+          { token: 'comment', foreground: '6f7d74', fontStyle: 'italic' },
+          { token: 'comment.doc', foreground: '789187', fontStyle: 'italic' },
 
-          // Keywords and control flow: pink / red.
+          // Keywords / control flow: pink-red
           { token: 'keyword', foreground: 'de6c83' },
           { token: 'keyword.control', foreground: 'de6c83' },
-          { token: 'keyword.operator', foreground: 'f09aaa' },
+          { token: 'keyword.operator', foreground: 'ef7890' },
           { token: 'keyword.flow', foreground: 'de6c83' },
-          { token: 'keyword.new', foreground: 'de6c83' },
-          { token: 'keyword.return', foreground: 'de6c83' },
 
-          // Functions / declarations: green.
-          { token: 'function', foreground: '4bd37b' },
-          { token: 'function.declaration', foreground: '4bd37b' },
-          { token: 'function.call', foreground: '4bd37b' },
-          { token: 'method', foreground: '4bd37b' },
-          { token: 'method.declaration', foreground: '4bd37b' },
+          // Strings: darker hot pink / red
+          { token: 'string', foreground: 'd9536f' },
+          { token: 'string.escape', foreground: 'ff8097' },
+          { token: 'string.html', foreground: 'd9536f' },
+          { token: 'string.css', foreground: 'd9536f' },
 
-          // Types / classes / built-ins: blue.
+          // Numbers / constants: green
+          { token: 'number', foreground: '69d99a' },
+          { token: 'number.hex', foreground: '59c98b' },
+          { token: 'constant', foreground: '69d99a' },
+          { token: 'constant.language', foreground: '69d99a' },
+          { token: 'boolean', foreground: '69d99a' },
+
+          // Types / classes: blue
           { token: 'type', foreground: '82aaff' },
           { token: 'type.identifier', foreground: '82aaff' },
-          { token: 'type.class', foreground: '82aaff' },
           { token: 'class', foreground: '82aaff' },
-          { token: 'class.name', foreground: '82aaff' },
+          { token: 'interface', foreground: '8fb7ff' },
           { token: 'namespace', foreground: '82aaff' },
-          { token: 'interface', foreground: '82aaff' },
+          { token: 'module', foreground: '82aaff' },
+          { token: 'enum', foreground: '8fb7ff' },
 
-          // Strings: hot pink / red.
-          { token: 'string', foreground: 'ef476f' },
-          { token: 'string.escape', foreground: 'ff7a98' },
-          { token: 'string.regexp', foreground: 'ef476f' },
-          { token: 'regexp', foreground: 'ef476f' },
+          // Variables / parameters: light green
+          { token: 'variable', foreground: 'd7eee0' },
+          { token: 'variable.predefined', foreground: '8fe5b3' },
+          { token: 'variable.readonly', foreground: '8fe5b3' },
+          { token: 'parameter', foreground: 'bfe9cf' },
 
-          // Numbers / constants: blue-green / pink.
-          { token: 'number', foreground: '63c7a5' },
-          { token: 'number.hex', foreground: '63c7a5' },
-          { token: 'constant', foreground: 'f09aaa' },
-          { token: 'constant.language', foreground: 'f09aaa' },
-          { token: 'constant.numeric', foreground: '63c7a5' },
+          // Functions / methods: bright green
+          { token: 'function', foreground: '69d99a' },
+          { token: 'function.declaration', foreground: '69d99a' },
+          { token: 'method', foreground: '69d99a' },
+          { token: 'method.declaration', foreground: '69d99a' },
 
-          // Variables and properties.
-          { token: 'variable', foreground: 'eeeeee' },
-          { token: 'variable.predefined', foreground: '82aaff' },
-          { token: 'property', foreground: 'f2a8bb' },
-          { token: 'property.name', foreground: 'f2a8bb' },
-          { token: 'variable.property', foreground: 'f2a8bb' },
-          { token: 'key', foreground: 'f2a8bb' },
-          { token: 'key.json', foreground: 'f2a8bb' },
+          // Properties / members: light pink
+          { token: 'property', foreground: 'ffb0bd' },
+          { token: 'property.readonly', foreground: 'ffb0bd' },
+          { token: 'attribute', foreground: 'ffb0bd' },
+          { token: 'attribute.name', foreground: 'ffb0bd' },
+          { token: 'attribute.value', foreground: 'd9536f' },
 
-          // Operators / punctuation.
-          { token: 'operator', foreground: 'f2a8bb' },
-          { token: 'operator.logical', foreground: 'de6c83' },
-          { token: 'operator.assignment', foreground: 'f2a8bb' },
-          { token: 'delimiter', foreground: 'aeb6b2' },
-          { token: 'delimiter.bracket', foreground: '8fd9b0' },
-          { token: 'delimiter.parenthesis', foreground: '8fd9b0' },
+          // Operators / punctuation
+          { token: 'operator', foreground: 'ef7890' },
+          { token: 'delimiter', foreground: 'aeb7b2' },
+          { token: 'delimiter.bracket', foreground: '82aaff' },
+          { token: 'identifier', foreground: 'e8e8e8' },
 
-          // ---------------------------------------------------------------------
-          // HTML-specific highlighting.
-          // Tag names      -> dark green
-          // Properties     -> light pink
-          // Strings        -> hot pink / red
-          // ---------------------------------------------------------------------
-          { token: 'tag', foreground: '2f9e59' },
-          { token: 'tag.html', foreground: '2f9e59' },
-          { token: 'tag.name', foreground: '2f9e59' },
-          { token: 'tag.name.html', foreground: '2f9e59' },
-          { token: 'metatag', foreground: '2f9e59' },
-          { token: 'metatag.html', foreground: '2f9e59' },
-          { token: 'attribute', foreground: 'f2a8bb' },
-          { token: 'attribute.name', foreground: 'f2a8bb' },
-          { token: 'attribute.name.html', foreground: 'f2a8bb' },
-          { token: 'attribute.value', foreground: 'ef476f' },
-          { token: 'attribute.value.html', foreground: 'ef476f' },
-          { token: 'string.html', foreground: 'ef476f' },
-          { token: 'delimiter.html', foreground: '2f9e59' },
-          { token: 'delimiter.tag', foreground: '2f9e59' },
-          { token: 'delimiter.tag.html', foreground: '2f9e59' }
+          // HTML: tag names dark green, attributes light pink, strings hot pink/red.
+          { token: 'tag', foreground: '3f9b67' },
+          { token: 'tag.html', foreground: '3f9b67' },
+          { token: 'tag.xml', foreground: '3f9b67' },
+          { token: 'delimiter.html', foreground: '6bb98a' },
+          { token: 'delimiter.xml', foreground: '6bb98a' },
+          { token: 'attribute.name.html', foreground: 'ffb0bd' },
+          { token: 'attribute.name.xml', foreground: 'ffb0bd' },
+          { token: 'attribute.value.html', foreground: 'd9536f' },
+          { token: 'attribute.value.xml', foreground: 'd9536f' },
+          { token: 'metatag.html', foreground: '82aaff' },
+          { token: 'metatag.content.html', foreground: '82aaff' },
+
+          // CSS / JSON-ish structures where Monaco exposes property tokens.
+          { token: 'type.css', foreground: '3f9b67' },
+          { token: 'attribute.name.css', foreground: 'ffb0bd' },
+          { token: 'attribute.value.css', foreground: 'd9536f' }
         ]
       };
 
+      // Replace the editor's shared Monaco theme with the WatermelonKatana theme.
+      // EditorTheme remains the single source of truth after the extension loads.
       editor.EditorTheme = editor.EditorTheme || {};
-      editor.EditorTheme.monaco = {
-        ...(editor.EditorTheme.monaco || {}),
-        ...WK_MONACO_THEME
-      };
-
-      function applyWatermelonKatanaMonacoTheme() {
-        const monaco = editor.monaco || window.monaco;
-        if (!monaco?.editor) return false;
-
-        monaco.editor.defineTheme(WK_MONACO_THEME.name, {
-          base: WK_MONACO_THEME.base,
-          inherit: WK_MONACO_THEME.inherit,
-          colors: WK_MONACO_THEME.colors,
-          rules: WK_MONACO_THEME.rules
-        });
-
-        monaco.editor.setTheme(WK_MONACO_THEME.name);
-
-        for (const instance of monaco.editor.getEditors()) {
-          try {
-            instance.updateOptions({});
-            instance.layout();
-          } catch (_) {}
-        }
-
-        return true;
-      }
-
-      if (typeof editor.EditorTheme?.set === 'function') {
-        editor.EditorTheme.set({
-          monaco: WK_MONACO_THEME
-        });
-      }
-
-      // Monaco may finish loading after the outer editor frame does.
-      if (!applyWatermelonKatanaMonacoTheme()) {
-        let attempts = 0;
-        const themeTimer = setInterval(() => {
-          attempts++;
-          if (applyWatermelonKatanaMonacoTheme() || attempts >= 60) {
-            clearInterval(themeTimer);
-          }
-        }, 250);
-      }
-
-      if (editor.EditorApp?.on) {
-        editor.EditorApp.on('builtinRender', applyWatermelonKatanaMonacoTheme);
-        editor.EditorApp.on('viewRender', applyWatermelonKatanaMonacoTheme);
-        editor.EditorApp.on('tabActivate', applyWatermelonKatanaMonacoTheme);
-      }
+      editor.EditorTheme.monaco = WK_MONACO_THEME;
+      editor.EditorTheme.apply?.();
 
       // ---------------------------------------------------------------------------
       // Sidebar change logging
