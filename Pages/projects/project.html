@@ -96,6 +96,7 @@
             <div>
             <b>Score:</b> <span id="score">${data.score}</span>
             <b>Views:</b> <span id="views">${data.views}</span>
+            <b>Plays:</b> <span id="plays">${data.plays || 0}</span>
             ${await createActionButton("edit", `onclick="window.location.href += '/edit'"`)}
             ${data.editorProject ? await createActionButton("editor", `onclick="window.location.href = '/editor/project/${data.id}'"`, "edit") : ""}
             ${await createDeleteButton("project", "search")}
@@ -226,6 +227,20 @@
             game.requestFullscreen();
             game.focus();
           }
+
+          game.addEventListener("load", async () => {
+            try {
+              const playres = await fetch("/api/project/play/" + pid);
+              if (!playres.ok) return;
+              const playdata = await playres.json();
+              if (playdata.counted) {
+                const plays = document.querySelector("#plays");
+                if (plays) plays.textContent = playdata.plays;
+              }
+            } catch (e) {
+              console.warn("Unable to record project play:", e);
+            }
+          });
           const tok = await getAuth();
           const favoritebtn = document.querySelector("#favorite-btn");
           if (!tok.auth) {
