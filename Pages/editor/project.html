@@ -19,7 +19,7 @@
     const frame = document.getElementById("editorFrame");
     var wait = t => new Promise(r => setTimeout(r, t));
     frame.addEventListener('load',async () => {
-      while (!editor?.__sharedBrowserNetwork?._requestObject) await wait(10);
+      while (!frame?.contentWindow?.__sharedBrowserNetwork?._requestObject) await wait(10);
 
       const framedoc = frame.contentDocument;
       const editor = frame.contentWindow;
