@@ -110,7 +110,7 @@ exports.verifyUser = async (req,res) => {
       error: "User not found",
     });
     user.email = verify.email;
-    user.emailVerified = true;
+    user.verified = true;
     await user.save();
     delete pendingVerifications[id];
     res.status(301).redirect("/verified?email="+user.email);
