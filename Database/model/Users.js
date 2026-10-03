@@ -92,6 +92,14 @@ const UserSchema = new Mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  emailVerified: {
+    type: Boolean,
+    default: false,
+  },
+  showEmail: {
+    type: Boolean,
+    default: false,
+  },
   anonymous: {
     type: Boolean,
     default: false,
@@ -156,7 +164,10 @@ const UserSchema = new Mongoose.Schema({
     pack: function(full) {
       const container = {};
       container.username = this.username;
-      container.verified = !!this.email;
+      container.emailVerified = this.emailVerified === true || (this.emailVerified === undefined && !!this.email);
+      container.verified = container.emailVerified;
+      container.showEmail = !!this.showEmail;
+      if (full || this.showEmail) container.email = this.email || "";
       container.avatar = this.avatar;
       container.banner = this.banner;
       container.biography = this.biography;
