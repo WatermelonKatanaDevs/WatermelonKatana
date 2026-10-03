@@ -11,5 +11,23 @@
 </head>
 <body>
   <iframe id="deploymentFrame" src="DEPLOYMENT_SRC" allow="fullscreen; clipboard-read; clipboard-write"></iframe>
+  <script>
+    const frame = document.getElementById("deploymentFrame");
+    var wait = t => new Promise(r => setTimeout(r, t));
+    frame.addEventListener('load',async () => {
+      while (!frame?.contentWindow?.__deploymentNetworkReady?._requestObject) await wait(1);
+      
+      var old = frame.contentWindow.__deploymentNetworkReady._requestObject;
+      frame.contentWindow.__deploymentNetworkReady._requestObject = function(request, ...args) {
+        if (!request.url.startsWith(window.origin)) return old.call(this, request, ...args);
+        const newHeaders = new request.headers.constructor(request.headers);
+        newHeaders.append('X-From-Emulator', '1');
+        const modifiedRequest = new request.constructor(request, {
+          headers: newHeaders
+        });
+        return old.call(this, modifiedRequest, ...args);
+      };
+    });
+  </script>
 </body>
 </html>

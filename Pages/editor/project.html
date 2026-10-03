@@ -19,10 +19,22 @@
     const frame = document.getElementById("editorFrame");
     var wait = t => new Promise(r => setTimeout(r, t));
     frame.addEventListener('load',async () => {
-      while (!frame?.contentWindow?.__sharedBrowserNetwork?._requestObject) await wait(10);
+      while (!frame?.contentWindow?.__sharedBrowserNetwork?._requestObject) await wait(1);
+      
+      var old = frame.contentWindow.__sharedBrowserNetwork._requestObject;
+      frame.contentWindow.__sharedBrowserNetwork._requestObject = function(request, ...args) {
+        if (!request.url.startsWith(window.origin)) return old.call(this, request, ...args);
+        const newHeaders = new request.headers.constructor(request.headers);
+        newHeaders.append('X-From-Emulator', '1');
+        const modifiedRequest = new request.constructor(request, {
+          headers: newHeaders
+        });
+        return old.call(this, modifiedRequest, ...args);
+      };
 
       const framedoc = frame.contentDocument;
       const editor = frame.contentWindow;
+      
       var nameplate = framedoc.getElementById("projectName");
       if (pid) {
         framedoc.getElementsByClassName("toolbar-left")[0].innerHTML = `<a href="/project/${pid}" target="_top"><Button>Exit</Button></a>`;
@@ -253,42 +265,540 @@
       // This is NOT part of EditorExtensionAPI.
       // --------------------------------------------------------------------------
 
+      // --------------------------------------------------------------------------
+      // WatermelonKatana editor page.
+      // This is the functional side of the extension. The description page above
+      // intentionally stays small; this page owns the signed-in/repository/project
+      // workflow while reusing the existing WatermelonKatana project APIs.
+      // --------------------------------------------------------------------------
+
+      const WK_EDITOR_STATE = {
+        directProjectId: pid || null,
+        currentProjectId: pid || null,
+        renderToken: 0,
+        repo: null,
+        auth: null
+      };
+
+      const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, ch => ({
+        '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+      }[ch]));
+
+      function normalizeWKRepository(value) {
+        try {
+          const url = new URL(String(value || '').trim());
+          if (!/^https?:$/i.test(url.protocol)) return '';
+          if (!/^(www\.)?github\.com$/i.test(url.hostname)) return '';
+          const parts = url.pathname.split('/').filter(Boolean);
+          if (parts.length !== 2 || parts.some(part => !/^[A-Za-z0-9_.-]+$/.test(part))) return '';
+          return `https://github.com/${parts[0]}/${parts[1]}`;
+        } catch (_) {
+          return '';
+        }
+      }
+
+      function workspaceInfo() {
+        try {
+          return editor.EditorApp?.getWorkspaceInfo?.() || {};
+        } catch (_) {
+          return {};
+        }
+      }
+
+      function workspaceRepository() {
+        const info = workspaceInfo();
+        const remote = info.gitRemote;
+        if (remote?.provider !== 'github' || !remote.owner || !remote.repo) return null;
+        return {
+          owner: String(remote.owner),
+          repo: String(remote.repo),
+          branch: String(remote.branch || 'main'),
+          url: normalizeWKRepository(`https://github.com/${remote.owner}/${remote.repo}`),
+          name: String(remote.repo)
+        };
+      }
+
+      async function ensureWKProjectEditorTools() {
+        if (editor.__wkProjectEditorToolsPromise) return editor.__wkProjectEditorToolsPromise;
+        editor.__wkProjectEditorToolsPromise = (async () => {
+          const sources = [
+            '/scripts/EmojiPicker.js',
+            '/scripts/markdowntextbox.js',
+            '/scripts/mediaupload.js'
+          ];
+          for (const src of sources) {
+            const exists = framedoc.querySelector(`script[data-wk-project-tool="${CSS.escape(src)}"]`);
+            if (exists) continue;
+            await new Promise((resolve, reject) => {
+              const script = framedoc.createElement('script');
+              script.src = src;
+              script.async = false;
+              script.dataset.wkProjectTool = src;
+              script.onload = resolve;
+              script.onerror = () => reject(new Error(`Failed to load ${src}`));
+              framedoc.head.appendChild(script);
+            });
+          }
+        })();
+        try {
+          await editor.__wkProjectEditorToolsPromise;
+        } catch (e) {
+          editor.__wkProjectEditorToolsPromise = null;
+          throw e;
+        }
+      }
+
+      function wkEditorShell(page, title, subtitle = '') {
+        page.className = 'watermelonkatana-editor-page';
+        page.style.cssText = `
+          height:100%;
+          width:100%;
+          box-sizing:border-box;
+          overflow:auto;
+          padding:32px;
+          background:#111;
+          color:#eee;
+          font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+        `;
+        page.innerHTML = `
+          <style>
+            .wk-editor-wrap { max-width:980px; margin:0 auto; }
+            .wk-editor-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:24px; margin-bottom:26px; }
+            .wk-editor-heading h1 { margin:0 0 7px; font-size:25px; font-weight:600; letter-spacing:.1px; }
+            .wk-editor-heading p { margin:0; color:#aaa; line-height:1.5; }
+            .wk-editor-card { background:#1e1e1e; border:1px solid #333; border-radius:10px; padding:22px; box-sizing:border-box; }
+            .wk-editor-card + .wk-editor-card { margin-top:16px; }
+            .wk-editor-actions { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+            .wk-editor-button { appearance:none; border:1px solid #444; background:#252526; color:#eee; border-radius:6px; padding:8px 13px; font-size:14px; cursor:pointer; }
+            .wk-editor-button:hover { background:#303030; border-color:#555; }
+            .wk-editor-button.primary { background:#2563a6; border-color:#4a86bd; }
+            .wk-editor-button.primary:hover { background:#2d73bd; }
+            .wk-editor-button.subtle { background:transparent; }
+            .wk-editor-button:disabled { opacity:.55; cursor:default; }
+            .wk-editor-empty { color:#aaa; padding:12px 0 2px; line-height:1.55; }
+            .wk-editor-status { min-height:20px; margin-top:12px; color:#aaa; font-size:13px; }
+            .wk-editor-error { color:#ff8f8f; }
+            .wk-editor-success { color:#72e0af; }
+            .wk-editor-repo { display:inline-flex; align-items:center; gap:8px; background:#181818; border:1px solid #333; border-radius:6px; padding:7px 10px; color:#ddd; font-size:13px; }
+            .wk-editor-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:14px; }
+            .wk-project-row { display:grid; grid-template-columns:74px minmax(0,1fr) auto; gap:14px; align-items:center; padding:12px 0; border-top:1px solid #2b2b2b; }
+            .wk-project-row:first-child { border-top:0; padding-top:0; }
+            .wk-project-thumb { width:74px; height:54px; border-radius:6px; object-fit:cover; background:#151515; border:1px solid #333; }
+            .wk-project-title { font-size:15px; font-weight:600; margin-bottom:4px; }
+            .wk-project-desc { color:#999; font-size:13px; line-height:1.4; }
+            .wk-field { display:flex; flex-direction:column; gap:7px; }
+            .wk-field + .wk-field { margin-top:15px; }
+            .wk-field label { color:#ddd; font-size:13px; }
+            .wk-field input[type="text"], .wk-field textarea { width:100%; box-sizing:border-box; border:1px solid #444; background:#151515; color:#eee; border-radius:6px; padding:9px 10px; font:inherit; outline:none; }
+            .wk-field input[type="text"]:focus, .wk-field textarea:focus { border-color:#4a86bd; box-shadow:0 0 0 2px #2563a633; }
+            .wk-field textarea { min-height:220px; resize:vertical; line-height:1.5; }
+            .wk-editor-form-row { display:grid; grid-template-columns:minmax(0,1fr) minmax(230px,320px); gap:18px; }
+            .wk-thumbnail-box { display:flex; align-items:center; gap:12px; }
+            .wk-thumbnail-button { border:1px solid #444; background:#181818; color:#ddd; border-radius:7px; padding:9px; cursor:pointer; text-align:left; }
+            .wk-thumbnail-button:hover { border-color:#555; background:#202020; }
+            .wk-thumbnail-button img { display:block; width:130px; height:90px; object-fit:contain; background:#111; border:1px solid #333; border-radius:5px; }
+            .wk-readonly { color:#aaa; font-size:13px; line-height:1.5; }
+            .wk-checks { display:flex; gap:18px; flex-wrap:wrap; margin-top:16px; }
+            .wk-check { display:inline-flex; gap:8px; align-items:center; color:#ddd; font-size:13px; }
+            .wk-form-actions { display:flex; justify-content:space-between; gap:12px; align-items:center; margin-top:20px; padding-top:18px; border-top:1px solid #2b2b2b; }
+            .wk-markdown-tools { margin-bottom:8px; }
+            .wk-field textarea.mk-textbox { min-height:220px; }
+            .wk-field textarea.mk-textbox + br { display:none; }
+            .wk-field textarea.mk-textbox + br ~ button { appearance:none; border:1px solid #444; background:#252526; color:#ccc; border-radius:5px; min-width:30px; height:30px; margin:6px 4px 0 0; padding:5px 7px; cursor:pointer; }
+            .wk-field textarea.mk-textbox + br ~ button:hover { background:#303030; border-color:#555; }
+            .wk-field textarea.mk-textbox + br ~ button svg { vertical-align:middle; }
+            @media (max-width:720px) {
+              .wk-editor-heading { flex-direction:column; }
+              .wk-editor-form-row { grid-template-columns:1fr; }
+              .wk-project-row { grid-template-columns:58px minmax(0,1fr); }
+              .wk-project-row .wk-editor-button { grid-column:2; justify-self:start; }
+              .wk-project-thumb { width:58px; height:44px; }
+            }
+          </style>
+          <div class="wk-editor-wrap"></div>
+        `;
+        const wrap = page.querySelector('.wk-editor-wrap');
+        const heading = framedoc.createElement('div');
+        heading.className = 'wk-editor-heading';
+        heading.innerHTML = `<div><h1>${escapeHTML(title)}</h1>${subtitle ? `<p>${escapeHTML(subtitle)}</p>` : ''}</div>`;
+        wrap.appendChild(heading);
+        return wrap;
+      }
+
+      function appendRepoBadge(container, repo) {
+        if (!repo) return;
+        const badge = framedoc.createElement('div');
+        badge.className = 'wk-editor-repo';
+        badge.innerHTML = `<span style="opacity:.7">GitHub</span><strong>${escapeHTML(repo.owner)}/${escapeHTML(repo.repo)}</strong>`;
+        container.appendChild(badge);
+      }
+
+      function renderSimpleMessage(page, title, message, buttonText, onClick) {
+        const wrap = wkEditorShell(page, title, message);
+        const card = framedoc.createElement('div');
+        card.className = 'wk-editor-card';
+        card.style.maxWidth = '700px';
+        card.innerHTML = `<div class="wk-editor-empty">${message}</div>`;
+        if (buttonText && onClick) {
+          const actions = framedoc.createElement('div');
+          actions.className = 'wk-editor-actions';
+          actions.style.marginTop = '18px';
+          const button = framedoc.createElement('button');
+          button.type = 'button';
+          button.className = 'wk-editor-button primary';
+          button.textContent = buttonText;
+          button.addEventListener('click', onClick);
+          actions.appendChild(button);
+          card.appendChild(actions);
+        }
+        wrap.appendChild(card);
+      }
+
+      async function getWKAuth() {
+        try {
+          return await getAuth();
+        } catch (_) {
+          return null;
+        }
+      }
+
+      async function loadWKProjects(repo, username) {
+        const params = new URLSearchParams({
+          poster: username,
+          sort: 'latest',
+          showHidden: '1'
+        });
+        const response = await fetch('/api/project/list?' + params.toString(), {cache:'no-store'});
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data?.error || data?.message || `Unable to load projects (${response.status}).`);
+        const projects = Array.isArray(data?.projects) ? data.projects : [];
+        return projects.filter(project => {
+          if (!project?.editorProject) return false;
+          return normalizeWKRepository(project.editorRepository || project.link) === repo.url;
+        });
+      }
+
+      async function renderSelectPublishOrEdit(g, page, auth, repo) {
+        const token = ++WK_EDITOR_STATE.renderToken;
+        const wrap = wkEditorShell(page, 'WatermelonKatana', 'Publish this repository or edit a project already attached to it.');
+        const top = framedoc.createElement('div');
+        top.className = 'wk-editor-card';
+        appendRepoBadge(top, repo);
+        top.insertAdjacentHTML('beforeend', `
+          <div style="margin-top:15px;font-size:19px;font-weight:600;">Publish current repository</div>
+          <div class="wk-editor-empty">Publish <strong>${escapeHTML(repo.name)}</strong> with its repository name as the project title. Tags and the normal publishing form are skipped.</div>
+        `);
+        const publishActions = framedoc.createElement('div');
+        publishActions.className = 'wk-editor-actions';
+        publishActions.style.marginTop = '16px';
+        const publishButton = framedoc.createElement('button');
+        publishButton.type = 'button';
+        publishButton.className = 'wk-editor-button primary';
+        publishButton.textContent = 'Publish repository';
+        publishActions.appendChild(publishButton);
+        top.appendChild(publishActions);
+        const publishStatus = framedoc.createElement('div');
+        publishStatus.className = 'wk-editor-status';
+        top.appendChild(publishStatus);
+        wrap.appendChild(top);
+
+        const projectsCard = framedoc.createElement('div');
+        projectsCard.className = 'wk-editor-card';
+        projectsCard.innerHTML = `<div style="font-size:19px;font-weight:600;">Projects attached to this repository</div><div class="wk-editor-status" data-project-status>Loading projects…</div><div data-project-list></div>`;
+        wrap.appendChild(projectsCard);
+        const list = projectsCard.querySelector('[data-project-list]');
+        const projectStatus = projectsCard.querySelector('[data-project-status]');
+
+        publishButton.addEventListener('click', async () => {
+          if (publishButton.disabled) return;
+          publishButton.disabled = true;
+          publishStatus.className = 'wk-editor-status';
+          publishStatus.textContent = 'Publishing repository…';
+          try {
+            const response = await fetch('/api/project/publish', {
+              method: 'POST',
+              headers: {'Content-Type':'application/json'},
+              body: JSON.stringify({
+                title: repo.name,
+                link: repo.url,
+                content: '',
+                thumbnail: '',
+                tags: [],
+                mature: false,
+                hidden: false,
+                privateRecipients: [],
+                editorProject: true,
+                editorRepository: repo.url
+              })
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(data?.error ? `${data.message || 'Project not successfully published'}. ${data.error}` : (data?.message || `Project publish failed (${response.status}).`));
+            WK_EDITOR_STATE.currentProjectId = String(data.id || '');
+            publishStatus.className = 'wk-editor-status wk-editor-success';
+            publishStatus.textContent = 'Published. Opening project editor…';
+            await renderEditMode(g, page, WK_EDITOR_STATE.currentProjectId, repo);
+          } catch (e) {
+            publishButton.disabled = false;
+            publishStatus.className = 'wk-editor-status wk-editor-error';
+            publishStatus.textContent = e?.message || String(e);
+          }
+        });
+
+        try {
+          const projects = await loadWKProjects(repo, auth.user.username);
+          if (token !== WK_EDITOR_STATE.renderToken) return;
+          projectStatus.remove();
+          if (!projects.length) {
+            list.innerHTML = '<div class="wk-editor-empty">No WatermelonKatana projects are currently attached to this repository.</div>';
+            return;
+          }
+          for (const project of projects) {
+            const row = framedoc.createElement('div');
+            row.className = 'wk-project-row';
+            const thumbnail = escapeHTML(project.thumbnail || '/images/blank_project.png');
+            const desc = String(project.content || '').replace(/\s+/g,' ').trim();
+            row.innerHTML = `
+              <img class="wk-project-thumb" src="${thumbnail}" alt="">
+              <div><div class="wk-project-title">${escapeHTML(project.title || 'Untitled project')}</div><div class="wk-project-desc">${escapeHTML(desc ? (desc.length > 140 ? desc.slice(0,137) + '…' : desc) : 'No description')}</div></div>
+            `;
+            const action = framedoc.createElement('button');
+            action.type = 'button';
+            action.className = 'wk-editor-button';
+            action.textContent = 'Edit';
+            action.addEventListener('click', () => {
+              WK_EDITOR_STATE.currentProjectId = String(project.id);
+              renderEditMode(g, page, WK_EDITOR_STATE.currentProjectId, repo).catch(err => editor.EditorApp?.logError?.(err));
+            });
+            row.appendChild(action);
+            list.appendChild(row);
+          }
+        } catch (e) {
+          projectStatus.className = 'wk-editor-status wk-editor-error';
+          projectStatus.textContent = e?.message || String(e);
+        }
+      }
+
+      async function renderEditMode(g, page, projectId, repo) {
+        const token = ++WK_EDITOR_STATE.renderToken;
+        await ensureWKProjectEditorTools();
+        if (token !== WK_EDITOR_STATE.renderToken) return;
+        const wrap = wkEditorShell(page, 'Edit WatermelonKatana project', 'Edit the project metadata without leaving the editor.');
+        const card = framedoc.createElement('div');
+        card.className = 'wk-editor-card';
+        card.innerHTML = `
+          <div class="wk-editor-status" data-load-status>Loading project…</div>
+          <form data-wk-project-form style="display:none;">
+            <div class="wk-editor-form-row">
+              <div>
+                <div class="wk-field"><label for="wk-project-name">Name</label><input id="wk-project-name" type="text" required></div>
+                <div class="wk-field"><label for="wk-project-description">Description</label><textarea id="wk-project-description"></textarea></div>
+              </div>
+              <div>
+                <div class="wk-field"><label>Thumbnail</label>
+                  <div class="wk-thumbnail-box">
+                    <button type="button" class="wk-thumbnail-button" data-upload-thumbnail><img data-thumbnail-preview src="/images/blank_project.png" alt="Project thumbnail"></button>
+                  </div>
+                  <div class="wk-readonly">Use the thumbnail button to insert an uploaded image or a direct image URL.</div>
+                </div>
+                <div class="wk-field"><label for="wk-project-tags">Tags</label><input id="wk-project-tags" type="text" placeholder="comma, separated, tags"></div>
+                <div class="wk-checks">
+                  <label class="wk-check"><input type="checkbox" id="wk-project-mature"> Mature</label>
+                  <label class="wk-check"><input type="checkbox" id="wk-project-hidden"> Hidden</label>
+                </div>
+                <div class="wk-field" style="margin-top:20px;"><label>GitHub repository</label><div class="wk-readonly" data-repository></div></div>
+              </div>
+            </div>
+            <div class="wk-form-actions">
+              <div class="wk-editor-actions"><button type="button" class="wk-editor-button subtle" data-reload-project>Discard changes</button></div>
+              <div class="wk-editor-actions"><span class="wk-editor-status" data-save-status></span><button type="submit" class="wk-editor-button primary" data-save-project>Save changes</button></div>
+            </div>
+          </form>
+        `;
+        wrap.appendChild(card);
+
+        const status = card.querySelector('[data-load-status]');
+        const form = card.querySelector('[data-wk-project-form]');
+        const nameInput = card.querySelector('#wk-project-name');
+        const descInput = card.querySelector('#wk-project-description');
+        const tagsInput = card.querySelector('#wk-project-tags');
+        const matureInput = card.querySelector('#wk-project-mature');
+        const hiddenInput = card.querySelector('#wk-project-hidden');
+        const thumbPreview = card.querySelector('[data-thumbnail-preview]');
+        const repoEl = card.querySelector('[data-repository]');
+        const saveStatus = card.querySelector('[data-save-status]');
+        const saveButton = card.querySelector('[data-save-project]');
+        const uploadButton = card.querySelector('[data-upload-thumbnail]');
+        const reloadButton = card.querySelector('[data-reload-project]');
+        let thumbValue = '';
+        let loadedProject = null;
+
+        function setThumbnail(url) {
+          thumbValue = String(url || '');
+          thumbPreview.src = thumbValue || '/images/blank_project.png';
+          thumbPreview.onerror = () => { thumbPreview.src = '/images/blank_project.png'; };
+        }
+
+        async function loadProject() {
+          saveStatus.textContent = '';
+          status.className = 'wk-editor-status';
+          status.textContent = 'Loading project…';
+          form.style.display = 'none';
+          try {
+            const response = await fetch('/api/project/data/' + encodeURIComponent(projectId), {cache:'no-store'});
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(data?.error || data?.message || `Unable to load project (${response.status}).`);
+            if (!data.editorProject) throw new Error('This project is not a Node Editor project.');
+            loadedProject = data;
+            nameInput.value = data.title || '';
+            descInput.value = data.content || '';
+            tagsInput.value = Array.isArray(data.tags) ? data.tags.join(', ') : '';
+            matureInput.checked = !!data.mature;
+            hiddenInput.checked = !!data.hidden;
+            setThumbnail(data.thumbnail || '');
+            repoEl.textContent = data.editorRepository || data.link || repo?.url || '';
+            status.remove();
+            form.style.display = '';
+            await ensureWKProjectEditorTools();
+            if (!descInput.parentElement.querySelector('.mk-textbox')) {
+              editor.markdownTextbox?.('#wk-project-description');
+            }
+          } catch (e) {
+            status.className = 'wk-editor-status wk-editor-error';
+            status.textContent = e?.message || String(e);
+          }
+        }
+
+        uploadButton.addEventListener('click', async () => {
+          try {
+            const url = await editor.getFileUpload?.(thumbValue);
+            if (url != null) setThumbnail(url);
+          } catch (e) {
+            saveStatus.className = 'wk-editor-status wk-editor-error';
+            saveStatus.textContent = e?.message || String(e);
+          }
+        });
+
+        reloadButton.addEventListener('click', () => loadProject());
+
+        form.addEventListener('submit', async event => {
+          event.preventDefault();
+          saveStatus.className = 'wk-editor-status';
+          saveStatus.textContent = '';
+          if (!loadedProject) return;
+          const taglist = tagsInput.value.toLowerCase().replace(/[^,\w\d_-]/g, '').split(',');
+          if (taglist.length < 3) {
+            saveStatus.className = 'wk-editor-status wk-editor-error';
+            saveStatus.textContent = 'Choose at least 3 tags';
+            return;
+          }
+          if (taglist.length > 10) {
+            saveStatus.className = 'wk-editor-status wk-editor-error';
+            saveStatus.textContent = 'You can only choose a maximum of 10 tags';
+            return;
+          }
+          saveButton.disabled = true;
+          saveStatus.textContent = 'Saving…';
+          try {
+            const repository = normalizeWKRepository(loadedProject.editorRepository || loadedProject.link || repo?.url);
+            if (!repository) throw new Error('This project does not have a valid GitHub repository.');
+            const response = await fetch('/api/project/update/' + encodeURIComponent(projectId), {
+              method:'PUT',
+              headers:{'Content-Type':'application/json'},
+              body:JSON.stringify({
+                title:nameInput.value,
+                link:repository,
+                content:descInput.value,
+                thumbnail:thumbValue,
+                tags:taglist,
+                mature:matureInput.checked,
+                hidden:hiddenInput.checked,
+                privateRecipients:[],
+                editorProject:true,
+                editorRepository:repository
+              })
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(data?.error ? `${data.message || 'Project not successfully updated'}. ${data.error}` : (data?.message || `Project update failed (${response.status}).`));
+            saveStatus.className = 'wk-editor-status wk-editor-success';
+            saveStatus.textContent = 'Saved successfully.';
+            loadedProject = {...loadedProject, title:nameInput.value, content:descInput.value, thumbnail:thumbValue, tags:taglist, mature:matureInput.checked, hidden:hiddenInput.checked, editorRepository:repository, link:repository};
+            document.title = `${nameInput.value || 'WatermelonKatana'} | Editor`;
+          } catch (e) {
+            saveStatus.className = 'wk-editor-status wk-editor-error';
+            saveStatus.textContent = e?.message || String(e);
+          } finally {
+            saveButton.disabled = false;
+          }
+        });
+
+        await loadProject();
+      }
+
+      async function renderWatermelonKatanaEditor(g) {
+        g.viewBody.innerHTML = '';
+        const page = framedoc.createElement('div');
+        g.viewBody.appendChild(page);
+
+        const auth = await getWKAuth();
+        WK_EDITOR_STATE.auth = auth;
+        if (!auth?.user) {
+          renderSimpleMessage(
+            page,
+            'Please sign in',
+            'Please sign in to WatermelonKatana to use this extension.',
+            'Sign in to WatermelonKatana',
+            () => {
+              const returnUrl = new URL(location.href);
+              returnUrl.searchParams.set('wkExtension', '1');
+              location.assign('/login?redir=' + encodeURIComponent(returnUrl.href));
+            }
+          );
+          return;
+        }
+
+        if (WK_EDITOR_STATE.directProjectId) {
+          const repo = workspaceRepository();
+          if (!repo) {
+            renderSimpleMessage(page, 'Please open a GitHub repository', 'Please open a GitHub repository to use the extension.');
+            return;
+          }
+          WK_EDITOR_STATE.repo = repo;
+          await renderEditMode(g, page, WK_EDITOR_STATE.directProjectId, repo);
+          return;
+        }
+
+        const info = workspaceInfo();
+        if (info.loading) {
+          renderSimpleMessage(page, 'Loading workspace', 'The editor is still loading the current workspace. Open the extension again once the workspace has finished loading.');
+          return;
+        }
+        const repo = workspaceRepository();
+        if (!repo) {
+          renderSimpleMessage(
+            page,
+            'Please open a GitHub repository',
+            'Please open a GitHub repository with Source Control enabled to use the extension.',
+            'Open GitHub repository',
+            async () => {
+              try {
+                await editor.EditorApp?.openRemoteProject?.({skipGuard:true});
+              } catch (e) {
+                editor.EditorApp?.logError?.(e);
+              }
+            }
+          );
+          return;
+        }
+        WK_EDITOR_STATE.repo = repo;
+        await renderSelectPublishOrEdit(g, page, auth, repo);
+      }
+
       factories.watermelonkatanaEditor = function () {
         return {
           title: 'WatermelonKatana Editor',
           icon: WK_EXTENSION.icon,
-
-          render(g) {
-            g.viewBody.innerHTML = '';
-
-            const page = framedoc.createElement('div');
-
-            page.style.cssText = `
-              height:100%;
-              box-sizing:border-box;
-              display:flex;
-              align-items:center;
-              justify-content:center;
-              padding:48px;
-              overflow:auto;
-            `;
-
-            page.innerHTML = `
-              <div style=" max-width:760px; width:100%; text-align:center;">
-                <img src="/images/icon.png" alt="WatermelonKatana" style="display:block; width:220px; height:220px; object-fit:contain; margin:0 auto 28px;">
-
-                <h1 style="margin:0 0 14px; font-size:32px;">
-                  WatermelonKatana Editor
-                </h1>
-
-                <p style="margin:0; color:#aaa; font-size:16px; line-height:1.6;">
-                  This is the custom editor page registered by the
-                  WatermelonKatana extension.
-                </p>
-              </div>
-            `;
-
-            g.viewBody.appendChild(page);
+          async render(g) {
+            await renderWatermelonKatanaEditor(g);
           }
         };
       };
@@ -323,18 +833,24 @@
         );
       }
 
+      // After WatermelonKatana login, return directly to this extension.
+      if (!pid && new URLSearchParams(location.search).get('wkExtension') === '1') {
+        const autoOpenTimer = setInterval(() => {
+          const chooser = framedoc.querySelector('.startup-modal');
+          const info = editor.EditorApp?.getWorkspaceInfo?.();
+          if (!editor.EditorApp?.openBuiltin) return;
+          if (!chooser && !info?.gitRemote && !info?.loading) return;
+          chooser?.remove();
+          clearInterval(autoOpenTimer);
+          const cleanURL = new URL(location.href);
+          cleanURL.searchParams.delete('wkExtension');
+          history.replaceState({}, document.title, cleanURL.pathname + cleanURL.search + cleanURL.hash);
+          editor.EditorApp.openBuiltin('watermelonkatanaEditor');
+        }, 100);
+        setTimeout(() => clearInterval(autoOpenTimer), 15000);
+      }
+
       // ---------------------------------------------------------------------------
-      
-      var old = editor.__sharedBrowserNetwork._requestObject;
-      editor.__sharedBrowserNetwork._requestObject = function(request, ...args) {
-        if (!request.url.startsWith(window.origin)) return old.call(this, request, ...args);
-        const newHeaders = new request.headers.constructor(request.headers);
-        newHeaders.append('X-From-Emulator', '1');
-        const modifiedRequest = new request.constructor(request, {
-          headers: newHeaders
-        });
-        return old.call(this, modifiedRequest, ...args);
-      };
       
       var style = framedoc.createElement('style');
       style.innerHTML = `

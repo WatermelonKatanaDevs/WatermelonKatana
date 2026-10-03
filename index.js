@@ -139,7 +139,7 @@ function sendEditorForbidden(res) {
   return res.status(403).sendFile(__dirname + "/Middleware/403.html");
 }
 
-app.get("/editor", async (req, res) => {
+app.get("/editor", makeFormToken, async (req, res) => {
   try {
     const src = "/editor/index.html" ;
     sendFileReplace(res, "./Pages/editor/project.html", s => s.replace("EDITOR_SRC", src));
