@@ -198,7 +198,7 @@ app.get("/project/:id", checkAuth, makeFormToken, async (req, res) => {
     <meta property="og:title" content="${makeLiteralChars(proj.title)}"/>
     <meta property="og:type" content="website"/>
     <meta property="og:image" content="${makeLiteralChars(proj.thumbnail)}"/>
-    <meta property="og:description" content="${makeLiteralChars(proj.content)} \n By: ${proj.poster} \n Score: ${proj.score} Views: ${proj.views}"/>
+    <meta property="og:description" content="${makeLiteralChars(proj.content)} \n By: ${proj.poster} \n Score: ${proj.score} Views: ${proj.views} Plays: ${proj.plays || 0}"/>
   `).replace("<!--content-->", () => `
     ${makeLiteralChars(proj.title)}<br>
     By: ${proj.poster}<br>
