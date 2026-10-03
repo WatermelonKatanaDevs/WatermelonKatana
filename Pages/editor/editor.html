@@ -396,7 +396,7 @@
           if (parenDepth > 0 &&
               !isWKControlWord(token.value) &&
               p?.value !== '.' && p?.value !== '?.' &&
-              p?.value !== 'class' && p?.value !== 'new') {
+              p?.value !== 'class' && p?.value !== 'new' && n?.value !== '(') {
             let open = i - 1;
             while (open >= 0 && tokens[open].value !== '(') open--;
             const openerPrev = open > 0 ? tokens[open - 1] : null;
@@ -404,7 +404,15 @@
               openerPrev?.value === ']' || openerPrev?.value === '.' || openerPrev?.value === '?.';
             const isFunctionList = openerPrev?.value === 'function' ||
               (open > 1 && tokens[open - 2]?.value === 'function');
-            if (isCallList || isFunctionList) add('wk-monaco-argument-token');
+            let close = open + 1;
+            let depth = 1;
+            while (close < tokens.length && depth > 0) {
+              if (tokens[close].value === '(') depth++;
+              else if (tokens[close].value === ')') depth--;
+              close++;
+            }
+            const isArrowList = depth === 0 && tokens[close]?.value === '=>';
+            if (isCallList || isFunctionList || isArrowList) add('wk-monaco-argument-token');
           }
 
           if (p?.value === 'class') { add('wk-monaco-class-token'); continue; }
