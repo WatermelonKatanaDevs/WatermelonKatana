@@ -108,6 +108,7 @@
         }
       </div>
       <p class="biography">${convertMarkdown(userData.biography)}</p>
+      ${userData.showEmail && userData.email ? `<p class="profile-email">Email: <a href="mailto:${makeLiteralChars(userData.email)}">${makeLiteralChars(userData.email)}</a></p>` : ""}
       <p class="role" title="${makeLiteralChars(roletip)}" style="${rolestyle}">${userData.role}</p>
       Joined on ${new Date(userData.joinedAt).toUTCString().replace(/\d\d:[^]+$/, "")} |
       <span id="followercount" class="link">${userData.followers.length}</span> Followers |
