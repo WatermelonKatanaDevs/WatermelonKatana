@@ -92,6 +92,29 @@
         inherit: true,
         semanticHighlighting: true,
 
+        // Newer Monaco builds use semanticTokenColors for language-service
+        // classifications; keep these alongside the token rules below so the
+        // same WatermelonKatana palette works in both Monaco generations.
+        semanticTokenColors: {
+          class: '#00c23a',
+          type: '#00c23a',
+          interface: '#00c23a',
+          struct: '#00c23a',
+          enum: '#00c23a',
+          namespace: '#65b782',
+          function: '#3cdfa9',
+          method: '#3cdfa9',
+          parameter: '#de6c83',
+          property: '#c98f9c',
+          variable: '#d7eee0',
+          number: '#82aaff',
+          boolean: '#ff465d',
+          operator: '#b8737f',
+          keyword: '#de6c83',
+          comment: '#6f7d74',
+          string: '#d9536f'
+        },
+
         colors: {
           'editor.background': '#181818',
           'editor.foreground': '#e8e8e8',
