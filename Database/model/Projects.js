@@ -49,7 +49,16 @@ const ProjectSchema = new Mongoose.Schema({
     type: Number,
     default: 0,
   },
+  plays: {
+    type: Number,
+    default: 0,
+  },
   viewers: [ String ],
+  playCooldowns: {
+    type: Map,
+    of: Number,
+    default: {},
+  },
   upvotes: [ String ],
   gamejam: {
     type: String,
@@ -105,6 +114,7 @@ const ProjectSchema = new Mongoose.Schema({
       container.privateRecipients = this.privateRecipients;
       container.score = this.score;
       container.views = this.views;
+      container.plays = this.plays;
       container.viewers = this.viewers;
       container.upvotes = this.upvotes;
       container.gamejam = this.gamejam;
