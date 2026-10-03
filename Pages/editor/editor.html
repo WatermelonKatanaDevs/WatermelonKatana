@@ -1383,27 +1383,13 @@
       // --------------------------------------------------------------------------
 
       if (editor.EditorExtensionAPI) {
-        // The AI-enabled registration above is the extension's canonical
-        // registration. Keep the sidebar opener on the same extension entry.
-        const existing = editor.EditorExtensionAPI.get?.(WK_EXTENSION.id);
-        if (existing) {
-          editor.EditorExtensionAPI.get?.(WK_EXTENSION.id);
-          editor.EditorExtensionAPI.register({
-            ...WK_EXTENSION,
-            ai:{tools:wkAITools},
-            open() {
-              editor.EditorApp.openBuiltin('watermelonkatana');
-            }
-          });
-        } else {
-          editor.EditorExtensionAPI.register({
-            ...WK_EXTENSION,
-            ai:{tools:wkAITools},
-            open() {
-              editor.EditorApp.openBuiltin('watermelonkatana');
-            }
-          });
-        }
+        editor.EditorExtensionAPI.register({
+          ...WK_EXTENSION,
+          ai:{tools:wkAITools},
+          open() {
+            editor.EditorApp.openBuiltin('watermelonkatana');
+          }
+        });
       }
 
       // --------------------------------------------------------------------------
@@ -1498,56 +1484,48 @@
         return {id:projectId,title:data.title || args.title || current.title || '',updated:true};
       }
 
-      if (editor.EditorExtensionAPI) {
-        const wkAIExtension = editor.EditorExtensionAPI.get?.(WK_EXTENSION.id);
-        const wkAITools = [
-          {
-            name:'wk_list_publications',
-            description:'List the current user\'s WatermelonKatana publications attached to the open GitHub repository.',
-            permission:'extensionActions',
-            parameters:{type:'object',properties:{},additionalProperties:false},
-            execute:async () => ({publications:await wkAIListPublications()})
-          },
-          {
-            name:'wk_publish_project',
-            description:'Publish the currently open GitHub repository as a WatermelonKatana project. This creates a publication.',
-            permission:'extensionActions',
-            parameters:{type:'object',properties:{
-              title:{type:'string',description:'Publication title. Defaults to the repository name.'},
-              description:{type:'string'},
-              thumbnail:{type:'string'},
-              tags:{type:'array',items:{type:'string'}},
-              mature:{type:'boolean'},
-              hidden:{type:'boolean'}
-            },additionalProperties:false},
-            execute:wkAIPublishRepository
-          },
-          {
-            name:'wk_update_project',
-            description:'Edit an existing WatermelonKatana Editor publication. Only WatermelonKatana Editor publications can be changed with this tool.',
-            permission:'extensionActions',
-            parameters:{type:'object',required:['projectId'],properties:{
-              projectId:{type:'string'},
-              title:{type:'string'},
-              description:{type:'string'},
-              thumbnail:{type:'string'},
-              tags:{type:'array',items:{type:'string'}},
-              mature:{type:'boolean'},
-              hidden:{type:'boolean'},
-              repository:{type:'string'}
-            },additionalProperties:false},
-            execute:wkAIUpdatePublication
-          }
-        ];
-        const wkAI = wkAIExtension?.ai || null;
-        // Register through the public API so this remains an ordinary extension
-        // capability rather than a special case in the Editor's AI implementation.
-        const handle = editor.EditorExtensionAPI.register({
-          ...WK_EXTENSION,
-          ai:{tools:wkAITools}
-        });
-        void handle;
-      }
+      wkAITools = [
+                {
+                  name:'wk_list_publications',
+                  description:'List the current user\'s WatermelonKatana publications attached to the open GitHub repository.',
+                  permission:'extensionActions',
+                  parameters:{type:'object',properties:{},additionalProperties:false},
+                  execute:async () => ({publications:await wkAIListPublications()})
+                },
+                {
+                  name:'wk_publish_project',
+                  description:'Publish the currently open GitHub repository as a WatermelonKatana project. This creates a publication.',
+                  permission:'extensionActions',
+                  parameters:{type:'object',properties:{
+                    title:{type:'string',description:'Publication title. Defaults to the repository name.'},
+                    description:{type:'string'},
+                    thumbnail:{type:'string'},
+                    tags:{type:'array',items:{type:'string'}},
+                    mature:{type:'boolean'},
+                    hidden:{type:'boolean'}
+                  },additionalProperties:false},
+                  execute:wkAIPublishRepository
+                },
+                {
+                  name:'wk_update_project',
+                  description:'Edit an existing WatermelonKatana Editor publication. Only WatermelonKatana Editor publications can be changed with this tool.',
+                  permission:'extensionActions',
+                  parameters:{type:'object',required:['projectId'],properties:{
+                    projectId:{type:'string'},
+                    title:{type:'string'},
+                    description:{type:'string'},
+                    thumbnail:{type:'string'},
+                    tags:{type:'array',items:{type:'string'}},
+                    mature:{type:'boolean'},
+                    hidden:{type:'boolean'},
+                    repository:{type:'string'}
+                  },additionalProperties:false},
+                  execute:wkAIUpdatePublication
+                }
+              ];
+              const wkAI = wkAIExtension?.ai || null;
+              // Register through the public API so this remains an ordinary extension
+              // capability rather than a special case in the Editor's AI implementation.
 
       // --------------------------------------------------------------------------
       // Add the separate custom page to Welcome.
