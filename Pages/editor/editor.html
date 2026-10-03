@@ -261,31 +261,104 @@
         monaco: WK_MONACO_THEME
       };
 
-      // Apply the WK palette locally to Monaco after the extension has loaded.
-      // Do not assign editor.EditorTheme: that API belongs to the neutral base Editor.
-      function applyWKMonacoTheme() {
-        const monaco = editor.monaco;
-        if (!monaco?.editor?.defineTheme || !monaco?.editor?.setTheme) return false;
-        monaco.editor.defineTheme(WK_MONACO_THEME.name, WK_MONACO_THEME);
-        monaco.editor.setTheme(WK_MONACO_THEME.name);
-        return true;
-      }
-
-      applyWKMonacoTheme();
-
-      // Monaco may finish loading after the embedding page. Re-apply the WK theme
-      // once Monaco exists, without changing the Editor's default theme machinery.
-      if (!editor.monaco?.editor) {
-        let attempts = 0;
-        const wkThemeTimer = setInterval(() => {
-          attempts++;
-          if (applyWKMonacoTheme() || attempts >= 120) clearInterval(wkThemeTimer);
-        }, 100);
-      }
+      // EditorTheme is the public extension override point. Assigning here intentionally
+      // replaces the active theme while the base Editor remains WK-agnostic.
+      editor.EditorTheme = {
+        id: WK_MONACO_THEME.name,
+        monaco: WK_MONACO_THEME
+      };
 
       // Monaco exposes object-literal keys and member-access names through the
       // same semantic `property` class. Keep this tiny override only for keys in
       // object literals; member names remain the Monaco property color.
+      // Monaco's semantic-token pipeline is not guaranteed to expose function
+      // classifications in this embedded TypeScript build, so WK owns the visual
+      // function highlighting as decorations. This is deliberately extension-local.
+      function installWKFunctionStyle() {
+        if (framedoc.getElementById('wk-function-token-style')) return;
+        const style = framedoc.createElement('style');
+        style.id = 'wk-function-token-style';
+        style.textContent = '.wk-function-token{color:#3cdfa9 !important;}';
+        framedoc.head?.appendChild(style);
+      }
+
+      function attachWKFunctionOverride(instance) {
+        if (!instance || instance.__wkFunctionOverride) return;
+        const monaco = editor.monaco;
+        const model = instance.getModel?.();
+        if (!monaco?.Range || !model) return;
+        installWKFunctionStyle();
+
+        const refresh = () => {
+          const ranges = [];
+          for (let line = 1; line <= model.getLineCount(); line++) {
+            const source = model.getLineContent(line);
+            let m;
+
+            // Named function declarations / expressions, including async forms.
+            const functions = /\\b(?:async\\s+)?function\\s*([A-Za-z_$][\\w$]*)\\s*\\(/g;
+            while ((m = functions.exec(source))) {
+              const start = m.index + m[0].lastIndexOf(m[1]);
+              ranges.push({
+                range: new monaco.Range(line, start + 1, line, start + m[1].length + 1),
+                options: { inlineClassName: 'wk-function-token', inlineClassNameAffectsLetterSpacing: false }
+              });
+            }
+
+            // Class/object methods. Avoid control-flow keywords and property keys.
+            const methods = /(?:^|[,{;}]|\\b(?:static|get|set|async)\\s+)\\s*([A-Za-z_$][\\w$]*)\\s*\\(/g;
+            while ((m = methods.exec(source))) {
+              const name = m[1];
+              if (/^(?:if|for|while|switch|catch|with|function)$/.test(name)) continue;
+              const before = source.slice(0, m.index + m[0].length - name.length - 1);
+              if (/\\bfunction\\s*$/.test(before)) continue;
+              const start = m.index + m[0].lastIndexOf(name);
+              ranges.push({
+                range: new monaco.Range(line, start + 1, line, start + name.length + 1),
+                options: { inlineClassName: 'wk-function-token', inlineClassNameAffectsLetterSpacing: false }
+              });
+            }
+
+            // Named arrow functions: const foo = (...) => / const foo = x =>
+            const arrows = /\\b(?:const|let|var)\\s+([A-Za-z_$][\\w$]*)\\s*=\\s*(?:\\([^\\n]*\\)|[A-Za-z_$][\\w$]*)\\s*=>/g;
+            while ((m = arrows.exec(source))) {
+              const start = m.index + m[0].indexOf(m[1]);
+              ranges.push({
+                range: new monaco.Range(line, start + 1, line, start + m[1].length + 1),
+                options: { inlineClassName: 'wk-function-token', inlineClassNameAffectsLetterSpacing: false }
+              });
+            }
+          }
+          instance.__wkFunctionDecorationIds = instance.deltaDecorations(
+            instance.__wkFunctionDecorationIds || [], ranges
+          );
+        };
+
+        const contentListener = model.onDidChangeContent?.(refresh);
+        const modelListener = instance.onDidChangeModel?.(() => {
+          contentListener?.dispose?.();
+          instance.__wkFunctionOverride = null;
+          attachWKFunctionOverride(instance);
+        });
+        instance.__wkFunctionOverride = { model, contentListener, modelListener, refresh };
+        refresh();
+      }
+
+      function installWKFunctionOverride() {
+        const monaco = editor.monaco;
+        if (!monaco?.editor?.getEditors) return false;
+        installWKFunctionStyle();
+        for (const instance of monaco.editor.getEditors()) attachWKFunctionOverride(instance);
+        if (!monaco.editor.__wkFunctionCreateHook && typeof monaco.editor.onDidCreateEditor === 'function') {
+          monaco.editor.__wkFunctionCreateHook = monaco.editor.onDidCreateEditor(instance => {
+            attachWKFunctionOverride(instance);
+          });
+        }
+        return true;
+      }
+
+      installWKFunctionOverride();
+
       function installWKObjectKeyStyle() {
         if (framedoc.getElementById('wk-object-key-style')) return;
         const style = framedoc.createElement('style');
