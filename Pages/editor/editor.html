@@ -38,6 +38,7 @@
       var nameplate = framedoc.getElementById("projectName");
        if (pid) {
         const toolbarLeft = framedoc.getElementsByClassName("toolbar-left")[0];
+        while (toolbarLeft.firstChild) toolbarLeft.removeChild(toolbarLeft.firstChild);
         const exitLink = framedoc.createElement("a");
         exitLink.href = "/project/" + pid;
         exitLink.target = "_top";
