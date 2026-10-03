@@ -77,6 +77,8 @@
           const res = await fetch("/api/project/data/" + pid);
           const data = await res.json();
           const link = data.platform == "editor" ? (location.origin + "/editor/project/" + pid + "/deployment") : data.link;
+          const auth = await getAuth();
+          const isAdmin = !!(auth.auth && auth.user && ["Admin", "Uni Lover"].includes(auth.user.role));
           await createPost(
             postdiv,
             data,`   
@@ -97,6 +99,7 @@
             <b>Score:</b> <span id="score">${data.score}</span>
             <b>Views:</b> <span id="views">${data.views}</span>
             <b>Plays:</b> <span id="plays">${data.plays || 0}</span>
+            ${isAdmin ? '<div style="margin-top:10px; padding:10px; border:1px solid var(--palette-background-item); border-radius:6px;"><b>Admin controls</b><br><label><input type="checkbox" id="project-featured" ' + (data.featured ? "checked" : "") + ' onchange="featurebtnclick(this.checked)"> Featured</label><label style="margin-left:12px;"><input type="checkbox" id="project-verified" ' + (data.verified ? "checked" : "") + ' onchange="verifyprojectclick(this.checked)"> Blue-check verified</label></div>' : ""}
             ${await createActionButton("edit", `onclick="window.location.href += '/edit'"`)}
             ${data.editorProject ? await createActionButton("editor", `onclick="window.location.href = '/editor/project/${data.id}'"`, "edit") : ""}
             ${await createDeleteButton("project", "search")}
@@ -273,6 +276,15 @@
           await fetch("/api/project/unfeature/" + pid);
         }
       }
+      async function verifyprojectclick(verified) {
+        const response = await fetch((verified ? "/api/project/verify/" : "/api/project/unverify/") + pid);
+        if (!response.ok) {
+          const checkbox = document.querySelector("#project-verified");
+          if (checkbox) checkbox.checked = !verified;
+          alert("Unable to update project verification.");
+        }
+      }
+
 
       (function(){
         const viewed = JSON.safeParse(localStorage.getItem("recently-viewed-projects"),[]);
