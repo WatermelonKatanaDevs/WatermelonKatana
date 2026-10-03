@@ -91,7 +91,6 @@
         semanticHighlighting: true,
 
         semanticTokenColors: {
-          // Classes / types.
           class: '#65b782',
           type: '#65b782',
           interface: '#65b782',
@@ -99,56 +98,23 @@
           namespace: '#65b782',
           typeParameter: '#65b782',
 
-          // Functions and calls.
           function: '#69d99a',
-          'function.declaration': '#69d99a',
-          'function.call': '#69d99a',
           method: '#69d99a',
-          'method.declaration': '#69d99a',
-          'method.call': '#69d99a',
 
-          // Parameters.
           parameter: '#ffb0bd',
-          'parameter.declaration': '#ffb0bd',
-          'parameter.readonly': '#ffb0bd',
-          'variable.parameter': '#ffb0bd',
 
-          // Numbers.
           number: '#82aaff',
 
-          // Object/property keys.
-          property: '#c98f9c',
-          'property.declaration': '#c98f9c',
-          'property.readonly': '#c98f9c',
-          enumMember: '#c98f9c',
+          property: '#d49aa8',
+          enumMember: '#d49aa8',
 
-          // Ordinary variables.
           variable: '#d7eee0',
           variableReadonly: '#8fe5b3',
 
-          // Definitions such as const / function / new / this.
           keyword: '#de6c83',
-          'keyword.declaration': '#de6c83',
-          'keyword.operator.new': '#de6c83',
-          'variable.language.this': '#de6c83',
-
-          // Control flow.
-          'keyword.control': '#ff465d',
-          'keyword.control.flow': '#ff465d',
-          'keyword.control.conditional': '#ff465d',
-          'keyword.control.loop': '#ff465d',
-
-          // Logical / comparison / ordinary operators.
-          operator: '#b8737f',
-          'operator.logical': '#b8737f',
-          'operator.comparison': '#b8737f',
-          'keyword.operator': '#b8737f',
-          'keyword.operator.logical': '#b8737f',
-          'keyword.operator.comparison': '#b8737f',
-
-          // Booleans: bright red.
-          boolean: '#ff5a66',
-          'constant.language.boolean': '#ff5a66'
+          operator: '#c07b86',
+          boolean: '#e07a8a',
+          string: '#d9536f'
         },
 
         colors: {
@@ -161,10 +127,10 @@
           'panel.background': '#181818',
           'terminal.background': '#181818',
           'editorGroupHeader.tabsBackground': '#181818',
-          'editorGroupHeader.tabsBorder': '#171717',
-          'tab.border': '#171717',
-          'tab.activeBorder': '#de6c8325',
-          'tab.unfocusedActiveBorder': '#de6c8315',
+          'editorGroupHeader.tabsBorder': '#1a1a1a',
+          'tab.border': '#191919',
+          'tab.activeBorder': '#de6c8330',
+          'tab.unfocusedActiveBorder': '#de6c8320',
           'editorWidget.background': '#181818',
           'editorHoverWidget.background': '#181818',
           'editorHoverWidget.border': '#de6c83aa',
@@ -199,63 +165,46 @@
         },
 
         rules: [
-          // Comments.
+          // Core text / comments.
           { token: 'comment', foreground: '6f7d74', fontStyle: 'italic' },
           { token: 'comment.doc', foreground: '789187', fontStyle: 'italic' },
 
-          // Definitions: const, let, var, function, new, this.
+          // Definitions such as const, function, new, and this: WK pink.
           { token: 'keyword', foreground: 'de6c83' },
           { token: 'keyword.declaration', foreground: 'de6c83' },
-          { token: 'storage.type', foreground: 'de6c83' },
-          { token: 'storage.type.function', foreground: 'de6c83' },
-          { token: 'storage.modifier', foreground: 'de6c83' },
-          { token: 'keyword.operator.new', foreground: 'de6c83' },
-          { token: 'variable.language.this', foreground: 'de6c83' },
 
           // Control statements: solid red.
-          { token: 'keyword.control', foreground: 'ff465d' },
-          { token: 'keyword.control.flow', foreground: 'ff465d' },
-          { token: 'keyword.control.conditional', foreground: 'ff465d' },
-          { token: 'keyword.control.loop', foreground: 'ff465d' },
-          { token: 'keyword.control.js', foreground: 'ff465d' },
-          { token: 'keyword.control.flow.js', foreground: 'ff465d' },
+          { token: 'keyword.control', foreground: 'ff4a5f' },
+          { token: 'keyword.flow', foreground: 'ff4a5f' },
+          { token: 'keyword.control.flow', foreground: 'ff4a5f' },
 
-          // Logical/comparison operators: faded red.
-          { token: 'keyword.operator', foreground: 'b8737f' },
+          // Logical / operator tokens: faded red.
+          { token: 'keyword.operator', foreground: 'c07b86' },
           { token: 'keyword.operator.logical', foreground: 'b8737f' },
-          { token: 'keyword.operator.comparison', foreground: 'b8737f' },
-          { token: 'operator', foreground: 'b8737f' },
+          { token: 'operator', foreground: 'c07b86' },
           { token: 'operator.logical', foreground: 'b8737f' },
-          { token: 'operator.comparison', foreground: 'b8737f' },
-          { token: 'keyword.operator.logical.js', foreground: 'b8737f' },
-          { token: 'keyword.operator.comparison.js', foreground: 'b8737f' },
 
-          // Strings: hot pink/red.
+          // Strings: hot pink / red.
           { token: 'string', foreground: 'd9536f' },
-          { token: 'string.quoted', foreground: 'd9536f' },
-          { token: 'string.quoted.single', foreground: 'd9536f' },
-          { token: 'string.quoted.double', foreground: 'd9536f' },
           { token: 'string.escape', foreground: 'ff8097' },
+          { token: 'string.html', foreground: 'd9536f' },
+          { token: 'string.css', foreground: 'd9536f' },
 
           // Numbers: blue.
           { token: 'number', foreground: '82aaff' },
           { token: 'number.hex', foreground: '82aaff' },
-          { token: 'constant.numeric', foreground: '82aaff' },
+          { token: 'constant', foreground: '82aaff' },
+          { token: 'constant.language', foreground: '82aaff' },
 
-          // true / false: bright red.
-          { token: 'boolean', foreground: 'ff5a66' },
-          { token: 'constant.language.boolean', foreground: 'ff5a66' },
-          { token: 'constant.language.true', foreground: 'ff5a66' },
-          { token: 'constant.language.false', foreground: 'ff5a66' },
+          // true / false: separate red shade.
+          { token: 'boolean', foreground: 'e07a8a' },
+          { token: 'constant.language.boolean', foreground: 'e07a8a' },
 
           // Classes / types: slightly lighter dark green.
           { token: 'type', foreground: '65b782' },
           { token: 'type.identifier', foreground: '65b782' },
           { token: 'class', foreground: '65b782' },
           { token: 'class.name', foreground: '65b782' },
-          { token: 'entity.name.type', foreground: '65b782' },
-          { token: 'entity.name.type.class', foreground: '65b782' },
-          { token: 'support.class', foreground: '65b782' },
           { token: 'interface', foreground: '65b782' },
           { token: 'namespace', foreground: '65b782' },
           { token: 'module', foreground: '65b782' },
@@ -266,16 +215,10 @@
           { token: 'variable.predefined', foreground: '8fe5b3' },
           { token: 'variable.readonly', foreground: '8fe5b3' },
 
-          // Function names and calls: light WK green.
+          // Function names / calls: light WK green.
           { token: 'function', foreground: '69d99a' },
           { token: 'function.declaration', foreground: '69d99a' },
           { token: 'function.call', foreground: '69d99a' },
-          { token: 'entity.name.function', foreground: '69d99a' },
-          { token: 'entity.name.function.js', foreground: '69d99a' },
-          { token: 'meta.function-call', foreground: '69d99a' },
-          { token: 'variable.function', foreground: '69d99a' },
-          { token: 'support.function', foreground: '69d99a' },
-          { token: 'support.function.construct', foreground: '69d99a' },
           { token: 'method', foreground: '69d99a' },
           { token: 'method.declaration', foreground: '69d99a' },
           { token: 'method.call', foreground: '69d99a' },
@@ -283,56 +226,41 @@
           // Function parameters: WK light pink.
           { token: 'parameter', foreground: 'ffb0bd' },
           { token: 'parameter.name', foreground: 'ffb0bd' },
-          { token: 'variable.parameter', foreground: 'ffb0bd' },
-          { token: 'variable.parameter.function', foreground: 'ffb0bd' },
-          { token: 'meta.function.parameters', foreground: 'ffb0bd' },
 
-          // Object keys: subtle pink.
-          { token: 'property', foreground: 'c98f9c' },
-          { token: 'property.readonly', foreground: 'c98f9c' },
-          { token: 'property.name', foreground: 'c98f9c' },
-          { token: 'variable.other.property', foreground: 'c98f9c' },
-          { token: 'meta.object-literal.key', foreground: 'c98f9c' },
-          { token: 'support.type.property-name', foreground: 'c98f9c' },
-          { token: 'string.key.json', foreground: 'c98f9c' },
+          // Object keys: very subtle pink.
+          { token: 'property', foreground: 'd49aa8' },
+          { token: 'property.readonly', foreground: 'd49aa8' },
+          { token: 'property.name', foreground: 'd49aa8' },
+          { token: 'string.key.json', foreground: 'd49aa8' },
 
-          // HTML: tags dark green, < > faded grey-green, attributes light pink,
-          // strings hot pink.
-          { token: 'entity.name.tag.html', foreground: '65b782' },
-          { token: 'entity.name.tag', foreground: '65b782' },
+          // HTML: class/tag names are dark green, attributes light pink,
+          // strings hot pink, and < > punctuation faded grey-green.
           { token: 'tag', foreground: '65b782' },
           { token: 'tag.html', foreground: '65b782' },
           { token: 'tag.xml', foreground: '65b782' },
-          { token: 'punctuation.definition.tag.begin.html', foreground: 'b8bcc4' },
-          { token: 'punctuation.definition.tag.end.html', foreground: 'b8bcc4' },
-          { token: 'punctuation.definition.tag', foreground: 'b8bcc4' },
-          { token: 'delimiter', foreground: 'b8bcc4' },
-          { token: 'delimiter.bracket', foreground: 'b8bcc4' },
-          { token: 'delimiter.html', foreground: 'b8bcc4' },
-          { token: 'delimiter.xml', foreground: 'b8bcc4' },
-          { token: 'entity.other.attribute-name.html', foreground: 'ffb0bd' },
-          { token: 'entity.other.attribute-name', foreground: 'ffb0bd' },
+          { token: 'delimiter', foreground: '7f9186' },
+          { token: 'delimiter.bracket', foreground: '7f9186' },
+          { token: 'delimiter.html', foreground: '7f9186' },
+          { token: 'delimiter.xml', foreground: '7f9186' },
           { token: 'attribute', foreground: 'ffb0bd' },
           { token: 'attribute.name', foreground: 'ffb0bd' },
           { token: 'attribute.name.html', foreground: 'ffb0bd' },
           { token: 'attribute.name.xml', foreground: 'ffb0bd' },
-          { token: 'string.quoted.double.html', foreground: 'd9536f' },
-          { token: 'string.quoted.single.html', foreground: 'd9536f' },
           { token: 'attribute.value', foreground: 'd9536f' },
           { token: 'attribute.value.html', foreground: 'd9536f' },
           { token: 'attribute.value.xml', foreground: 'd9536f' },
           { token: 'metatag.html', foreground: '65b782' },
           { token: 'metatag.content.html', foreground: '65b782' },
 
-          // CSS/JSON-ish structures.
+          // Punctuation / fallback identifiers.
+          { token: 'delimiter', foreground: '7f9186' },
+          { token: 'delimiter.bracket', foreground: '7f9186' },
+          { token: 'identifier', foreground: 'e8e8e8' },
+
+          // CSS / JSON-ish structures.
           { token: 'type.css', foreground: '65b782' },
           { token: 'attribute.name.css', foreground: 'ffb0bd' },
-          { token: 'attribute.value.css', foreground: 'd9536f' },
-
-          // General punctuation/identifiers.
-          { token: 'delimiter', foreground: 'b8bcc4' },
-          { token: 'delimiter.bracket', foreground: 'b8bcc4' },
-          { token: 'identifier', foreground: 'e8e8e8' }
+          { token: 'attribute.value.css', foreground: 'd9536f' }
         ]
       };
 
