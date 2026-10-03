@@ -182,7 +182,7 @@ function projHTML(list, tok) {
     div.innerHTML = `
       <div class="thumbnail-border ${classes}">
         <div class="panel-overlay">
-          <div>Score: ${proj.score} Views: ${proj.views}</div>
+          <div>Score: ${proj.score} Views: ${proj.views} Plays: ${proj.plays || 0}</div>
           <div>${tagHTML(proj.tags)}</div>
         </div>
         <img class="project-thumbnail" src="${proj.thumbnail || "/images/blank_project.png"}" alt="">
