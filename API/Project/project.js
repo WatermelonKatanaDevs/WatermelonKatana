@@ -288,6 +288,12 @@ async play(req, res, next) {
 
     project.plays++;
     project.playCooldowns.set(uid, now);
+
+    // Keep the per-project cooldown map bounded to recently active players.
+    for (const [playerId, timestamp] of project.playCooldowns) {
+      if (now - Number(timestamp) >= cooldown) project.playCooldowns.delete(playerId);
+    }
+    project.playCooldowns.set(uid, now);
     await project.save();
 
     res.status(201).json({
