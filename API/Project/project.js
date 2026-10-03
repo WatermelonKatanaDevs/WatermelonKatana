@@ -287,7 +287,6 @@ async play(req, res, next) {
     }
 
     project.plays++;
-    project.playCooldowns.set(uid, now);
 
     // Keep the per-project cooldown map bounded to recently active players.
     for (const [playerId, timestamp] of project.playCooldowns) {
