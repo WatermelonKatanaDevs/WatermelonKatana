@@ -275,7 +275,7 @@ async play(req, res, next) {
     });
 
     const now = Date.now();
-    const cooldown = 5 * 60 * 1000;
+    const cooldown = 60 * 1000;
     const forwarded = req.headers["x-forwarded-for"];
     const ip = String(Array.isArray(forwarded) ? forwarded[0] : (forwarded || req.socket?.remoteAddress || "")).split(",")[0].trim();
     const accountId = res.locals.userToken?.id ? String(res.locals.userToken.id) : "";
