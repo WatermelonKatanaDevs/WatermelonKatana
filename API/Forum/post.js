@@ -260,6 +260,7 @@ module.exports = class {
           case "oldest": sortby = { postedAt: 1 }; break;
           case "score": sortby = { [sort]: -1, views: -1, postedAt: -1 }; break;
           case "views": sortby = { [sort]: -1, score: -1, postedAt: -1 }; break;
+          case "plays": sortby = { [sort]: -1, score: -1, views: -1, postedAt: -1 }; break;
           default:
             sortby = limitby > 0 && typeof sort !== "string"
               ? (this.name === "posts" ? { featured: -1, activeAt: -1 } : { postedAt: -1 })
