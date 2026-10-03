@@ -173,7 +173,7 @@
         name.innerHTML = "@" + user.username + " " + verifiedmark(user.verifiedbadge);
         const meta = document.createElement("div");
         meta.className = "card-meta";
-        meta.textContent = (user.verified ? "Verified" : "Unverified") + " · Joined " + new Date(user.joinedAt).toLocaleDateString();
+        meta.textContent = "Email: " + (user.emailVerified ? "Verified" : "Not verified") + " · Blue check: " + (user.verifiedbadge ? "Enabled" : "Disabled") + " · Joined " + new Date(user.joinedAt).toLocaleDateString();
         info.appendChild(name);
         info.appendChild(document.createElement("br"));
         info.appendChild(meta);
@@ -217,7 +217,7 @@
         card.appendChild(warnbtn);
 
         const verifybtn = document.createElement("button");
-        verifybtn.textContent = user.verifiedbadge ? "Unverify" : "Verify";
+        verifybtn.textContent = user.verifiedbadge ? "Remove blue check" : "Add blue check";
         verifybtn.addEventListener("click", async () => {
           try {
             await apicall("/api/auth/verifybadge", {
