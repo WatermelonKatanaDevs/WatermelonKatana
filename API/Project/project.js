@@ -264,6 +264,47 @@ async unverify(req, res, next) {
   }
 };
 
+async play(req, res, next) {
+  try {
+    const pid = req.params.id;
+    const project = await this.model.findOne({ _id: pid });
+    if (!project) return res.status(404).json({
+      message: "Play not recorded",
+      error: "Project not found",
+    });
+
+    const uid = String(res.locals.userToken.id);
+    const now = Date.now();
+    const cooldown = 5 * 60 * 1000;
+    const lastPlayed = Number(project.playCooldowns?.get(uid) || 0);
+
+    if (now - lastPlayed < cooldown) {
+      return res.status(200).json({
+        message: "Play ignored during cooldown",
+        plays: project.plays,
+        counted: false,
+      });
+    }
+
+    project.plays++;
+    project.playCooldowns.set(uid, now);
+    await project.save();
+
+    res.status(201).json({
+      message: "Play recorded",
+      id: project._id,
+      plays: project.plays,
+      counted: true,
+    });
+  } catch(error) {
+    res.status(400).json({
+      message: "Play not recorded",
+      error: error.message,
+    });
+    console.log(error.message);
+  }
+};
+
 async favorite(req, res, next) {
   try {
     const pid = req.params.id;
