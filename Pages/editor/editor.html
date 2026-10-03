@@ -270,7 +270,8 @@
           '.wk-monaco-function-token{color:#3cdfa9 !important;}',
           '.wk-monaco-class-token{color:#00c23a !important;}',
           '.wk-monaco-object-key-token{color:#afcc8f !important;}',
-          '.wk-monaco-property-token{color:#c98f9c !important;}'
+          '.wk-monaco-property-token{color:#c98f9c !important;}',
+          '.wk-monaco-operator-token{color:#c7c7c7 !important;}'
         ].join('');
         framedoc.head?.appendChild(style);
       }
@@ -333,6 +334,10 @@
         return tokens;
       }
 
+      function isWKOperator(value) {
+        return new Set(['=','+','-','*','/','%','**','++','--','+=','-=','*=','/=','%=','==','===','!=','!==','<','>','<=','>=','&&','||','??','!','~','&','|','^','<<','>>','>>>','=>','?.','?']).has(value);
+      }
+
       function isWKControlWord(value) {
         return new Set(['if','else','for','while','do','switch','case','catch','finally','try',
           'throw','return','break','continue','default','yield','await','with']).has(value);
@@ -357,6 +362,13 @@
 
         for (let i = 0; i < tokens.length; i++) {
           const token = tokens[i], p = prev(i), n = next(i);
+
+          // Explicitly decorate operators so the WK palette wins over Monaco's
+          // language token colors, including the plain <, =, and > operators.
+          if (token.type === 'punct' && isWKOperator(token.value)) {
+            ranges.push({start:token.start,end:token.end,className:'wk-monaco-operator-token'});
+            continue;
+          }
 
           if (token.value === '{') {
             const pv = p?.value;
