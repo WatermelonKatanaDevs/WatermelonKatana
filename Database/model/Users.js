@@ -92,7 +92,7 @@ const UserSchema = new Mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  emailVerified: {
+  verified: {
     type: Boolean,
     default: false,
   },
@@ -164,8 +164,7 @@ const UserSchema = new Mongoose.Schema({
     pack: function(full) {
       const container = {};
       container.username = this.username;
-      container.emailVerified = this.emailVerified === true || (this.emailVerified === undefined && !!this.email);
-      container.verified = container.emailVerified;
+      container.verified = this.verified === true || (this.verified === undefined && !!this.email);
       container.showEmail = !!this.showEmail;
       if (full || this.showEmail) container.email = this.email || "";
       container.avatar = this.avatar;
