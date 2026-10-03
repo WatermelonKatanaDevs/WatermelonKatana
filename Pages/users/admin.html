@@ -173,7 +173,7 @@
         name.innerHTML = "@" + user.username + " " + verifiedmark(user.verifiedbadge);
         const meta = document.createElement("div");
         meta.className = "card-meta";
-        meta.textContent = "Email: " + (user.emailVerified ? "Verified" : "Not verified") + " · Blue check: " + (user.verifiedbadge ? "Enabled" : "Disabled") + " · Joined " + new Date(user.joinedAt).toLocaleDateString();
+        meta.textContent = "Email: " + (user.verified ? "Verified" : "Not verified") + " · Blue check: " + (user.verifiedbadge ? "Enabled" : "Disabled") + " · Joined " + new Date(user.joinedAt).toLocaleDateString();
         info.appendChild(name);
         info.appendChild(document.createElement("br"));
         info.appendChild(meta);
