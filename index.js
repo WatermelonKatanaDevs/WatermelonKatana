@@ -194,7 +194,7 @@ app.get("/project/:id", checkAuth, makeFormToken, async (req, res) => {
   } 
   // keep this in until all posts and projects are at the correct number of views
   proj.views = proj.viewers.length;
-  sendFileReplace(res, "./Pages/projects/editor.html", (s) => s.replace("<!--og:meta-->", () => `
+  sendFileReplace(res, "./Pages/projects/project.html", (s) => s.replace("<!--og:meta-->", () => `
     <meta property="og:title" content="${makeLiteralChars(proj.title)}"/>
     <meta property="og:type" content="website"/>
     <meta property="og:image" content="${makeLiteralChars(proj.thumbnail)}"/>
