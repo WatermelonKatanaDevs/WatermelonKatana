@@ -1638,6 +1638,55 @@
 
       // ---------------------------------------------------------------------------
       
+      // Apply the WatermelonKatana accent to the embedded Piskel editor too.
+      // Piskel is loaded in a same-origin iframe (and uses a few more nested
+      // same-origin iframes), so the extension can skin it without changing
+      // the generic Piskel preview for other users.
+      function styleWKPiskelDocument(doc) {
+        if (!doc?.head) return;
+        if (doc.getElementById('wk-piskel-theme')) return;
+        const css = doc.createElement('style');
+        css.id = 'wk-piskel-theme';
+        css.textContent = `
+          :root { --wk-piskel-pink: rgb(221,109,127); --wk-piskel-pink-soft: rgba(221,109,127,.22); }
+          .user-message { border-color: var(--wk-piskel-pink) !important; background-color: var(--wk-piskel-pink-soft) !important; color: #222 !important; }
+          .sp-container { border-color: var(--wk-piskel-pink) !important; }
+          .sp-input:focus { border-color: var(--wk-piskel-pink) !important; box-shadow: 0 0 0 1px var(--wk-piskel-pink) !important; }
+          .sp-palette .sp-thumb-el:hover, .sp-palette .sp-thumb-el.sp-thumb-active { border-color: var(--wk-piskel-pink) !important; }
+          .sp-replacer:hover, .sp-replacer.sp-active { border-color: var(--wk-piskel-pink) !important; }
+          [style*="orange"], [style*="Orange"], [style*="#F0C36D"], [style*="#F9EDBE"], [style*="#f0c49B"], [style*="#F0C49B"], [style*="#91765d"] { color: var(--wk-piskel-pink) !important; border-color: var(--wk-piskel-pink) !important; }
+          input:focus, select:focus, textarea:focus { border-color: var(--wk-piskel-pink) !important; outline-color: var(--wk-piskel-pink) !important; }
+        `;
+        doc.head.appendChild(css);
+      }
+
+      function skinWKPiskel(frame) {
+        if (!frame?.contentDocument) return;
+        const visit = doc => {
+          try {
+            styleWKPiskelDocument(doc);
+            doc.querySelectorAll('iframe').forEach(child => {
+              try { if (child.contentDocument) visit(child.contentDocument); } catch (_) {}
+            });
+          } catch (_) {}
+        };
+        visit(frame.contentDocument);
+      }
+
+      function watchWKPiskel() {
+        const root = framedoc.body;
+        if (!root) return;
+        const apply = () => framedoc.querySelectorAll('iframe.editor-piskel').forEach(frame => {
+          if (frame.contentDocument) skinWKPiskel(frame);
+          frame.addEventListener('load', () => skinWKPiskel(frame), {once:false});
+        });
+        apply();
+        const observer = new MutationObserver(apply);
+        observer.observe(root, {childList:true, subtree:true});
+        window.addEventListener('beforeunload', () => observer.disconnect(), {once:true});
+      }
+      watchWKPiskel();
+
       var style = framedoc.createElement('style');
       style.innerHTML = `
    /* WatermelonKatana-inspired accent skin for Node Editor. Add AFTER existing styles. */
