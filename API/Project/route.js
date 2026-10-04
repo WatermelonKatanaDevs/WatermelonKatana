@@ -11,6 +11,7 @@ router.route("/verify/:id").get(adminAuth, poster.verify.bind(poster));
 router.route("/unverify/:id").get(adminAuth, poster.unverify.bind(poster));
 router.route("/favorite/:id").get(userAuth, poster.favorite.bind(poster));
 router.route("/play/:id").get(checkAuth, poster.play.bind(poster));
+router.route("/editor-repository-rename").post(userAuth, poster.editorRepositoryRename.bind(poster));
 router.route("/unfavorite/:id").get(userAuth, poster.unfavorite.bind(poster));
 
 module.exports = router;
