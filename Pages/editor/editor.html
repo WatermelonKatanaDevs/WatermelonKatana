@@ -950,10 +950,6 @@
             .wk-thumbnail-button:hover { border-color:#666; background:#202020; }
             .wk-thumbnail-button img { display:block; width:130px; height:90px; object-fit:contain; background:#111; border:1px solid #333; border-radius:5px; }
             .wk-readonly { color:#aaa; font-size:13px; line-height:1.5; }
-            .wk-github-metadata { margin-top:20px; padding-top:18px; border-top:1px solid #2b2b2b; }
-            .wk-github-metadata-title { color:#ddd; font-size:14px; font-weight:600; margin-bottom:5px; }
-            .wk-github-metadata-actions { margin-top:10px; }
-            .wk-github-metadata-actions .wk-editor-button { font-size:12px; padding:7px 10px; }
             .wk-checks { display:flex; gap:18px; flex-wrap:wrap; margin-top:16px; }
             .wk-check { display:inline-flex; gap:8px; align-items:center; color:#ddd; font-size:13px; }
             .wk-form-actions { display:flex; justify-content:space-between; gap:12px; align-items:center; margin-top:20px; padding-top:18px; border-top:1px solid #2b2b2b; }
@@ -1187,18 +1183,7 @@
                   <label class="wk-check"><input type="checkbox" id="wk-project-hidden"> Hidden</label>
                 </div>
                 <div class="wk-field" style="margin-top:20px;"><label>GitHub repository</label><div class="wk-readonly" data-repository></div></div>
-                <div class="wk-github-metadata">
-                  <div class="wk-github-metadata-title">GitHub metadata</div>
-                  <div class="wk-readonly">Edit the repository description and topics here, or sync them with the WatermelonKatana values above.</div>
-                  <div class="wk-field"><label for="wk-github-description">Description</label><input id="wk-github-description" type="text" placeholder="GitHub repository description"></div>
-                  <div class="wk-field"><label for="wk-github-topics">Topics</label><input id="wk-github-topics" type="text" placeholder="comma, separated, topics"></div>
-                  <div class="wk-editor-actions wk-github-metadata-actions">
-                    <button type="button" class="wk-editor-button" data-github-load>Load from GitHub</button>
-                    <button type="button" class="wk-editor-button" data-github-from-wk>Sync WK → GitHub</button>
-                    <button type="button" class="wk-editor-button" data-wk-from-github>Use GitHub in WK</button>
-                  </div>
-                  <div class="wk-editor-status" data-github-status></div>
-                </div>
+
               </div>
             </div>
             <div class="wk-form-actions">
@@ -1220,12 +1205,6 @@
         const hiddenInput = card.querySelector('#wk-project-hidden');
         const thumbPreview = card.querySelector('[data-thumbnail-preview]');
         const repoEl = card.querySelector('[data-repository]');
-        const githubDescriptionInput = card.querySelector('#wk-github-description');
-        const githubTopicsInput = card.querySelector('#wk-github-topics');
-        const githubLoadButton = card.querySelector('[data-github-load]');
-        const githubFromWKButton = card.querySelector('[data-github-from-wk]');
-        const wkFromGithubButton = card.querySelector('[data-wk-from-github]');
-        const githubStatus = card.querySelector('[data-github-status]');
         const saveStatus = card.querySelector('[data-save-status]');
         const saveButton = card.querySelector('[data-save-project]');
         const uploadButton = card.querySelector('[data-upload-thumbnail]');
@@ -1242,82 +1221,6 @@
           thumbPreview.src = thumbValue || '/images/blank_project.png';
           thumbPreview.onerror = () => { thumbPreview.src = '/images/blank_project.png'; };
         }
-
-        function githubMetadataRepository() {
-          const repository = normalizeWKRepository(loadedProject?.editorRepository || loadedProject?.link || repo?.url);
-          if (!repository) throw new Error('This project does not have a valid GitHub repository.');
-          const parsed = new URL(repository);
-          const parts = parsed.pathname.split('/').filter(Boolean);
-          if (parts.length !== 2) throw new Error('Invalid GitHub repository.');
-          return {owner:parts[0], repo:parts[1]};
-        }
-
-        function normalizeGitHubTopics(value) {
-          return [...new Set(String(value || '')
-            .split(',')
-            .map(x => x.trim().toLowerCase().replace(/[^a-z0-9_-]/g, ''))
-            .filter(Boolean))].slice(0, 20);
-        }
-
-        async function loadGitHubMetadata() {
-          if (!loadedProject) return;
-          githubStatus.className = 'wk-editor-status';
-          githubStatus.textContent = 'Loading GitHub metadata…';
-          try {
-            const target = githubMetadataRepository();
-            if (!window.GitHubService?.isSignedIn?.()) throw new Error('Sign in to GitHub from the Editor profile first.');
-            const data = await window.GitHubService.request('/repos/' + encodeURIComponent(target.owner) + '/' + encodeURIComponent(target.repo));
-            githubDescriptionInput.value = data?.description || '';
-            githubTopicsInput.value = Array.isArray(data?.topics) ? data.topics.join(', ') : '';
-            githubStatus.textContent = 'Loaded from GitHub.';
-          } catch (e) {
-            githubStatus.className = 'wk-editor-status wk-editor-error';
-            githubStatus.textContent = e?.message || String(e);
-          }
-        }
-
-        async function syncWKToGitHub() {
-          if (!loadedProject) return;
-          githubFromWKButton.disabled = true;
-          githubStatus.className = 'wk-editor-status';
-          githubStatus.textContent = 'Syncing WatermelonKatana metadata to GitHub…';
-          try {
-            const target = githubMetadataRepository();
-            if (!window.GitHubService?.isSignedIn?.()) throw new Error('Sign in to GitHub from the Editor profile first.');
-            const description = String(descInput.value || '').trim();
-            const topics = normalizeGitHubTopics(tagsInput.value);
-            const data = await window.GitHubService.request('/repos/' + encodeURIComponent(target.owner) + '/' + encodeURIComponent(target.repo), {
-              method:'PATCH',
-              body:JSON.stringify({description})
-            });
-            await window.GitHubService.request('/repos/' + encodeURIComponent(target.owner) + '/' + encodeURIComponent(target.repo) + '/topics', {
-              method:'PUT',
-              body:JSON.stringify({names:topics})
-            });
-            githubDescriptionInput.value = data?.description ?? description;
-            githubTopicsInput.value = topics.join(', ');
-            githubStatus.className = 'wk-editor-status wk-editor-success';
-            githubStatus.textContent = 'GitHub metadata updated.';
-          } catch (e) {
-            githubStatus.className = 'wk-editor-status wk-editor-error';
-            githubStatus.textContent = e?.message || String(e);
-          } finally {
-            githubFromWKButton.disabled = false;
-          }
-        }
-
-        function useGitHubInWK() {
-          const topics = normalizeGitHubTopics(githubTopicsInput.value);
-          descInput.value = githubDescriptionInput.value || '';
-          tagsInput.value = topics.join(', ');
-          descInput.dispatchEvent(new Event('input', {bubbles:true}));
-          githubStatus.className = 'wk-editor-status wk-editor-success';
-          githubStatus.textContent = 'Copied GitHub metadata into the WK fields. Click Save changes to publish it to WatermelonKatana.';
-        }
-
-        githubLoadButton.addEventListener('click', loadGitHubMetadata);
-        githubFromWKButton.addEventListener('click', syncWKToGitHub);
-        wkFromGithubButton.addEventListener('click', useGitHubInWK);
 
         async function loadProject() {
           saveStatus.textContent = '';
@@ -1360,7 +1263,6 @@
               }
             }
             renderWKDescriptionPreview(descriptionPreview, descInput.value);
-            await loadGitHubMetadata();
           } catch (e) {
             status.className = 'wk-editor-status wk-editor-error';
             status.textContent = e?.message || String(e);
