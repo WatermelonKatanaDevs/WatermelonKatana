@@ -8,13 +8,13 @@ Welcome to WatermelonKatana! By using our website and services, you agree to com
 
 - **Eligibility**: You must be at least 13 years old to use our services.
 - **Account Security**: You are responsible for maintaining the security of your account and password. WatermelonKatana cannot and will not be liable for any loss or damage from your failure to comply with this security obligation.
-- **Accuracy of Information**: You agree to provide accurate and complete information during the registration process and to update such information to keep it accurate, current, and complete. Watermelonkatana operates in good faith and will not ask for any invasive information to confirm or identify what you have provided us is true. If you are in a country or state that does not allow this we kindly ask you to discontinue using our services or not create an account at all.
+- **Accuracy of Information**: You agree to provide accurate and complete information during the registration process and to update such information to keep it accurate, current, and complete.
 
 ### 2. User Conduct
 
 - **Respectful Behavior**: You agree to use our services in a manner that is respectful to other users. Harassment, hate speech, and discrimination are strictly prohibited.
 - **Legal Use**: You agree not to use our services for any illegal or unauthorized purpose. You agree to comply with all local laws regarding online conduct and acceptable content.
-- **Content Ownership**: You retain ownership of the content you create and upload to our services. However, by uploading content, you grant WatermelonKatana a non-exclusive, royalty-free, worldwide license to use, store, and display your content. WatermelonKatana will never sell your content to third parties or collect any additional information about you.
+- **Content Ownership**: You retain ownership of the content you create and upload to our services. However, by uploading content, you grant WatermelonKatana a non-exclusive, royalty-free, worldwide license to use, store, and display your content.
 
 ### 3. Prohibited Activities
 
@@ -25,14 +25,21 @@ Welcome to WatermelonKatana! By using our website and services, you agree to com
 ### 4. Content and Intellectual Property
 
 - **Copyright Infringement**: We respect the intellectual property rights of others and expect users to do the same. If you believe that your work has been copied in a way that constitutes copyright infringement, please notify us with relevant details.
-- Content Removal: We reserve the right to remove any content that violates these terms or is deemed inappropriate at our sole discretion.
+- **Content Removal**: We reserve the right to remove any content that violates these terms or is deemed inappropriate at our sole discretion.
 
 ### 5. Limitation of Liability
 
 - **No Warranty**: WatermelonKatana is provided on an "as is" and "as available" basis without any warranties of any kind, either express or implied.
 - **Liability Limitations**: In no event shall WatermelonKatana, its owners, or its employees be liable for any indirect, incidental, special, consequential, or punitive damages arising out of or related to your use of our services.
 
-### 6. Termination
+### 6. Privacy
+
+- **Your Data**: Watermelonkatana will not ask for any invasive information to confirm or identify what you have provided us is true nor will the information we have collected knowingly be sold. Some countries and states do not agree with this methodology; and to that Watermelonkatana kindy asks you to discontinue using our services and delete your account.
+- **Partners**: When *you* upload images to our site know that they are being stored elsewhere and not on our services kindly refer to their privacy policy or terms
+- **Cookies**: are used for performance and to prevent spam we may also store local data such as recent play history color schemas these cookies do expire and will not persist if you clear them, cookies are not necessary to browse our site
+- **Javascript**: is required to fully experience the site, you can still use some of it without it but you will be limited on what you can do.
+
+### 7. Termination
 
 - **Termination Rights**: We reserve the right to terminate or suspend your account and access to our services at our sole discretion, without notice or liability, for conduct that we believe violates these terms or is harmful to other users of WatermelonKatana, us, or third parties, or for any other reason.
 
@@ -59,7 +66,7 @@ Watermelonkatana respects your right to remove this content manually on your own
 
 ### 7. Changes to Terms
 
-- **Modification**: We may modify these terms at some point. Any changes will be effective immediately upon posting the updated terms on our website. The best way to be notified of the new terms is the Discord server; Terms have been last updated at *03/12/2026*. Your continued use of our services after any changes constitute your acceptance of the new terms.
+- **Modification**: We may modify these terms at some point. Any changes will be effective immediately upon posting the updated terms on our website. The best way to be notified of the new terms is the Discord server; Terms have been last updated at *10/04/2026*. Your continued use of our services after any changes constitute your acceptance of the new terms.
 
 ### 8. Governing Law
 
