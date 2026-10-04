@@ -1675,10 +1675,14 @@
 
       function watchWKPiskel() {
         const root = framedoc.body;
-        if (!root) return;
+        if (!root || root.dataset.wkPiskelWatcher === '1') return;
+        root.dataset.wkPiskelWatcher = '1';
         const apply = () => framedoc.querySelectorAll('iframe.editor-piskel').forEach(frame => {
           if (frame.contentDocument) skinWKPiskel(frame);
-          frame.addEventListener('load', () => skinWKPiskel(frame), {once:false});
+          if (frame.dataset.wkPiskelLoadHook !== '1') {
+            frame.dataset.wkPiskelLoadHook = '1';
+            frame.addEventListener('load', () => skinWKPiskel(frame));
+          }
         });
         apply();
         const observer = new MutationObserver(apply);
