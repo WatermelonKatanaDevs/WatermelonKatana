@@ -269,7 +269,6 @@ async editorRepositoryRename(req, res, next) {
       {
         $set: {
           editorRepository: newRepository,
-          link: newRepository,
           activeAt: Date.now(),
         },
       },
