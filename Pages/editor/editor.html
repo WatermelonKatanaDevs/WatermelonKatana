@@ -37,6 +37,7 @@
       
       var nameplate = framedoc.getElementById("projectName");
        if (pid) {
+        const projectOwner = new URLSearchParams(location.search).get('projectOwner') !== '0';
         const toolbarLeft = framedoc.getElementsByClassName("toolbar-left")[0];
         while (toolbarLeft.firstChild) toolbarLeft.removeChild(toolbarLeft.firstChild);
         const exitLink = framedoc.createElement("a");
@@ -47,7 +48,7 @@
         exitLink.appendChild(exitButton);
         toolbarLeft.prepend(exitLink);
         framedoc.getElementById("saveProjectBtn").outerHTML = '';
-        framedoc.getElementById("saveZipBtn").outerHTML = '';
+        if (projectOwner) framedoc.getElementById("saveZipBtn").outerHTML = '';
         nameplate.style['font-weight'] = "bold";
         nameplate.id = "";
         nameplate.innerText = "WORKSPACE_NAME";
