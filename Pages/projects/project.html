@@ -76,7 +76,6 @@
           const postdiv = document.querySelector("#post");
           const res = await fetch("/api/project/data/" + pid);
           const data = await res.json();
-          const tok = await getAuth();
           const link = data.platform == "editor" ? (location.origin + "/editor/project/" + pid + "/deployment") : data.link;
 
           await createPost(
@@ -101,7 +100,7 @@
             <b>Plays:</b> <span id="plays">${data.plays || 0}</span>
 
             ${await createActionButton("edit", `onclick="window.location.href += '/edit'"`)}
-            ${data.editorProject && tok.auth ? await createActionButton("editor", `onclick="window.location.href = '/editor/project/${data.id}'"`, "edit") : ""}
+            ${data.editorProject ? await createActionButton("editor", `onclick="window.location.href = '/editor/project/${data.id}'"`, "edit") : ""}
             ${await createDeleteButton("project", "search")}
             </div>
             <br>
