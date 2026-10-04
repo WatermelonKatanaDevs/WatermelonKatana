@@ -137,7 +137,7 @@ async publish(req, res, next) {
 };
 
 async update(req, res, next) {
-  var { title, link, content, thumbnail, tags, mature, hidden, privateRecipients, platform, editorProject, editorRepository } = req.body;
+  var { title, link, content, thumbnail, tags, mature, hidden, privateRecipients, platform, editorProject, editorRepository, optimalViewSize } = req.body;
   console.log(title,link,thumbnail);
   try {
     const pid = req.params.id;
