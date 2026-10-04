@@ -236,6 +236,62 @@ async delete(req, res, next) {
   }
 };
 
+async editorRepositoryRename(req, res, next) {
+  try {
+    const oldRepository = normalizeGithubRepository(req.body?.oldRepository);
+    const newRepository = normalizeGithubRepository(req.body?.newRepository);
+    if (!oldRepository || !newRepository) {
+      return res.status(400).json({
+        message: "Repository rename not recorded",
+        error: "Both oldRepository and newRepository must be valid GitHub repository URLs",
+      });
+    }
+    if (oldRepository === newRepository) {
+      return res.status(200).json({
+        message: "Repository rename already synchronized",
+        matched: 0,
+        modified: 0,
+      });
+    }
+
+    const user = res.locals.userToken;
+    if (!user?.id) return res.status(401).json({
+      message: "Repository rename not recorded",
+      error: "Authentication required",
+    });
+
+    const result = await this.model.updateMany(
+      {
+        posterId: String(user.id),
+        editorProject: true,
+        editorRepository: oldRepository,
+      },
+      {
+        $set: {
+          editorRepository: newRepository,
+          link: newRepository,
+          activeAt: Date.now(),
+        },
+      },
+    );
+
+    const modified = Number(result.modifiedCount || 0);
+    res.status(200).json({
+      message: "Repository rename synchronized",
+      matched: Number(result.matchedCount || 0),
+      modified,
+      oldRepository,
+      newRepository,
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: "Repository rename not recorded",
+      error: error.message,
+    });
+    console.log(error.message);
+  }
+}
+
 async verify(req, res, next) {
   try {
     const pid = req.params.id;
