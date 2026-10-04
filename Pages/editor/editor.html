@@ -47,8 +47,12 @@
         exitButton.textContent = "Exit";
         exitLink.appendChild(exitButton);
         toolbarLeft.prepend(exitLink);
-        framedoc.getElementById("saveProjectBtn").outerHTML = '';
-        if (projectOwner) framedoc.getElementById("saveZipBtn").outerHTML = '';
+        // Owners publish through WatermelonKatana; non-owners still need
+        // the editor's local save and ZIP export for their detached remix.
+        if (projectOwner) {
+          framedoc.getElementById("saveProjectBtn").outerHTML = '';
+          framedoc.getElementById("saveZipBtn").outerHTML = '';
+        }
         nameplate.style['font-weight'] = "bold";
         nameplate.id = "";
         nameplate.innerText = "WORKSPACE_NAME";
