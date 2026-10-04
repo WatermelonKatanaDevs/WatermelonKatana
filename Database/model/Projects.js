@@ -76,6 +76,12 @@ const ProjectSchema = new Mongoose.Schema({
     type: String,
     default: "",
   },
+  optimalViewSize: {
+    enabled: { type: Boolean, default: false },
+    width: { type: Number, default: 1 },
+    height: { type: Number, default: 1 },
+    mode: { type: String, enum: ["ratio", "fixed"], default: "ratio" },
+  },
   postedAt: {
     type: Number,
     required: true,
@@ -122,6 +128,12 @@ const ProjectSchema = new Mongoose.Schema({
       container.platform = this.platform;
       container.editorProject = this.editorProject;
       container.editorRepository = this.editorRepository;
+      container.optimalViewSize = {
+        enabled: !!this.optimalViewSize?.enabled,
+        width: Number(this.optimalViewSize?.width) || 1,
+        height: Number(this.optimalViewSize?.height) || 1,
+        mode: this.optimalViewSize?.mode === "fixed" ? "fixed" : "ratio",
+      };
       container.postedAt = this.postedAt;
       container.activeAt = this.activeAt;
       container.id = this._id;
