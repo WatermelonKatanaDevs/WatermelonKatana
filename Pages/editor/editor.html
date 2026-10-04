@@ -1405,13 +1405,28 @@
         }
 
         if (WK_EDITOR_STATE.directProjectId) {
+          const info = workspaceInfo();
           const repo = workspaceRepository();
           if (!repo) {
-            renderSimpleMessage(page, 'Please open a GitHub repository', 'Please open a GitHub repository to use the extension.');
+            if (info.projectOwner === false) {
+              renderSimpleMessage(
+                page,
+                'You are not the owner of this game',
+                'You can view and modify the source code, but GitHub publishing is disabled until you sign in to GitHub and connect a repository of your own. You can also export the workspace as a ZIP.',
+                'Connect GitHub repository',
+                () => editor.EditorApp?.showSidebar?.('Profile')
+              );
+            } else {
+              renderSimpleMessage(page, 'Please open a GitHub repository', 'Please open a GitHub repository to use the extension.');
+            }
             return;
           }
           WK_EDITOR_STATE.repo = repo;
-          await renderEditMode(g, page, WK_EDITOR_STATE.directProjectId, repo);
+          if (info.projectOwner === false) {
+            await renderSelectPublishOrEdit(g, page, WK_EDITOR_STATE.auth, repo);
+          } else {
+            await renderEditMode(g, page, WK_EDITOR_STATE.directProjectId, repo);
+          }
           return;
         }
 
