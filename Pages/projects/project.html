@@ -114,6 +114,32 @@
           if (reload) return;
 
           const game = document.querySelector("#game");
+          let optimalResize = null;
+          function applyOptimalViewSize() {
+            const settings = data.optimalViewSize;
+            if (!settings?.enabled) return false;
+            const width = Number(settings.width);
+            const height = Number(settings.height);
+            if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return false;
+            if (settings.mode === "fixed") {
+              game.style.width = Math.round(width) + "px";
+              game.style.height = Math.round(height) + "px";
+              return true;
+            }
+            const fontSize = parseFloat(getComputedStyle(document.body).fontSize) || 16;
+            const availableWidth = Math.max(1, window.innerWidth - 30 - 2.5 * fontSize);
+            const availableHeight = Math.max(1, window.innerHeight - 15 - 2.5 * fontSize);
+            const scale = Math.min(availableWidth / width, availableHeight / height);
+            game.style.width = Math.max(1, Math.floor(width * scale)) + "px";
+            game.style.height = Math.max(1, Math.floor(height * scale)) + "px";
+            return true;
+          }
+          function watchOptimalViewSize() {
+            if (optimalResize) window.removeEventListener("resize", optimalResize);
+            optimalResize = data.optimalViewSize?.enabled && data.optimalViewSize?.mode !== "fixed"
+              ? applyOptimalViewSize : null;
+            if (optimalResize) window.addEventListener("resize", optimalResize);
+          }
           switch (data.platform) {
             case "editor":
               game.src = location.origin + "/editor/project/" + pid + "/deployment";
@@ -225,6 +251,8 @@
               game.style.height = "calc(100vh - 15px - 2.5em)";
               break;
           }
+          applyOptimalViewSize();
+          watchOptimalViewSize();
           game.fullscreen = () => {
             game.requestFullscreen();
             game.focus();
