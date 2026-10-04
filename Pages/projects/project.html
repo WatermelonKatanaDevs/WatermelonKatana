@@ -77,8 +77,7 @@
           const res = await fetch("/api/project/data/" + pid);
           const data = await res.json();
           const link = data.platform == "editor" ? (location.origin + "/editor/project/" + pid + "/deployment") : data.link;
-          const auth = await getAuth();
-          const isAdmin = !!(auth.auth && auth.user && ["Admin", "Uni Lover"].includes(auth.user.role));
+
           await createPost(
             postdiv,
             data,`   
