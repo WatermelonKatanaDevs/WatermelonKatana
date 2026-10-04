@@ -151,6 +151,12 @@ app.get("/editor", makeFormToken, async (req, res) => {
   }
 });
 
+// Canonical deployment entry point: always serve the deployment implementation
+// from the Editor submodule. Project-specific deployment pages use the wrapper below.
+app.get("/editor/deployment.html", (req, res) => {
+  res.sendFile(__dirname + "/Editor/deployment.html");
+});
+
 app.get("/editor/project/:id/deployment", checkAuth, async (req, res) => {
   try {
     const project = await Projects.findOne({ _id: req.params.id });
@@ -161,8 +167,22 @@ app.get("/editor/project/:id/deployment", checkAuth, async (req, res) => {
     if (project.hidden && !owner) return res.status(404).sendFile(cldir + "/404.html");
     if (project.privateRecipients?.length && !owner && !(tok && project.privateRecipients.includes(tok.id))) return sendEditorForbidden(res);
     if (project.mature && !owner && !viewer?.mature) return sendEditorForbidden(res);
-    const src = "/editor/deployment.html?github=" + encodeURIComponent(project.editorRepository);
-    sendFileReplace(res, "./Pages/editor/deployment.html", s => s.replace("DEPLOYMENT_SRC", src).replace("<title>Project</title>", `<title>${makeLiteralChars(project.title)}</title>`));
+
+    // The project URL is a wrapper around the canonical Editor deployment page.
+    // Pass the repository and project id through so the Editor page can load the
+    // project's deployment configuration without duplicating the deployment UI.
+    const params = new URLSearchParams({
+      github: String(project.editorRepository),
+      projectId: String(project._id)
+    });
+    const src = "/editor/deployment.html?" + params.toString();
+    sendFileReplace(
+      res,
+      "./Pages/editor/deployment.html",
+      s => s
+        .replace("DEPLOYMENT_SRC", src)
+        .replace("<title>Project</title>", `<title>${makeLiteralChars(project.title)}</title>`)
+    );
   } catch (e) {
     console.error(e);
     res.status(404).sendFile(cldir + "/404.html");
