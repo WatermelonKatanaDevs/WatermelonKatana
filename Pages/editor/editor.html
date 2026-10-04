@@ -87,7 +87,10 @@
         id: 'watermelonkatana',
         name: 'WatermelonKatana',
         description: 'A WatermelonKatana extension. Allows you to edit and publish your projects from within the editor.',
-        icon: '<img src="/images/icon.png" alt="WatermelonKatana" style="width:100%;height:100%;object-fit:contain">'
+        icon: '<img src="/images/icon.png" alt="WatermelonKatana" style="width:100%;height:100%;object-fit:contain">',
+        open() {
+          return editor.EditorApp.openBuiltin('watermelonkatana');
+        }
       };
 
       const factories =
