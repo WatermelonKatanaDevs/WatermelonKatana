@@ -55,6 +55,14 @@
         <span class="checkbox"></span>
       </label><br>
       <input type="submit" value="update"/><br/>
+      <div id="adminControls" style="display:none; margin-top:20px; padding:16px; border:1px solid var(--palette-background-item); border-radius:8px;">
+        <h3 style="margin-top:0;">Project Admin</h3>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button type="button" id="featureProjectBtn"></button>
+          <button type="button" id="verifyProjectBtn"></button>
+        </div>
+        <div id="adminStatus" style="margin-top:10px;"></div>
+      </div>
     </form>
     <!-- <button id="deletebtn" style="background-color: red;">delete</button> -->
     <button id="discardbtn"> Discard Changes </button>
@@ -79,6 +87,41 @@
       const mature = document.querySelector('#mature');
       const hidden = document.querySelector('#hidden');
       const display = document.querySelector(".error");
+      const adminControls = document.querySelector("#adminControls");
+      const featureProjectBtn = document.querySelector("#featureProjectBtn");
+      const verifyProjectBtn = document.querySelector("#verifyProjectBtn");
+      const adminStatus = document.querySelector("#adminStatus");
+      let projectFeatured = false;
+      let projectVerified = false;
+
+      function updateAdminButtons() {
+        featureProjectBtn.textContent = projectFeatured ? "Unfeature Project" : "Feature Project";
+        verifyProjectBtn.textContent = projectVerified ? "Remove Blue-check" : "Enable Blue-check";
+      }
+
+      async function updateProjectFlag(type, enabled) {
+        const endpoint = type === "featured"
+          ? (enabled ? "/api/project/feature/" : "/api/project/unfeature/")
+          : (enabled ? "/api/project/verify/" : "/api/project/unverify/");
+        const button = type === "featured" ? featureProjectBtn : verifyProjectBtn;
+        button.disabled = true;
+        adminStatus.textContent = "Updating…";
+        try {
+          const response = await fetch(endpoint + pid);
+          if (!response.ok) throw new Error("Unable to update project " + type + ".");
+          if (type === "featured") projectFeatured = enabled;
+          else projectVerified = enabled;
+          updateAdminButtons();
+          adminStatus.textContent = "Updated.";
+        } catch (err) {
+          adminStatus.textContent = err.message;
+        } finally {
+          button.disabled = false;
+        }
+      }
+
+      featureProjectBtn.onclick = () => updateProjectFlag("featured", !projectFeatured);
+      verifyProjectBtn.onclick = () => updateProjectFlag("verified", !projectVerified);
 
       location.path = location.pathname.split("/");
       const pid = location.path[2];
@@ -128,6 +171,13 @@
         tags.value = data.tags.join(", ");
         mature.checked = data.mature;
         hidden.checked = data.hidden;
+        projectFeatured = !!data.featured;
+        projectVerified = !!data.verified;
+        updateAdminButtons();
+        const auth = await getAuth();
+        if (auth.auth && auth.user && ["Admin", "Uni Lover"].includes(auth.user.role)) {
+          adminControls.style.display = "";
+        }
         markdownTextbox('#desc');
         renderDescriptionPreview();
         desc.addEventListener('input', renderDescriptionPreview);
