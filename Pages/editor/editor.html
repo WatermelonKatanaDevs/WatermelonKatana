@@ -954,7 +954,10 @@
             .wk-check { display:inline-flex; gap:8px; align-items:center; color:#ddd; font-size:13px; }
             .wk-form-actions { display:flex; justify-content:space-between; gap:12px; align-items:center; margin-top:20px; padding-top:18px; border-top:1px solid #2b2b2b; }
             .wk-field textarea.mk-textbox { min-height:220px; }
-            @media (max-width:900px) {
+            /* The embedded editor has less usable width than the browser window
+               suggests because of the Node Editor chrome/sidebar. Stack the WK form
+               before the workbench becomes cramped. */
+            @media (max-width:1200px) {
               .wk-editor-heading { flex-direction:column; }
               .wk-editor-form-row { grid-template-columns:1fr; }
               .wk-editor-grid { grid-template-columns:1fr; }
