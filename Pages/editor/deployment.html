@@ -14,9 +14,63 @@
   <script>
     const frame = document.getElementById("deploymentFrame");
     var wait = t => new Promise(r => setTimeout(r, t));
-    frame.addEventListener('load',async () => {
+
+    function syncEmulatedMetadata() {
+      const doc = frame?.contentDocument;
+      if (!doc) return;
+
+      if (doc.title) document.title = doc.title;
+
+      let icon = doc.querySelector(
+        'link[rel~="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]'
+      );
+
+      if (icon?.href) {
+        let href;
+        try {
+          href = new URL(icon.getAttribute("href"), doc.baseURI).href;
+        } catch {
+          href = icon.href;
+        }
+
+        if (href) {
+          let ownIcon = document.querySelector('link[data-emulated-favicon="1"]');
+          if (!ownIcon) {
+            ownIcon = document.createElement("link");
+            ownIcon.rel = "icon";
+            ownIcon.dataset.emulatedFavicon = "1";
+            document.head.appendChild(ownIcon);
+          }
+          ownIcon.href = href;
+        }
+      }
+    }
+
+    frame.addEventListener('load', async () => {
       while (!frame?.contentWindow?.__deploymentNetworkReady?._requestObject) await wait(1);
-      
+
+      syncEmulatedMetadata();
+
+      const doc = frame.contentDocument;
+      if (doc) {
+        const observer = new MutationObserver(syncEmulatedMetadata);
+        observer.observe(doc.head || doc.documentElement, {
+          subtree: true,
+          childList: true,
+          attributes: true,
+          attributeFilter: ["href", "rel"]
+        });
+
+        const title = doc.querySelector("title");
+        if (title) {
+          observer.observe(title, {
+            subtree: true,
+            childList: true,
+            characterData: true
+          });
+        }
+      }
+
       var old = frame.contentWindow.__deploymentNetworkReady._requestObject;
       frame.contentWindow.__deploymentNetworkReady._requestObject = function(request, ...args) {
         if (!request.url.startsWith(window.origin)) return old.call(this, request, ...args);
