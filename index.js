@@ -165,10 +165,14 @@ app.get("/editor/project/:id/deployment", checkAuth, async (req, res) => {
     // The project URL is a wrapper around the canonical Editor deployment page.
     // Pass the repository and project id through so the Editor page can load the
     // project's deployment configuration without duplicating the deployment UI.
+    const deploymentUrl = /^https?:\\/\\//i.test(String(project.link || '').trim())
+      ? String(project.link).trim()
+      : '';
     const params = new URLSearchParams({
       github: String(project.editorRepository),
       projectId: String(project._id)
     });
+    if (deploymentUrl) params.set("url", deploymentUrl);
     const src = "/editor/deployment.html?" + params.toString();
     sendFileReplace(
       res,
