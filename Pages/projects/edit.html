@@ -54,6 +54,29 @@
         <input type="checkbox" id="hidden">
         <span class="checkbox"></span>
       </label><br>
+      <div id="optimalViewSize" style="margin-top:16px; padding:16px; border:1px solid var(--palette-background-item); border-radius:8px;">
+        <label style="display:block; margin-bottom:10px;">Optimal View Size</label>
+        <label for="optimal-view-use">
+          <input type="checkbox" id="optimal-view-use">
+          Use custom view size
+        </label>
+        <div id="optimal-view-options" style="display:none; margin-top:12px;">
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <label for="optimal-view-width">Width<br/>
+              <input id="optimal-view-width" type="number" min="1" max="10000" step="1">
+            </label>
+            <label for="optimal-view-height">Height<br/>
+              <input id="optimal-view-height" type="number" min="1" max="10000" step="1">
+            </label>
+          </div>
+          <label for="optimal-view-mode" style="display:block; margin-top:10px;">Scaling<br/>
+            <select id="optimal-view-mode">
+              <option value="ratio">Scale to fit ratio</option>
+              <option value="fixed">Fixed pixel size</option>
+            </select>
+          </label>
+        </div>
+      </div>
       <input type="submit" value="update"/><br/>
       <div id="adminControls" style="display:none; margin-top:20px; padding:16px; border:1px solid var(--palette-background-item); border-radius:8px;">
         <h3 style="margin-top:0;">Project Admin</h3>
