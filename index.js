@@ -21,6 +21,8 @@ const { Turbo } = require("./Turbo/index");
   Constants
 */
 const app = express();
+// Render sits behind a trusted reverse proxy and forwards the client IP in X-Forwarded-For.
+app.set("trust proxy", 1);
 const PORT = process.env.PORT || 3000;
 
 /**
