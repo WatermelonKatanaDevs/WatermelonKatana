@@ -1288,7 +1288,7 @@
             const topics = normalizeGitHubTopics(tagsInput.value);
             const data = await window.GitHubService.request('/repos/' + encodeURIComponent(target.owner) + '/' + encodeURIComponent(target.repo), {
               method:'PATCH',
-              body:JSON.stringify({description, has_issues:true})
+              body:JSON.stringify({description})
             });
             await window.GitHubService.request('/repos/' + encodeURIComponent(target.owner) + '/' + encodeURIComponent(target.repo) + '/topics', {
               method:'PUT',
