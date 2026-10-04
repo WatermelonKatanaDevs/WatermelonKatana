@@ -8,7 +8,7 @@
         "dev": "nodemon index.js",
         "cleanup": "npx prettier . --write",
         "test": "jest",
-        "preinstall": "git submodule update --init --recursive"
+        "preinstall": "git submodule update --init Turbo Editor"
     },
     "author": "The WatermelonKatana Developers",
     "license": "MIT",
