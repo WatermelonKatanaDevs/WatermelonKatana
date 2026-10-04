@@ -14,19 +14,44 @@
   <script>
     const frame = document.getElementById("deploymentFrame");
     var wait = t => new Promise(r => setTimeout(r, t));
-    frame.addEventListener('load',async () => {
-      while (!frame?.contentWindow?.__deploymentNetworkReady?._requestObject) await wait(1);
-      
-      var old = frame.contentWindow.__deploymentNetworkReady._requestObject;
-      frame.contentWindow.__deploymentNetworkReady._requestObject = function(request, ...args) {
-        if (!request.url.startsWith(window.origin)) return old.call(this, request, ...args);
-        const newHeaders = new request.headers.constructor(request.headers);
-        newHeaders.append('X-From-Emulator', '1');
-        const modifiedRequest = new request.constructor(request, {
-          headers: newHeaders
-        });
-        return old.call(this, modifiedRequest, ...args);
-      };
+    frame.addEventListener('load', async () => {
+      // The deployment iframe can navigate to a third-party origin (for example
+      // GitHub). Once that happens, its Window is cross-origin and must not be
+      // inspected by the parent page.
+      try {
+        while (true) {
+          let deploymentWindow;
+          try {
+            deploymentWindow = frame.contentWindow;
+            if (!deploymentWindow || deploymentWindow.location.origin !== window.location.origin) return;
+            if (deploymentWindow.__deploymentNetworkReady?._requestObject) break;
+          } catch (_) {
+            return;
+          }
+          await wait(1);
+        }
+
+        const deploymentWindow = frame.contentWindow;
+        const networkReady = deploymentWindow.__deploymentNetworkReady;
+        const old = networkReady?._requestObject;
+        if (typeof old !== 'function') return;
+
+        networkReady._requestObject = function(request, ...args) {
+          try {
+            if (!request.url.startsWith(window.origin)) return old.call(this, request, ...args);
+            const newHeaders = new request.headers.constructor(request.headers);
+            newHeaders.append('X-From-Emulator', '1');
+            const modifiedRequest = new request.constructor(request, {
+              headers: newHeaders
+            });
+            return old.call(this, modifiedRequest, ...args);
+          } catch (_) {
+            return old.call(this, request, ...args);
+          }
+        };
+      } catch (_) {
+        // Navigation may have crossed origins; nothing needs patching.
+      }
     });
   </script>
 </body>
