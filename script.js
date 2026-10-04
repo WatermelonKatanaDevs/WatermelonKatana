@@ -1,74 +1,28 @@
 const connectDB = require("./Database/connect");
-connectDB();
+const Projects = require("./Database/model/Projects");
 
-var Projects =  require("./Database/model/Projects");
-var Posts =  require("./Database/model/Posts");
-var Users =  require("./Database/model/Users");
+(async () => {
+  try {
+    await connectDB();
 
-(async function(){try{
+    const result = await Projects.updateMany(
+      { platform: "cdo" },
+      {
+        $set: {
+          "optimalViewSize.enabled": true,
+          "optimalViewSize.width": 1,
+          "optimalViewSize.height": 1,
+          "optimalViewSize.mode": "ratio"
+        }
+      }
+    );
 
-  var ulist = await Users.find({ });
-  for (var u of ulist) {
-    // Check if the user has a default avatar and banner
-    //u.avatar = u.avatar.replace("^https:\/\/watermelonkatana\.com","");
-    //u.banner = u.banner.replace("^https:\/\/watermelonkatana\.com","");
-    if (u.avatar === "https://watermelonkatana.com/images/default_pfp.png") u.avatar = "/images/default_pfp.png";
-    if (u.banner === "https://watermelonkatana.com/images/default_banner.png") u.banner = "/images/default_banner.png";
-    if (u.avatar === "https://fakeimg.pl/300x300") u.avatar = "/images/default_pfp.png";
-    if (u.banner === "https://fakeimg.pl/720x360") u.banner = "/images/default_banner.png";
-
-    //u.avatar = "https://fakeimg.pl/300x300";
-    //u.banner = "https://fakeimg.pl/720x360";
-    //u.biography = "This user has not added a biography yet.";
-    //u.joinedAt = Date.now();
-    //u.mature = false;
-    console.log(u);
-    await u.save();
+    console.log(`Updated ${result.modifiedCount ?? result.nModified ?? 0} CDO projects.`);
+    console.log("All CDO projects now use a 1x1 ratio optimal view size.");
+  } catch (error) {
+    console.error(error);
+    process.exitCode = 1;
+  } finally {
+    await Projects.db?.close().catch(() => {});
   }
-  
-  //Projects.updateMany({ },{views:0,thumbnail:""}).then(console.log);
-
-  /* Run when converting to ref
-  
-  var list = await Projects.find({ });
-  for (var p of list) {
-    //var u = await Users.findById(p[i].posterId);
-    //p[i].poster = u;
-    //delete p[i].posterId;
-    delete p.iscdo;
-    delete p.iskhan;
-    delete p.isscratch;
-    if (!p.activeAt) p.activeAt = p.postedAt;
-    p.mature = false;
-    p.hidden = false;
-    p.privateRecipients = [];
-    p.title = p.name;
-    delete p.name;
-    p.content = p.desc;
-    delete p.desc;
-    console.log(p);
-    await p.save();
-  }
-
-  var list = await Posts.find({ });
-  for (var p of list) {
-    //var u = await Users.findById(p[i].posterId);
-    //p[i].poster = u;
-    //delete p[i].posterId;
-    if (!p.activeAt) p.activeAt = p.postedAt;
-    p.mature = false;
-    p.hidden = false;
-    p.privateRecipients = [];
-    p.title = p.name;
-    delete p.name;
-    console.log(p);
-    await p.save();
-  }
-
-
-  //*/
-
-// Update all users who have a default avatar and banner to the new placeholders
-
-  
-console.log("Done!")}catch(e){console.log(e);}})();
+})();
