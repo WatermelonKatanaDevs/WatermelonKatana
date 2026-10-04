@@ -18,9 +18,12 @@ router.route("/upload").post(userAuth, express.urlencoded({ extended:false, limi
     data = await data.json();
     if (data.error) throw data.error;
     const image = data.data;
+    // Keep the user's filename semantics instead of ImgBB's normalized title.
+    // Literal whitespace becomes dashes; existing dashes are preserved.
+    const mediaName = String(req.body.name || image.title || "upload").replace(/\s+/g, "-");
     const user = res.locals.userToken;
     const media = await Media.create({
-      name: image.title,
+      name: mediaName,
       url: image.url,
       delete_url: image.delete_url,
       width: image.width,
