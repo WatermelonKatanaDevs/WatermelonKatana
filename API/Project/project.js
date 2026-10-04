@@ -91,7 +91,7 @@ async publish(req, res, next) {
       message: "Project not successfully published",
       error: "Link is not a valid url",
     });
-    if (thumbnail && !String(thumbnail).match(/^(https?:\/\/|\/)[^\s"'<>]+$/)) return res.status(400).json({
+    if (thumbnail && !String(thumbnail).match(/^(https?:\/\/|\/)[^"'<>]+$/)) return res.status(400).json({
       message: "Project not successfully published",
       error: "Thumbnail is not a valid url",
     });
@@ -165,7 +165,7 @@ async update(req, res, next) {
       message: "Project not successfully updated",
       error: "Link is not a valid url",
     });
-    if (thumbnail && !String(thumbnail).match(/^(https?:\/\/|\/)[^\s"'<>]+$/)) return res.status(400).json({
+    if (thumbnail && !String(thumbnail).match(/^(https?:\/\/|\/)[^"'<>]+$/)) return res.status(400).json({
       message: "Project not successfully updated",
       error: "Thumbnail is not a valid url",
     });
