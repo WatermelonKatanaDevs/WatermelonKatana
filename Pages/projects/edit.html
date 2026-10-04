@@ -86,6 +86,16 @@
       const tags = document.querySelector("#tags");
       const mature = document.querySelector('#mature');
       const hidden = document.querySelector('#hidden');
+      const optimalUse = document.querySelector('#optimal-view-use');
+      const optimalOptions = document.querySelector('#optimal-view-options');
+      const optimalWidth = document.querySelector('#optimal-view-width');
+      const optimalHeight = document.querySelector('#optimal-view-height');
+      const optimalMode = document.querySelector('#optimal-view-mode');
+
+      function updateOptimalViewVisibility() {
+        optimalOptions.style.display = optimalUse.checked ? '' : 'none';
+      }
+      optimalUse.addEventListener('change', updateOptimalViewVisibility);
       const display = document.querySelector(".error");
       const adminControls = document.querySelector("#adminControls");
       const featureProjectBtn = document.querySelector("#featureProjectBtn");
@@ -171,6 +181,12 @@
         tags.value = data.tags.join(", ");
         mature.checked = data.mature;
         hidden.checked = data.hidden;
+        const optimal = data.optimalViewSize || {};
+        optimalUse.checked = !!optimal.enabled;
+        optimalWidth.value = Number(optimal.width) > 0 ? Number(optimal.width) : 1;
+        optimalHeight.value = Number(optimal.height) > 0 ? Number(optimal.height) : 1;
+        optimalMode.value = optimal.mode === 'fixed' ? 'fixed' : 'ratio';
+        updateOptimalViewVisibility();
         projectFeatured = !!data.featured;
         projectVerified = !!data.verified;
         updateAdminButtons();
@@ -219,6 +235,12 @@
               privateRecipients: [],
               editorProject,
               editorRepository,
+              optimalViewSize: {
+                enabled: optimalUse.checked,
+                width: Math.max(1, Number(optimalWidth.value) || 1),
+                height: Math.max(1, Number(optimalHeight.value) || 1),
+                mode: optimalMode.value === 'fixed' ? 'fixed' : 'ratio'
+              }
             }),
             headers: { "Content-Type": "application/json" },
           });
