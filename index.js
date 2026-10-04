@@ -151,12 +151,6 @@ app.get("/editor", makeFormToken, async (req, res) => {
   }
 });
 
-// Canonical deployment entry point: always serve the deployment implementation
-// from the Editor submodule. Project-specific deployment pages use the wrapper below.
-app.get("/editor/deployment.html", (req, res) => {
-  res.sendFile(__dirname + "/Editor/deployment.html");
-});
-
 app.get("/editor/project/:id/deployment", checkAuth, async (req, res) => {
   try {
     const project = await Projects.findOne({ _id: req.params.id });
