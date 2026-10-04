@@ -3,6 +3,19 @@ const crypto = require("crypto");
 const { isadmin } = require("../../util/js/roles");
 var PostAPI = require("../Forum/post.js");
 
+function normalizeOptimalViewSize(value, fallback = null) {
+  if (value == null) return fallback;
+  const source = value && typeof value === "object" ? value : {};
+  const width = Number(source.width);
+  const height = Number(source.height);
+  return {
+    enabled: !!source.enabled,
+    width: Number.isFinite(width) ? Math.max(1, Math.min(10000, width)) : 1,
+    height: Number.isFinite(height) ? Math.max(1, Math.min(10000, height)) : 1,
+    mode: source.mode === "fixed" ? "fixed" : "ratio",
+  };
+}
+
 function normalizeGithubRepository(value) {
   try {
     const url = new URL(String(value || "").trim());
@@ -54,7 +67,7 @@ processLink(link,thumbnail) {
 }
   
 async publish(req, res, next) {
-  var { title, link, content, thumbnail, tags, mature, hidden, privateRecipients, platform, editorProject, editorRepository } = req.body;
+  var { title, link, content, thumbnail, tags, mature, hidden, privateRecipients, platform, editorProject, editorRepository, optimalViewSize } = req.body;
   console.log(title,link,thumbnail);
   try {
     const uid = res.locals.userToken.id;
@@ -95,6 +108,9 @@ async publish(req, res, next) {
       platform: editorProject ? "editor" : e.platform,
       editorProject,
       editorRepository,
+      optimalViewSize: e.platform === "cdo"
+        ? (normalizeOptimalViewSize(optimalViewSize, {enabled:true,width:1,height:1,mode:"ratio"}))
+        : normalizeOptimalViewSize(optimalViewSize, null),
       postedAt: Date.now(),
       activeAt: Date.now(),
       posterId: user.id,
@@ -165,6 +181,9 @@ async update(req, res, next) {
     project.platform = editorProject ? "editor" : e.platform;
     project.editorProject = editorProject;
     project.editorRepository = editorRepository;
+    if (optimalViewSize !== undefined) {
+      project.optimalViewSize = normalizeOptimalViewSize(optimalViewSize, project.optimalViewSize);
+    }
     project.activeAt = Date.now();
     await project.save();
     res.status(201).json({
