@@ -271,6 +271,7 @@
               console.warn("Unable to record project play:", e);
             }
           });
+          const tok = await getAuth();
           const favoritebtn = document.querySelector("#favorite-btn");
           if (!tok.auth) {
             favoritebtn.outerHTML = "";
