@@ -1,0 +1,1715 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Editor | WatermelonKatana</title>
+  <link rel="stylesheet" type="text/css" href="/styles/style.css">
+  <style>
+    html,body { margin:0; width:100%; height:100%; overflow:hidden; }
+    #editorFrame { position:fixed; top:2.5em; left:0; width:100vw; height:calc(100vh - 2.5em); border:0; display:block; }
+  </style>
+</head>
+<body>
+  <script src="/scripts/script.js"></script>
+  <script src="/scripts/navbar.js"></script>
+  <iframe id="editorFrame" src="EDITOR_SRC" allow="fullscreen; clipboard-read; clipboard-write"></iframe>
+  <script>
+    const pid = location.path[3];
+    const frame = document.getElementById("editorFrame");
+    var wait = t => new Promise(r => setTimeout(r, t));
+    frame.addEventListener('load',async () => {
+      while (!frame?.contentWindow?.__sharedBrowserNetwork?._requestObject) await wait(1);
+      
+      var old = frame.contentWindow.__sharedBrowserNetwork._requestObject;
+      frame.contentWindow.__sharedBrowserNetwork._requestObject = function(request, ...args) {
+        if (!request.url.startsWith(window.origin)) return old.call(this, request, ...args);
+        const newHeaders = new request.headers.constructor(request.headers);
+        newHeaders.append('X-From-Emulator', '1');
+        const modifiedRequest = new request.constructor(request, {
+          headers: newHeaders
+        });
+        return old.call(this, modifiedRequest, ...args);
+      };
+
+      const framedoc = frame.contentDocument;
+      const editor = frame.contentWindow;
+      
+      var nameplate = framedoc.getElementById("projectName");
+       if (pid) {
+        const toolbarLeft = framedoc.getElementsByClassName("toolbar-left")[0];
+        while (toolbarLeft.firstChild) toolbarLeft.removeChild(toolbarLeft.firstChild);
+        const exitLink = framedoc.createElement("a");
+        exitLink.href = "/project/" + pid;
+        exitLink.target = "_top";
+        const exitButton = framedoc.createElement("button");
+        exitButton.textContent = "Exit";
+        exitLink.appendChild(exitButton);
+        toolbarLeft.prepend(exitLink);
+        framedoc.getElementById("saveProjectBtn").outerHTML = '';
+        framedoc.getElementById("saveZipBtn").outerHTML = '';
+        nameplate.style['font-weight'] = "bold";
+        nameplate.id = "";
+        nameplate.innerText = "WORKSPACE_NAME";
+        
+        var replaceRepo = (clear) => {
+          var repoSelect = framedoc.querySelector('[data-repo]');
+          if (!repoSelect || repoSelect.children.length === 1) return;
+          repoSelect.innerHTML = `<option value=${repoSelect.value}>${repoSelect.value}</option>`;
+          clear();
+        }
+
+        const logSidebarChange = (event) => {
+          const sidebar = event?.sidebar || event?.name || event?.id || sidebarNames[event?.buttonId] || 'Unknown';
+          replaceRepo(()=>{});
+          const timer = setInterval(()=>replaceRepo(()=>clearInterval(timer)),1);
+        };
+
+        if (typeof editor.EditorApp?.onSidebarChange === 'function') {
+          editor.EditorApp.onSidebarChange(logSidebarChange);
+        } else if (typeof editor.EditorApp?.on === 'function') {
+          editor.EditorApp.on('sidebarChange', logSidebarChange);
+        }
+      } else {
+        const toolbarLeft = framedoc.getElementsByClassName("toolbar-left")[0];
+        const exitLink = framedoc.createElement("a");
+        exitLink.href = "/";
+        exitLink.target = "_top";
+        const exitButton = framedoc.createElement("button");
+        exitButton.textContent = "Exit";
+        exitLink.appendChild(exitButton);
+        toolbarLeft.prepend(exitLink);
+      }
+
+      // --- WatermelonKatana Extension ---------------------------------------
+
+      const WK_EXTENSION = {
+        id: 'watermelonkatana',
+        name: 'WatermelonKatana',
+        description: 'A WatermelonKatana extension. Allows you to edit and publish your projects from within the editor.',
+        icon: '<img src="/images/icon.png" alt="WatermelonKatana" style="width:100%;height:100%;object-fit:contain">',
+        open() {
+          return editor.EditorApp.openBuiltin('watermelonkatana');
+        }
+      };
+
+      const factories =
+        editor.EditorBuiltinFactories =
+        editor.EditorBuiltinFactories || {};
+
+
+      // --- WatermelonKatana Monaco theme -----------------------------------------
+      // WatermelonKatana applies its own Monaco theme only after this extension loads.
+      // The base Editor keeps its default theme; WK does not mutate EditorTheme.
+      // This Monaco build styles semantic tokens through its token-theme `rules`
+      // table (it does not consume `semanticTokenColors`), so semantic token
+      // categories are deliberately represented as rules below.
+      const WK_MONACO_THEME = {
+        name: 'watermelonkatanatest-theme',
+        base: 'vs-dark',
+        inherit: true,
+        semanticHighlighting: true,
+
+        // Newer Monaco builds use semanticTokenColors for language-service
+        // classifications; keep these alongside the token rules below so the
+        // same WatermelonKatana palette works in both Monaco generations.
+        semanticTokenColors: {
+          class: '#00c23a',
+          type: '#00c23a',
+          interface: '#00c23a',
+          struct: '#00c23a',
+          enum: '#00c23a',
+          namespace: '#65b782',
+          function: '#3cdfa9',
+          method: '#3cdfa9',
+          parameter: '#de6c83',
+          property: '#c98f9c',
+          variable: '#d7eee0',
+          number: '#82aaff',
+          boolean: '#ff465d',
+          operator: '#b8737f',
+          keyword: '#de6c83',
+          comment: '#6f7d74',
+          string: '#d9536f'
+        },
+
+        colors: {
+          'editor.background': '#181818',
+          'editor.foreground': '#e8e8e8',
+          'editorGutter.background': '#181818',
+          'sideBar.background': '#181818',
+          'sideBarSectionHeader.background': '#181818',
+          'activityBar.background': '#181818',
+          'panel.background': '#181818',
+          'terminal.background': '#181818',
+          'editorGroupHeader.tabsBackground': '#181818',
+          'editorGroupHeader.tabsBorder': '#141414',
+          'tab.border': '#141414',
+          'tab.activeBorder': '#de6c8320',
+          'tab.unfocusedActiveBorder': '#de6c8310',
+          'editorWidget.background': '#181818',
+          'editorHoverWidget.background': '#181818',
+          'editorHoverWidget.border': '#de6c83aa',
+          'editorWidget.border': '#de6c83aa',
+          'input.background': '#181818',
+          'inputOption.activeBackground': '#de6c8328',
+          'inputOption.activeBorder': '#de6c83',
+          'dropdown.background': '#181818',
+          'dropdown.border': '#292929',
+          'peekViewEditor.background': '#181818',
+          'peekViewResult.background': '#181818',
+          'peekViewBorder': '#de6c83aa',
+          'editorCursor.foreground': '#3cdfa9',
+          'editor.selectionBackground': '#3cdfa938',
+          'editor.inactiveSelectionBackground': '#3cdfa922',
+          'editor.lineHighlightBackground': '#3cdfa90d',
+          'editorLineNumber.foreground': '#666666',
+          'editorLineNumber.activeForeground': '#3cdfa9',
+          'editorIndentGuide.background': '#ffffff12',
+          'editorIndentGuide.activeBackground': '#de6c8355',
+          'editorWhitespace.foreground': '#ffffff18',
+          'editorBracketMatch.background': '#de6c8322',
+          'editorBracketMatch.border': '#de6c83aa',
+          'editor.findMatchBackground': '#3cdfa944',
+          'editor.findMatchHighlightBackground': '#3cdfa922',
+          'editorOverviewRuler.border': '#00000000',
+          'minimap.background': '#181818',
+          'scrollbarSlider.background': '#ffffff18',
+          'scrollbarSlider.hoverBackground': '#ffffff2b',
+          'scrollbarSlider.activeBackground': '#de6c8388'
+        },
+
+        rules: [
+          // Semantic token categories. The bundled Monaco version resolves
+          // semantic tokens through this same token-theme rule table.
+          { token: 'class', foreground: '00c23a' },
+          { token: 'type', foreground: '00c23a' },
+          { token: 'interface', foreground: '00c23a' },
+          { token: 'struct', foreground: '00c23a' },
+          { token: 'enum', foreground: '00c23a' },
+          { token: 'namespace', foreground: '65b782' },
+          { token: 'function', foreground: '3cdfa9' },
+          { token: 'method', foreground: '3cdfa9' },
+          { token: 'parameter', foreground: 'de6c83' },
+          { token: 'property', foreground: 'c98f9c' },
+          { token: 'member', foreground: 'c98f9c' },
+          { token: 'variable', foreground: 'd7eee0' },
+          { token: 'number', foreground: '82aaff' },
+          { token: 'boolean', foreground: 'ff465d' },
+          { token: 'operator', foreground: 'c7c7c7' },
+          { token: 'keyword', foreground: 'de6c83' },
+          { token: 'comment', foreground: '6f7d74', fontStyle: 'italic' },
+          { token: 'string', foreground: 'd9536f' },
+
+          // More-specific JavaScript / TypeScript semantic or TextMate tokens.
+          { token: 'function.declaration', foreground: '3cdfa9' },
+          { token: 'method.declaration', foreground: '3cdfa9' },
+          { token: 'class.declaration', foreground: '00c23a' },
+          { token: 'type.declaration', foreground: '00c23a' },
+          { token: 'parameter.declaration', foreground: 'de6c83' },
+          { token: 'keyword.control', foreground: 'ff465d' },
+          { token: 'keyword.control.flow', foreground: 'ff465d' },
+          { token: 'keyword.control.conditional', foreground: 'ff465d' },
+          { token: 'keyword.control.loop', foreground: 'ff465d' },
+          { token: 'keyword.operator.logical', foreground: 'c7c7c7' },
+          { token: 'keyword.operator.comparison', foreground: 'c7c7c7' },
+          { token: 'keyword.operator.arithmetic', foreground: 'c7c7c7' },
+          { token: 'keyword.declaration', foreground: 'de6c83' },
+          { token: 'storage.type', foreground: 'de6c83' },
+          { token: 'storage.type.function', foreground: 'de6c83' },
+          { token: 'keyword.operator.new', foreground: 'de6c83' },
+          { token: 'variable.language.this', foreground: 'de6c83' },
+          { token: 'variable.readonly', foreground: 'd7eee0' },
+          { token: 'constant.language.boolean', foreground: 'ff465d' },
+
+          // Function/type names from TextMate tokenization, where available.
+          { token: 'entity.name.function', foreground: '3cdfa9' },
+          { token: 'support.function', foreground: '3cdfa9' },
+          { token: 'meta.function-call', foreground: '3cdfa9' },
+          { token: 'entity.name.type.class', foreground: '00c23a' },
+          { token: 'entity.name.type', foreground: '00c23a' },
+          { token: 'entity.name.class', foreground: '00c23a' },
+          { token: 'support.type', foreground: '00c23a' },
+
+          // JS / TS literals.
+          { token: 'constant.numeric', foreground: '82aaff' },
+          { token: 'number', foreground: '82aaff' },
+          { token: 'boolean', foreground: 'ff465d' },
+          { token: 'keyword.operator', foreground: 'c7c7c7' },
+          { token: 'operator', foreground: 'b8737f' },
+          { token: 'string', foreground: 'd9536f' },
+          { token: 'string.escape', foreground: 'ff8097' },
+
+          // HTML/XML.
+          { token: 'entity.name.tag', foreground: '3f9b67' },
+          { token: 'entity.name.tag.html', foreground: '3f9b67' },
+          { token: 'tag', foreground: '3f9b67' },
+          { token: 'tag.html', foreground: '3f9b67' },
+          { token: 'tag.xml', foreground: '3f9b67' },
+          { token: 'delimiter.html', foreground: 'd5d8d6' },
+          { token: 'delimiter.xml', foreground: 'd5d8d6' },
+          { token: 'delimiter.tag.html', foreground: 'd5d8d6' },
+          { token: 'delimiter.tag.xml', foreground: 'd5d8d6' },
+          { token: 'punctuation.definition.tag.begin.html', foreground: 'd5d8d6' },
+          { token: 'punctuation.definition.tag.end.html', foreground: 'd5d8d6' },
+          { token: 'punctuation.definition.tag.html', foreground: 'd5d8d6' },
+          { token: 'attribute.name.html', foreground: 'ffb0bd' },
+          { token: 'attribute.name.xml', foreground: 'ffb0bd' },
+          { token: 'entity.other.attribute-name.html', foreground: 'ffb0bd' },
+          { token: 'entity.other.attribute-name', foreground: 'ffb0bd' },
+          { token: 'attribute.value.html', foreground: 'd9536f' },
+          { token: 'attribute.value.xml', foreground: 'd9536f' },
+          { token: 'string.quoted.double.html', foreground: 'd9536f' },
+          { token: 'string.quoted.single.html', foreground: 'd9536f' },
+          { token: 'metatag.html', foreground: '3f9b67' },
+          { token: 'metatag.content.html', foreground: '3f9b67' },
+          { token: 'type.css', foreground: '3f9b67' },
+          { token: 'attribute.name.css', foreground: 'ffb0bd' },
+          { token: 'attribute.value.css', foreground: 'd9536f' },
+
+          { token: 'comment.doc', foreground: '789187', fontStyle: 'italic' }
+        ]
+      };
+
+      // EditorTheme is the public extension override point. Assigning here intentionally
+      // replaces the active theme while the base Editor remains WK-agnostic.
+      // EditorTheme is the public extension override point.
+      editor.EditorTheme = {
+        id: WK_MONACO_THEME.name,
+        monaco: WK_MONACO_THEME
+      };
+
+      function installWKHighlightStyles() {
+        if (framedoc.getElementById('wk-monaco-semantic-styles')) return;
+        const style = framedoc.createElement('style');
+        style.id = 'wk-monaco-semantic-styles';
+        style.textContent = [
+          '.wk-monaco-function-token{color:#3cdfa9 !important;}',
+          '.wk-monaco-class-token{color:#00c23a !important;}',
+          '.wk-monaco-object-key-token{color:#afcc8f !important;}',
+          '.wk-monaco-property-token{color:#c98f9c !important;}',
+          '.wk-monaco-operator-token{color:#c7c7c7 !important;}',
+          '.wk-monaco-parameter-token{color:#de6c83 !important;}'
+        ].join('');
+        framedoc.head?.appendChild(style);
+      }
+
+      function isWKCodeModel(model) {
+        const id = model?.getLanguageId?.();
+        return id === 'javascript' || id === 'typescript' ||
+          id === 'javascriptreact' || id === 'typescriptreact';
+      }
+
+      function addWKRange(ranges, monaco, model, start, end, className) {
+        if (end <= start) return;
+        const a = model.getPositionAt(start);
+        const b = model.getPositionAt(end);
+        ranges.push({
+          range: new monaco.Range(a.lineNumber, a.column, b.lineNumber, b.column),
+          options: { inlineClassName: className, inlineClassNameAffectsLetterSpacing: false }
+        });
+      }
+
+      function lexWKCode(text) {
+        const tokens = [];
+        let i = 0;
+        while (i < text.length) {
+          const ch = text[i], next = text[i + 1];
+          if (/\s/.test(ch)) { i++; continue; }
+          if (ch === '/' && next === '/') {
+            const nl = text.indexOf('\n', i + 2);
+            i = nl < 0 ? text.length : nl;
+            continue;
+          }
+          if (ch === '/' && next === '*') {
+            const close = text.indexOf('*/', i + 2);
+            i = close < 0 ? text.length : close + 2;
+            continue;
+          }
+          if (ch === '"' || ch === "'" || ch === String.fromCharCode(96)) {
+            const quote = ch;
+            i++;
+            while (i < text.length) {
+              if (text[i] === '\\') { i += 2; continue; }
+              if (text[i] === quote) { i++; break; }
+              i++;
+            }
+            continue;
+          }
+          if (/[A-Za-z_$]/.test(ch)) {
+            const start = i++;
+            while (i < text.length && /[A-Za-z0-9_$]/.test(text[i])) i++;
+            tokens.push({value:text.slice(start,i),start,end:i,type:'id'});
+            continue;
+          }
+          const two = text.slice(i, i + 2);
+          const three = text.slice(i, i + 3);
+          const multi = ['===','!==','>>>','=>','==','!=','<=','>=','++','--','+=','-=','*=','/=','%=','**','&&','||','??','?.','<<','>>','...'];
+          const value = multi.includes(three) ? three : multi.includes(two) ? two : ch;
+          tokens.push({value,start:i,end:i+value.length,type:'punct'});
+          i += value.length;
+        }
+        return tokens;
+      }
+
+      function isWKOperator(value) {
+        return new Set(['=','+','-','*','/','%','**','++','--','+=','-=','*=','/=','%=','==','===','!=','!==','<','>','<=','>=','&&','||','??','!','~','&','|','^','<<','>>','>>>','=>','?.','?',';',':']).has(value);
+      }
+
+      function isWKControlWord(value) {
+        return new Set(['if','else','for','while','do','switch','case','catch','finally','try',
+          'throw','return','break','continue','default','yield','await','with']).has(value);
+      }
+
+      function isWKNewExpression(tokens, index) {
+        let i = index - 1;
+        if (tokens[i]?.value === 'new') return true;
+        while (i >= 0 && (tokens[i].type === 'id' || tokens[i].value === '.' || tokens[i].value === '?.')) {
+          if (tokens[i].value === 'new') return true;
+          i--;
+        }
+        return false;
+      }
+
+      function classifyWKCode(text) {
+        const tokens = lexWKCode(text);
+        const ranges = [];
+        const braces = [];
+        const prev = i => tokens[i - 1];
+        const next = i => tokens[i + 1];
+
+        for (let i = 0; i < tokens.length; i++) {
+          const token = tokens[i], p = prev(i), n = next(i);
+
+          // Explicitly decorate operators so the WK palette wins over Monaco's
+          // language token colors, including the plain <, =, and > operators.
+          if (token.type === 'punct' && isWKOperator(token.value)) {
+            ranges.push({start:token.start,end:token.end,className:'wk-monaco-operator-token'});
+            continue;
+          }
+
+          if (token.value === '{') {
+            const pv = p?.value;
+            const beforeP = prev(i - 1)?.value;
+            let kind = 'object';
+            if (!p || pv === '}' || pv === ')' || pv === '=>' || pv === ';' ||
+                pv === 'else' || pv === 'try' || pv === 'finally' || pv === 'do' ||
+                pv === 'catch' || (p?.type === 'id' && beforeP === 'class')) kind = 'block';
+            braces.push(kind);
+            continue;
+          }
+          if (token.value === '}') { braces.pop(); continue; }
+          if (token.type !== 'id') continue;
+
+          const add = className => ranges.push({start:token.start,end:token.end,className});
+
+          // Color actual function parameters, not call-site arguments.
+          // Parameters are detected from function declarations and arrow functions.
+          let parameterList = false;
+          let open = -1;
+          for (let j = i - 1; j >= 0; j--) {
+            if (tokens[j].value === '(') { open = j; break; }
+            if (tokens[j].value === ')' || tokens[j].value === ';' || tokens[j].value === '{' || tokens[j].value === '}') break;
+          }
+          if (open >= 0) {
+            const openerPrev = open > 0 ? tokens[open - 1] : null;
+            if (openerPrev?.value === 'function' ||
+                (open > 1 && tokens[open - 2]?.value === 'function')) {
+              parameterList = true;
+            } else {
+              let depth = 1;
+              let close = open + 1;
+              while (close < tokens.length && depth > 0) {
+                if (tokens[close].value === '(') depth++;
+                else if (tokens[close].value === ')') depth--;
+                close++;
+              }
+              if (depth === 0 && tokens[close]?.value === '=>') parameterList = true;
+            }
+          }
+          if (!parameterList) {
+            // Single-parameter arrow: x => ...
+            if (n?.value === '=>' && p?.value !== '.' && p?.value !== '?.') {
+              parameterList = true;
+            }
+          }
+          if (parameterList &&
+              p?.value !== '.' && p?.value !== '?.' &&
+              p?.value !== 'class' && p?.value !== 'new' &&
+              n?.value !== '(') {
+            add('wk-monaco-parameter-token');
+          }
+
+          if (p?.value === 'class') { add('wk-monaco-class-token'); continue; }
+          if (p?.value === 'new' || isWKNewExpression(tokens, i)) {
+            // In `new ns.Class()`, only Class is the constructor; ns remains
+            // an ordinary qualifier rather than becoming a class token.
+            if ((p?.value === 'new' && n?.value !== '.' && n?.value !== '?.') ||
+                (p?.value === '.' || p?.value === '?.') ||
+                (isWKNewExpression(tokens, i) && n?.value === '(')) {
+              add('wk-monaco-class-token');
+              continue;
+            }
+          }
+          if (p?.value === 'extends' || p?.value === 'implements' || p?.value === 'instanceof') {
+            add('wk-monaco-class-token');
+            continue;
+          }
+
+          if (n?.value === '(' && !isWKControlWord(token.value)) {
+            add('wk-monaco-function-token');
+            continue;
+          }
+
+          if (p?.value === '.' || p?.value === '?.') {
+            add('wk-monaco-property-token');
+            continue;
+          }
+
+          if (n?.value === ':' && braces[braces.length - 1] === 'object' && p?.value !== '?') {
+            add('wk-monaco-object-key-token');
+            continue;
+          }
+
+          if (n?.value === '=' && tokens[i + 2]?.value === '(') {
+            let depth = 0;
+            for (let j = i + 2; j < tokens.length && j < i + 24; j++) {
+              if (tokens[j].value === '(') depth++;
+              else if (tokens[j].value === ')') {
+                depth--;
+                if (depth === 0 && tokens[j + 1]?.value === '=>') {
+                  add('wk-monaco-function-token');
+                  break;
+                }
+              }
+            }
+          } else if (n?.value === '=' && tokens[i + 2]?.type === 'id' && tokens[i + 3]?.value === '=>') {
+            add('wk-monaco-function-token');
+          }
+        }
+        return ranges;
+      }
+
+      function collectWKCodeDecorations(monaco, model) {
+        return classifyWKCode(model.getValue()).map(item => {
+          const ranges = [];
+          addWKRange(ranges, monaco, model, item.start, item.end, item.className);
+          return ranges[0];
+        });
+      }
+
+      const wkEditorDecorations = new WeakMap();
+      const wkEditorDisposables = new WeakMap();
+
+      function updateWKEditorDecorations(instance) {
+        const model = instance?.getModel?.();
+        if (!model) return;
+        installWKHighlightStyles();
+        const monaco = editor.monaco;
+        const ranges = isWKCodeModel(model) ? collectWKCodeDecorations(monaco, model) : [];
+        const old = wkEditorDecorations.get(instance) || [];
+        wkEditorDecorations.set(instance, instance.deltaDecorations(old, ranges));
+      }
+
+      function attachWKEditor(instance) {
+        if (!instance || wkEditorDisposables.has(instance)) return;
+        const store = [];
+        store.push(instance.onDidChangeModel?.(() => {
+          const old = wkEditorDisposables.get(instance) || [];
+          for (const disposable of old) disposable?.dispose?.();
+          wkEditorDisposables.delete(instance);
+          attachWKEditor(instance);
+        }));
+        const model = instance.getModel?.();
+        store.push(model?.onDidChangeContent?.(() => updateWKEditorDecorations(instance)));
+        wkEditorDisposables.set(instance, store);
+        updateWKEditorDecorations(instance);
+      }
+
+      function installWKHighlightPass() {
+        const monaco = editor.monaco;
+        if (!monaco?.editor?.getEditors) return false;
+        installWKHighlightStyles();
+        for (const instance of monaco.editor.getEditors()) attachWKEditor(instance);
+        if (!monaco.editor.__wkCreateDecorationsHook &&
+            typeof monaco.editor.onDidCreateEditor === 'function') {
+          monaco.editor.__wkCreateDecorationsHook =
+            monaco.editor.onDidCreateEditor(instance => attachWKEditor(instance));
+        }
+        return true;
+      }
+
+      if (!installWKHighlightPass()) {
+        let attempts = 0;
+        const wkHighlightTimer = setInterval(() => {
+          attempts++;
+          if (installWKHighlightPass() || attempts >= 120) clearInterval(wkHighlightTimer);
+        }, 100);
+      }
+
+      // ---------------------------------------------------------------------------
+      // Sidebar change logging
+      // ---------------------------------------------------------------------------
+
+      const sidebarNames = {
+        activityExplorer: 'Explorer',
+        activitySearch: 'Search',
+        activitySourceControl: 'Source Control',
+        activityRun: 'Run and Debug',
+        activityExtensions: 'Extensions',
+        activitySettings: 'Settings',
+        activityProfile: 'Profile'
+      };
+
+      // --------------------------------------------------------------------------
+      // Extension sidebar page
+      // --------------------------------------------------------------------------
+
+      factories.watermelonkatana = function () {
+        return {
+          title: WK_EXTENSION.name,
+          icon: WK_EXTENSION.icon,
+
+          render(g) {
+            g.viewBody.innerHTML = '';
+
+            const page = framedoc.createElement('div');
+
+            page.className = 'watermelonkatana-page';
+
+            page.style.cssText = `
+              height: 100%;
+              box-sizing: border-box;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              padding: 48px;
+              overflow: auto;
+            `;
+
+            page.innerHTML = `
+              <style>
+                #openWatermelonKatanaEditor {
+                  appearance:none;
+                  padding:10px 18px;
+                  border:1px solid #444;
+                  border-radius:0;
+                  background:#252525;
+                  color:#eee;
+                  cursor:pointer;
+                  font-size:15px;
+                }
+                #openWatermelonKatanaEditor:hover {
+                  background:#2f2f2f;
+                  border-color:#666;
+                }
+              </style>
+              <div style="max-width: 760px; width: 100%; text-align: center;">
+                <img src="/images/icon.png" alt="WatermelonKatana" style="display:block; width:220px; height:220px; object-fit:contain; margin:0 auto 28px;">
+
+                <h1 style="margin:0 0 14px; font-size:32px;">WatermelonKatana</h1>
+
+                <p style="margin:0 0 24px; color:#aaa; font-size:16px; line-height:1.6;">
+                  ${WK_EXTENSION.description}
+                </p>
+
+                <button id="openWatermelonKatanaEditor" type="button">
+                  Open WatermelonKatana Editor
+                </button>
+              </div>
+            `;
+
+            g.viewBody.appendChild(page);
+
+            page.querySelector('#openWatermelonKatanaEditor')?.addEventListener('click', () => {
+              editor.EditorApp.openBuiltin('watermelonkatanaEditor');
+            });
+          }
+        };
+      };
+
+      // --------------------------------------------------------------------------
+      // Separate custom editor page
+      // This is NOT part of EditorExtensionAPI.
+      // --------------------------------------------------------------------------
+
+      // --------------------------------------------------------------------------
+      // WatermelonKatana editor page.
+      // This is the functional side of the extension. The description page above
+      // intentionally stays small; this page owns the signed-in/repository/project
+      // workflow while reusing the existing WatermelonKatana project APIs.
+      // --------------------------------------------------------------------------
+
+      const WK_EDITOR_STATE = {
+        directProjectId: pid || null,
+        currentProjectId: pid || null,
+        renderToken: 0,
+        repo: null,
+        auth: null
+      };
+
+      const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, ch => ({
+        '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+      }[ch]));
+
+      function installWKProjectEditorHostStyles() {
+        framedoc.body.classList.add('wk-editor-extension-host');
+        if (framedoc.getElementById('wk-project-editor-host-style')) return;
+        const style = framedoc.createElement('style');
+        style.id = 'wk-project-editor-host-style';
+        style.textContent = `
+          /* The real /edit page receives these styles from WatermelonKatana's site CSS.
+             The Node Editor deliberately has its own CSS, so the project editor needs
+             a small scoped copy of the relevant controls instead of importing the
+             entire website stylesheet into the workbench. */
+          body.wk-editor-extension-host #upload-container {
+            box-sizing:border-box !important;
+            width:min(520px, calc(100vw - 32px)) !important;
+            padding:10px !important;
+            top:50% !important;
+            left:50% !important;
+            transform:translate(-50%, -50%) !important;
+            background:#222 !important;
+            color:#e0e0e0 !important;
+            border:2px solid #de6c83 !important;
+            border-radius:10px !important;
+            box-shadow:0 14px 40px rgba(0,0,0,.55) !important;
+            z-index:2147483000 !important;
+            overflow:visible !important;
+          }
+          body.wk-editor-extension-host #upload-container input[type="text"],
+          body.wk-editor-extension-host #upload-container input[type="file"] {
+            box-sizing:border-box !important;
+            width:100% !important;
+            margin:0 0 8px 0 !important;
+            padding:9px 10px !important;
+            border:2px solid #de6c83 !important;
+            border-radius:5px !important;
+            background:#272727 !important;
+            background-image:none !important;
+            color:#e0e0e0 !important;
+            font:14px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif !important;
+          }
+          body.wk-editor-extension-host #upload-container button {
+            width:auto !important;
+            min-width:0 !important;
+            height:auto !important;
+            display:inline-flex !important;
+            align-items:center !important;
+            justify-content:center !important;
+            margin:4px 6px 0 0 !important;
+            padding:8px 16px !important;
+            border:1px solid #444 !important;
+            border-radius:0 !important;
+            background-color:#272727 !important;
+            background-image:none !important;
+            background-blend-mode:normal !important;
+            color:#e0e0e0 !important;
+            font:700 14px Tahoma,sans-serif !important;
+            cursor:pointer !important;
+          }
+          body.wk-editor-extension-host #upload-container button:hover {
+            background-color:#303030 !important;
+            border-color:#555 !important;
+          }
+          body.wk-editor-extension-host #upload-preview {
+            display:block !important;
+            max-width:100% !important;
+            max-height:55vh !important;
+            margin:0 auto 8px !important;
+            object-fit:contain !important;
+          }
+
+          body.wk-editor-extension-host .fg-emoji-container {
+            box-sizing:border-box !important;
+            background:#222 !important;
+            color:#eee !important;
+            border:1px solid #555 !important;
+            box-shadow:0 14px 40px rgba(0,0,0,.6) !important;
+            z-index:2147483000 !important;
+          }
+          body.wk-editor-extension-host .fg-emoji-picker-category-title {
+            color:#ddd !important;
+            border-bottom-color:#444 !important;
+          }
+          body.wk-editor-extension-host .fg-emoji-nav {
+            background:#3a3a3a !important;
+          }
+          /* EmojiPicker.js uses orange for its external move/close controls.
+             Keep those controls visually consistent with WatermelonKatana. */
+          body.wk-editor-extension-host .fg-picker-special-buttons a {
+            background-color:#de6c83 !important;
+          }
+          body.wk-editor-extension-host .fg-emoji-nav ul {
+            border-bottom-color:#444 !important;
+          }
+          body.wk-editor-extension-host .fg-emoji-nav li a:hover,
+          body.wk-editor-extension-host .fg-emoji-nav li.active a,
+          body.wk-editor-extension-host .fg-emoji-nav li.emoji-picker-nav-active a {
+            background:#555 !important;
+          }
+          body.wk-editor-extension-host .fg-emoji-list li a {
+            background:#2d2d2d !important;
+            color:#eee !important;
+          }
+          body.wk-editor-extension-host .fg-emoji-list li a:hover {
+            background:#404040 !important;
+          }
+          body.wk-editor-extension-host .fg-emoji-picker-search input {
+            width:calc(100% - 30px) !important;
+            box-sizing:border-box !important;
+            margin:0 !important;
+            border:0 !important;
+            border-radius:0 !important;
+            background:#272727 !important;
+            background-image:none !important;
+            color:#eee !important;
+          }
+
+          .wk-description-layout { display:grid; grid-template-columns:minmax(0,1fr); gap:14px; align-items:start; }
+          .wk-description-pane { min-width:0; }
+          .wk-description-pane-title { color:#aaa; font-size:11px; text-transform:uppercase; letter-spacing:.08em; margin:0 0 7px; }
+          .wk-description-edit { display:flex; flex-direction:column; min-width:0; }
+          .wk-description-edit textarea.mk-textbox { margin:0 !important; min-height:240px !important; resize:vertical !important; }
+          .wk-markdown-toolbar { display:flex !important; flex-wrap:wrap !important; align-items:center !important; gap:6px !important; margin-top:8px !important; }
+          .wk-markdown-toolbar > button {
+            flex:0 0 auto !important;
+            width:auto !important;
+            min-width:0 !important;
+            height:auto !important;
+            display:inline-flex !important;
+            align-items:center !important;
+            justify-content:center !important;
+            margin:0 !important;
+            padding:8px 12px !important;
+            border:1px solid #444 !important;
+            border-radius:6px !important;
+            background-color:#272727 !important;
+            background-image:none !important;
+            background-blend-mode:normal !important;
+            color:#e0e0e0 !important;
+            cursor:pointer !important;
+            font:700 14px Tahoma,sans-serif !important;
+          }
+          .wk-markdown-toolbar > button:hover { background-color:#303030 !important; border-color:#555 !important; }
+          .wk-markdown-toolbar > button svg { width:18px !important; height:18px !important; display:block !important; }
+          .wk-description-preview {
+            min-height:240px;
+            max-height:420px;
+            overflow:auto;
+            box-sizing:border-box;
+            padding:12px;
+            border:2px solid #444;
+            border-radius:6px;
+            background:#151515;
+            color:#e0e0e0;
+            font:14px/1.5 Tahoma,sans-serif;
+          }
+          .wk-description-preview:empty::before { content:'Nothing to preview yet.'; color:#777; }
+          .wk-description-preview a { color:#ff9c9c; text-decoration:none; }
+          .wk-description-preview a:hover { color:#39ff14; }
+          .wk-description-preview img { max-width:100%; height:auto; }
+          .wk-description-preview h1,.wk-description-preview h2,.wk-description-preview h3 { color:#fff; }
+          .wk-description-preview p { margin:0 0 10px; }
+          .wk-description-preview p:last-child { margin-bottom:0; }
+          @media (max-width:800px) {
+            .wk-description-preview { max-height:none; }
+          }
+        `;
+        framedoc.head.appendChild(style);
+      }
+
+      function renderWKDescriptionPreview(preview, value) {
+        const text = String(value ?? '');
+        try {
+          if (typeof convertMarkdown === 'function') {
+            preview.innerHTML = convertMarkdown(text);
+            return;
+          }
+        } catch (_) {}
+        preview.innerHTML = escapeHTML(text).replace(/\n/g, '<br>');
+      }
+
+      function normalizeWKRepository(value) {
+        try {
+          const url = new URL(String(value || '').trim());
+          if (!/^https?:$/i.test(url.protocol)) return '';
+          if (!/^(www\.)?github\.com$/i.test(url.hostname)) return '';
+          const parts = url.pathname.split('/').filter(Boolean);
+          if (parts.length !== 2 || parts.some(part => !/^[A-Za-z0-9_.-]+$/.test(part))) return '';
+          return `https://github.com/${parts[0]}/${parts[1]}`;
+        } catch (_) {
+          return '';
+        }
+      }
+
+      function workspaceInfo() {
+        try {
+          return editor.EditorApp?.getWorkspaceInfo?.() || {};
+        } catch (_) {
+          return {};
+        }
+      }
+
+      function workspaceRepository() {
+        const info = workspaceInfo();
+        const remote = info.gitRemote;
+        if (remote?.provider !== 'github' || !remote.owner || !remote.repo) return null;
+        return {
+          owner: String(remote.owner),
+          repo: String(remote.repo),
+          branch: String(remote.branch || 'main'),
+          url: normalizeWKRepository(`https://github.com/${remote.owner}/${remote.repo}`),
+          name: String(remote.repo)
+        };
+      }
+
+      async function ensureWKProjectEditorTools() {
+        if (editor.__wkProjectEditorToolsPromise) return editor.__wkProjectEditorToolsPromise;
+        editor.__wkProjectEditorToolsPromise = (async () => {
+          // Reuse the existing WatermelonKatana editing tools inside this iframe.
+          // mediaupload.js is now DOM-safe and builds its UI with appendChild, so it
+          // no longer rebuilds the Node Editor workbench while loading.
+          const sources = [
+            '/scripts/EmojiPicker.js',
+            '/scripts/markdowntextbox.js',
+            '/scripts/mediaupload.js'
+          ];
+          for (const src of sources) {
+            const exists = Array.from(framedoc.scripts).find(script => script.dataset?.wkProjectTool === src);
+            if (exists) continue;
+            await new Promise((resolve, reject) => {
+              const script = framedoc.createElement('script');
+              script.src = src;
+              script.async = false;
+              script.dataset.wkProjectTool = src;
+              script.onload = resolve;
+              script.onerror = () => reject(new Error(`Failed to load ${src}`));
+              framedoc.head.appendChild(script);
+            });
+          }
+          if (typeof editor.getFileUpload !== 'function') {
+            throw new Error('WatermelonKatana media uploader is unavailable.');
+          }
+        })();
+        try {
+          await editor.__wkProjectEditorToolsPromise;
+        } catch (e) {
+          editor.__wkProjectEditorToolsPromise = null;
+          throw e;
+        }
+      }
+
+      function wkEditorShell(page, title, subtitle = '') {
+        page.className = 'watermelonkatana-editor-page';
+        page.style.cssText = `
+          height:100%;
+          width:100%;
+          box-sizing:border-box;
+          overflow:auto;
+          padding:32px;
+          background:#111;
+          color:#eee;
+          font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+        `;
+        page.innerHTML = `
+          <style>
+            .wk-editor-wrap { max-width:980px; margin:0 auto; }
+            .wk-editor-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:24px; margin-bottom:26px; }
+            .wk-editor-heading h1 { margin:0 0 7px; font-size:25px; font-weight:600; letter-spacing:.1px; }
+            .wk-editor-heading p { margin:0; color:#aaa; line-height:1.5; }
+            .wk-editor-card { background:#1e1e1e; border:1px solid #333; border-radius:10px; padding:22px; box-sizing:border-box; container-type:inline-size; container-name:wk-editor-card; }
+            .wk-editor-card + .wk-editor-card { margin-top:16px; }
+            .wk-editor-actions { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+            .wk-editor-button { appearance:none; border:1px solid #444; background:#252525; color:#eee; border-radius:0; padding:8px 13px; font-size:14px; cursor:pointer; }
+            .wk-editor-button:hover { background:#303030 !important; border-color:#666 !important; color:#fff; }
+            .wk-editor-button.primary { background:#252525; border-color:#555; color:#eee; }
+            .wk-editor-button.primary:hover { background:#303030 !important; border-color:#666 !important; }
+            .wk-editor-button.subtle { background:transparent; }
+            .wk-editor-button:disabled { opacity:.55; cursor:default; }
+            .wk-editor-empty { color:#aaa; padding:12px 0 2px; line-height:1.55; }
+            .wk-editor-status { min-height:20px; margin-top:12px; color:#aaa; font-size:13px; }
+            .wk-editor-error { color:#ff8f8f; }
+            .wk-editor-success { color:#72e0af; }
+            .wk-editor-repo { display:inline-flex; align-items:center; gap:8px; background:#181818; border:1px solid #333; border-radius:6px; padding:7px 10px; color:#ddd; font-size:13px; }
+            .wk-editor-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:14px; }
+            .wk-project-row { display:grid; grid-template-columns:74px minmax(0,1fr) auto; gap:14px; align-items:center; padding:12px 0; border-top:1px solid #2b2b2b; }
+            .wk-project-row:first-child { border-top:0; padding-top:0; }
+            .wk-project-thumb { width:74px; height:54px; border-radius:6px; object-fit:cover; background:#151515; border:1px solid #333; }
+            .wk-project-title { font-size:15px; font-weight:600; margin-bottom:4px; }
+            .wk-project-desc { color:#999; font-size:13px; line-height:1.4; }
+            .wk-field { display:flex; flex-direction:column; gap:7px; }
+            .wk-field + .wk-field { margin-top:15px; }
+            .wk-field label { color:#ddd; font-size:13px; }
+            .wk-field input[type="text"], .wk-field textarea { width:100%; box-sizing:border-box; border:1px solid #444; background:#151515; color:#eee; border-radius:6px; padding:9px 10px; font:inherit; outline:none; }
+            .wk-field input[type="text"]:focus, .wk-field textarea:focus { border-color:#4a86bd; box-shadow:0 0 0 2px #2563a633; }
+            .wk-field textarea { min-height:220px; resize:vertical; line-height:1.5; }
+            .wk-editor-form-row { display:grid; grid-template-columns:minmax(0,1fr) minmax(230px,320px); gap:18px; }
+            .wk-thumbnail-box { display:flex; align-items:center; gap:12px; }
+            .wk-thumbnail-button { appearance:none; border:1px solid #444; background:#181818; color:#ddd; border-radius:0; padding:9px; cursor:pointer; text-align:left; }
+            .wk-thumbnail-button:hover { border-color:#666; background:#202020; }
+            .wk-thumbnail-button img { display:block; width:130px; height:90px; object-fit:contain; background:#111; border:1px solid #333; border-radius:5px; }
+            .wk-readonly { color:#aaa; font-size:13px; line-height:1.5; }
+            .wk-checks { display:flex; gap:18px; flex-wrap:wrap; margin-top:16px; }
+            .wk-check { display:inline-flex; gap:8px; align-items:center; color:#ddd; font-size:13px; }
+            .wk-form-actions { display:flex; justify-content:space-between; gap:12px; align-items:center; margin-top:20px; padding-top:18px; border-top:1px solid #2b2b2b; }
+            .wk-field textarea.mk-textbox { min-height:220px; }
+            /* The embedded editor has less usable width than the browser window
+               suggests because of the Node Editor chrome/sidebar. Stack the WK form
+               before the workbench becomes cramped. */
+            /* The project form lives inside the Node Editor center pane, so its
+               usable width can be much smaller than the browser viewport. Respond to
+               the card's real width rather than the outer iframe viewport. */
+            @container wk-editor-card (max-width:760px) {
+              .wk-editor-form-row { grid-template-columns:1fr; }
+            }
+            @media (max-width:1200px) {
+              .wk-editor-heading { flex-direction:column; }
+              .wk-editor-grid { grid-template-columns:1fr; }
+              .wk-project-row { grid-template-columns:58px minmax(0,1fr); }
+              .wk-project-row .wk-editor-button { grid-column:2; justify-self:start; }
+              .wk-project-thumb { width:58px; height:44px; }
+            }
+            @media (max-width:560px) {
+              .watermelonkatana-editor-page { padding:16px !important; }
+              .wk-editor-card { padding:16px; }
+              .wk-project-row { grid-template-columns:1fr; }
+              .wk-project-row .wk-editor-button { grid-column:1; }
+              .wk-project-thumb { width:74px; height:54px; }
+              .wk-form-actions { flex-direction:column; align-items:stretch; }
+            }
+          </style>
+          <div class="wk-editor-wrap"></div>
+        `;
+        const wrap = page.querySelector('.wk-editor-wrap');
+        const heading = framedoc.createElement('div');
+        heading.className = 'wk-editor-heading';
+        heading.innerHTML = `<div><h1>${escapeHTML(title)}</h1>${subtitle ? `<p>${escapeHTML(subtitle)}</p>` : ''}</div>`;
+        wrap.appendChild(heading);
+        return wrap;
+      }
+
+      function appendRepoBadge(container, repo) {
+        if (!repo) return;
+        const badge = framedoc.createElement('div');
+        badge.className = 'wk-editor-repo';
+        badge.innerHTML = `<span style="opacity:.7">GitHub</span><strong>${escapeHTML(repo.owner)}/${escapeHTML(repo.repo)}</strong>`;
+        container.appendChild(badge);
+      }
+
+      function renderSimpleMessage(page, title, message, buttonText, onClick) {
+        const wrap = wkEditorShell(page, title, message);
+        const card = framedoc.createElement('div');
+        card.className = 'wk-editor-card';
+        card.style.maxWidth = '700px';
+        card.innerHTML = `<div class="wk-editor-empty">${message}</div>`;
+        if (buttonText && onClick) {
+          const actions = framedoc.createElement('div');
+          actions.className = 'wk-editor-actions';
+          actions.style.marginTop = '18px';
+          const button = framedoc.createElement('button');
+          button.type = 'button';
+          button.className = 'wk-editor-button primary';
+          button.textContent = buttonText;
+          button.addEventListener('click', onClick);
+          actions.appendChild(button);
+          card.appendChild(actions);
+        }
+        wrap.appendChild(card);
+      }
+
+      async function getWKAuth() {
+        try {
+          return await getAuth();
+        } catch (_) {
+          return null;
+        }
+      }
+
+      async function loadWKProjects(repo, username) {
+        const params = new URLSearchParams({
+          poster: username,
+          sort: 'latest',
+          showHidden: '1'
+        });
+        const response = await fetch('/api/project/list?' + params.toString(), {cache:'no-store'});
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data?.error || data?.message || `Unable to load projects (${response.status}).`);
+        const projects = Array.isArray(data?.projects) ? data.projects : [];
+        return projects.filter(project => {
+          if (!project?.editorProject) return false;
+          return normalizeWKRepository(project.editorRepository || project.link) === repo.url;
+        });
+      }
+
+      async function renderSelectPublishOrEdit(g, page, auth, repo) {
+        const token = ++WK_EDITOR_STATE.renderToken;
+        const wrap = wkEditorShell(page, 'WatermelonKatana', 'Publish this repository or edit a project already attached to it.');
+        const top = framedoc.createElement('div');
+        top.className = 'wk-editor-card';
+        appendRepoBadge(top, repo);
+        top.insertAdjacentHTML('beforeend', `
+          <div style="margin-top:15px;font-size:19px;font-weight:600;">Publish current repository</div>
+          <div class="wk-editor-empty">Publish <strong>${escapeHTML(repo.name)}</strong> with its repository name as the project title. Tags and the normal publishing form are skipped.</div>
+        `);
+        const publishActions = framedoc.createElement('div');
+        publishActions.className = 'wk-editor-actions';
+        publishActions.style.marginTop = '16px';
+        const publishButton = framedoc.createElement('button');
+        publishButton.type = 'button';
+        publishButton.className = 'wk-editor-button primary';
+        publishButton.textContent = 'Publish repository';
+        publishActions.appendChild(publishButton);
+        top.appendChild(publishActions);
+        const publishStatus = framedoc.createElement('div');
+        publishStatus.className = 'wk-editor-status';
+        top.appendChild(publishStatus);
+        wrap.appendChild(top);
+
+        const projectsCard = framedoc.createElement('div');
+        projectsCard.className = 'wk-editor-card';
+        projectsCard.innerHTML = `<div style="font-size:19px;font-weight:600;">Projects attached to this repository</div><div class="wk-editor-status" data-project-status>Loading projects…</div><div data-project-list></div>`;
+        wrap.appendChild(projectsCard);
+        const list = projectsCard.querySelector('[data-project-list]');
+        const projectStatus = projectsCard.querySelector('[data-project-status]');
+
+        publishButton.addEventListener('click', async () => {
+          if (publishButton.disabled) return;
+          publishButton.disabled = true;
+          publishStatus.className = 'wk-editor-status';
+          publishStatus.textContent = 'Publishing repository…';
+          try {
+            const response = await fetch('/api/project/publish', {
+              method: 'POST',
+              headers: {'Content-Type':'application/json'},
+              body: JSON.stringify({
+                title: repo.name,
+                link: repo.url,
+                content: '',
+                thumbnail: '',
+                tags: [],
+                mature: false,
+                hidden: false,
+                privateRecipients: [],
+                editorProject: true,
+                editorRepository: repo.url
+              })
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(data?.error ? `${data.message || 'Project not successfully published'}. ${data.error}` : (data?.message || `Project publish failed (${response.status}).`));
+            WK_EDITOR_STATE.currentProjectId = String(data.id || '');
+            publishStatus.className = 'wk-editor-status wk-editor-success';
+            publishStatus.textContent = 'Published. Opening project editor…';
+            await renderEditMode(g, page, WK_EDITOR_STATE.currentProjectId, repo);
+          } catch (e) {
+            publishButton.disabled = false;
+            publishStatus.className = 'wk-editor-status wk-editor-error';
+            publishStatus.textContent = e?.message || String(e);
+          }
+        });
+
+        try {
+          const projects = await loadWKProjects(repo, auth.user.username);
+          if (token !== WK_EDITOR_STATE.renderToken) return;
+          projectStatus.remove();
+          if (!projects.length) {
+            list.innerHTML = '<div class="wk-editor-empty">No WatermelonKatana projects are currently attached to this repository.</div>';
+            return;
+          }
+          for (const project of projects) {
+            const row = framedoc.createElement('div');
+            row.className = 'wk-project-row';
+            const thumbnail = escapeHTML(project.thumbnail || '/images/blank_project.png');
+            const desc = String(project.content || '').replace(/\s+/g,' ').trim();
+            row.innerHTML = `
+              <img class="wk-project-thumb" src="${thumbnail}" alt="">
+              <div><div class="wk-project-title">${escapeHTML(project.title || 'Untitled project')}</div><div class="wk-project-desc">${escapeHTML(desc ? (desc.length > 140 ? desc.slice(0,137) + '…' : desc) : 'No description')}</div></div>
+            `;
+            const action = framedoc.createElement('button');
+            action.type = 'button';
+            action.className = 'wk-editor-button';
+            action.textContent = 'Edit';
+            action.addEventListener('click', () => {
+              WK_EDITOR_STATE.currentProjectId = String(project.id);
+              renderEditMode(g, page, WK_EDITOR_STATE.currentProjectId, repo).catch(err => editor.EditorApp?.logError?.(err));
+            });
+            row.appendChild(action);
+            list.appendChild(row);
+          }
+        } catch (e) {
+          projectStatus.className = 'wk-editor-status wk-editor-error';
+          projectStatus.textContent = e?.message || String(e);
+        }
+      }
+
+      async function renderEditMode(g, page, projectId, repo) {
+        const token = ++WK_EDITOR_STATE.renderToken;
+        // Render the shell immediately so tool-loading/API failures are visible
+        // instead of leaving a blank builtin page.
+        const wrap = wkEditorShell(page, 'Edit WatermelonKatana project', 'Edit the project metadata without leaving the editor.');
+        const card = framedoc.createElement('div');
+        card.className = 'wk-editor-card';
+        card.innerHTML = `
+          <div class="wk-editor-status" data-load-status>Loading project…</div>
+          <form data-wk-project-form style="display:none;">
+            <div class="wk-editor-form-row">
+              <div>
+                <div class="wk-field"><label for="wk-project-name">Name</label><input id="wk-project-name" type="text" required></div>
+                <div class="wk-field wk-description-field">
+                  <label for="wk-project-description">Description</label>
+                  <div class="wk-description-layout">
+                    <div class="wk-description-pane wk-description-edit">
+                      <div class="wk-description-pane-title">Edit</div>
+                      <textarea id="wk-project-description"></textarea>
+                      <div class="wk-markdown-toolbar" data-description-toolbar></div>
+                    </div>
+                    <div class="wk-description-pane">
+                      <div class="wk-description-pane-title">Preview</div>
+                      <div class="wk-description-preview" data-description-preview></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div class="wk-field"><label>Thumbnail</label>
+                  <div class="wk-thumbnail-box">
+                    <button type="button" class="wk-thumbnail-button" data-upload-thumbnail><img data-thumbnail-preview src="/images/blank_project.png" alt="Project thumbnail"></button>
+                  </div>
+                  <div class="wk-readonly">Use the thumbnail button to insert an uploaded image or a direct image URL.</div>
+                </div>
+                <div class="wk-field"><label for="wk-project-tags">Tags</label><input id="wk-project-tags" type="text" placeholder="comma, separated, tags"></div>
+                <div class="wk-checks">
+                  <label class="wk-check"><input type="checkbox" id="wk-project-mature"> Mature</label>
+                  <label class="wk-check"><input type="checkbox" id="wk-project-hidden"> Hidden</label>
+                </div>
+                <div class="wk-field" style="margin-top:20px;">
+                  <label>Optimal View Size</label>
+                  <label class="wk-check"><input type="checkbox" id="wk-optimal-view-use"> Use custom view size</label>
+                  <div id="wk-optimal-view-options" style="display:none; margin-top:10px; padding:12px; border:1px solid #444;">
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                      <label>Width<br><input id="wk-optimal-view-width" type="number" min="1" max="10000" step="1"></label>
+                      <label>Height<br><input id="wk-optimal-view-height" type="number" min="1" max="10000" step="1"></label>
+                    </div>
+                    <label style="display:block; margin-top:10px;">Scaling
+                      <select id="wk-optimal-view-mode">
+                        <option value="ratio">Scale to fit ratio</option>
+                        <option value="fixed">Fixed pixel size</option>
+                      </select>
+                    </label>
+                  </div>
+                </div>
+                <div class="wk-field" style="margin-top:20px;"><label>GitHub repository</label><div class="wk-readonly" data-repository></div></div>
+
+              </div>
+            </div>
+            <div class="wk-form-actions">
+              <div class="wk-editor-actions"><button type="button" class="wk-editor-button subtle" data-reload-project>Discard changes</button></div>
+              <div class="wk-editor-actions"><span class="wk-editor-status" data-save-status></span><button type="submit" class="wk-editor-button primary" data-save-project>Save changes</button></div>
+            </div>
+          </form>
+        `;
+        wrap.appendChild(card);
+
+        const status = card.querySelector('[data-load-status]');
+        const form = card.querySelector('[data-wk-project-form]');
+        const nameInput = card.querySelector('#wk-project-name');
+        const descInput = card.querySelector('#wk-project-description');
+        const descriptionToolbar = card.querySelector('[data-description-toolbar]');
+        const descriptionPreview = card.querySelector('[data-description-preview]');
+        const tagsInput = card.querySelector('#wk-project-tags');
+        const matureInput = card.querySelector('#wk-project-mature');
+        const hiddenInput = card.querySelector('#wk-project-hidden');
+        const thumbPreview = card.querySelector('[data-thumbnail-preview]');
+        const repoEl = card.querySelector('[data-repository]');
+        const optimalUseInput = card.querySelector('#wk-optimal-view-use');
+        const optimalOptions = card.querySelector('#wk-optimal-view-options');
+        const optimalWidthInput = card.querySelector('#wk-optimal-view-width');
+        const optimalHeightInput = card.querySelector('#wk-optimal-view-height');
+        const optimalModeInput = card.querySelector('#wk-optimal-view-mode');
+        const saveStatus = card.querySelector('[data-save-status]');
+        const saveButton = card.querySelector('[data-save-project]');
+        const uploadButton = card.querySelector('[data-upload-thumbnail]');
+        const reloadButton = card.querySelector('[data-reload-project]');
+        let thumbValue = '';
+        let loadedProject = null;
+        function updateOptimalViewVisibility() {
+          optimalOptions.style.display = optimalUseInput.checked ? '' : 'none';
+        }
+        optimalUseInput.addEventListener('change', updateOptimalViewVisibility);
+
+        descInput.addEventListener('input', () => {
+          renderWKDescriptionPreview(descriptionPreview, descInput.value);
+        });
+
+        function setThumbnail(url) {
+          thumbValue = String(url || '');
+          thumbPreview.src = thumbValue || '/images/blank_project.png';
+          thumbPreview.onerror = () => { thumbPreview.src = '/images/blank_project.png'; };
+        }
+
+        async function loadProject() {
+          saveStatus.textContent = '';
+          status.className = 'wk-editor-status';
+          status.textContent = 'Loading project…';
+          form.style.display = 'none';
+          try {
+            const response = await fetch('/api/project/data/' + encodeURIComponent(projectId), {cache:'no-store'});
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(data?.error || data?.message || `Unable to load project (${response.status}).`);
+            if (!data.editorProject) throw new Error('This project is not a Node Editor project.');
+            loadedProject = data;
+            nameInput.value = data.title || '';
+            descInput.value = data.content || '';
+            tagsInput.value = Array.isArray(data.tags) ? data.tags.join(', ') : '';
+            matureInput.checked = !!data.mature;
+            hiddenInput.checked = !!data.hidden;
+            const optimal = data.optimalViewSize || {};
+            optimalUseInput.checked = !!optimal.enabled;
+            optimalWidthInput.value = Number(optimal.width) > 0 ? Number(optimal.width) : 1;
+            optimalHeightInput.value = Number(optimal.height) > 0 ? Number(optimal.height) : 1;
+            optimalModeInput.value = optimal.mode === 'fixed' ? 'fixed' : 'ratio';
+            updateOptimalViewVisibility();
+            setThumbnail(data.thumbnail || '');
+            repoEl.textContent = data.editorRepository || data.link || repo?.url || '';
+            status.remove();
+            form.style.display = '';
+            await ensureWKProjectEditorTools();
+            if (!descInput.classList.contains('mk-textbox')) {
+              editor.markdownTextbox?.('#wk-project-description', true);
+            }
+            if (descriptionToolbar && !descriptionToolbar.children.length) {
+              let node = descInput.nextSibling;
+              while (node) {
+                const next = node.nextSibling;
+                if (node.nodeType === 3 && !node.textContent.trim()) {
+                  node.remove();
+                } else if (node.nodeType === 1 && node.tagName === 'BUTTON') {
+                  descriptionToolbar.appendChild(node);
+                } else if (node.nodeType === 1 && node.tagName === 'BR') {
+                  node.remove();
+                } else {
+                  break;
+                }
+                node = next;
+              }
+            }
+            renderWKDescriptionPreview(descriptionPreview, descInput.value);
+          } catch (e) {
+            status.className = 'wk-editor-status wk-editor-error';
+            status.textContent = e?.message || String(e);
+          }
+        }
+
+        uploadButton.addEventListener('click', async () => {
+          try {
+            const url = await editor.getFileUpload?.(thumbValue);
+            if (url != null) setThumbnail(url);
+          } catch (e) {
+            saveStatus.className = 'wk-editor-status wk-editor-error';
+            saveStatus.textContent = e?.message || String(e);
+          }
+        });
+
+        reloadButton.addEventListener('click', () => loadProject());
+
+        form.addEventListener('submit', async event => {
+          event.preventDefault();
+          saveStatus.className = 'wk-editor-status';
+          saveStatus.textContent = '';
+          if (!loadedProject) return;
+          const taglist = tagsInput.value.toLowerCase().replace(/[^,\w\d_-]/g, '').split(',');
+          if (taglist.length < 3) {
+            saveStatus.className = 'wk-editor-status wk-editor-error';
+            saveStatus.textContent = 'Choose at least 3 tags';
+            return;
+          }
+          if (taglist.length > 10) {
+            saveStatus.className = 'wk-editor-status wk-editor-error';
+            saveStatus.textContent = 'You can only choose a maximum of 10 tags';
+            return;
+          }
+          saveButton.disabled = true;
+          saveStatus.textContent = 'Saving…';
+          try {
+            const repository = normalizeWKRepository(loadedProject.editorRepository || loadedProject.link || repo?.url);
+            if (!repository) throw new Error('This project does not have a valid GitHub repository.');
+            const response = await fetch('/api/project/update/' + encodeURIComponent(projectId), {
+              method:'PUT',
+              headers:{'Content-Type':'application/json'},
+              body:JSON.stringify({
+                title:nameInput.value,
+                link:repository,
+                content:descInput.value,
+                thumbnail:thumbValue,
+                tags:taglist,
+                mature:matureInput.checked,
+                hidden:hiddenInput.checked,
+                privateRecipients:[],
+                editorProject:true,
+                editorRepository:repository,
+                optimalViewSize:{
+                  enabled:optimalUseInput.checked,
+                  width:Math.max(1, Number(optimalWidthInput.value) || 1),
+                  height:Math.max(1, Number(optimalHeightInput.value) || 1),
+                  mode:optimalModeInput.value === 'fixed' ? 'fixed' : 'ratio'
+                }
+              })
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(data?.error ? `${data.message || 'Project not successfully updated'}. ${data.error}` : (data?.message || `Project update failed (${response.status}).`));
+            saveStatus.className = 'wk-editor-status wk-editor-success';
+            saveStatus.textContent = 'Saved successfully.';
+            loadedProject = {...loadedProject, title:nameInput.value, content:descInput.value, thumbnail:thumbValue, tags:taglist, mature:matureInput.checked, hidden:hiddenInput.checked, editorRepository:repository, link:repository, optimalViewSize:{enabled:optimalUseInput.checked,width:Math.max(1, Number(optimalWidthInput.value)||1),height:Math.max(1, Number(optimalHeightInput.value)||1),mode:optimalModeInput.value === 'fixed' ? 'fixed' : 'ratio'}};
+            document.title = `${nameInput.value || 'WatermelonKatana'} | Editor`;
+          } catch (e) {
+            saveStatus.className = 'wk-editor-status wk-editor-error';
+            saveStatus.textContent = e?.message || String(e);
+          } finally {
+            saveButton.disabled = false;
+          }
+        });
+
+        try {
+          await ensureWKProjectEditorTools();
+        } catch (e) {
+          status.className = 'wk-editor-status wk-editor-error';
+          status.textContent = e?.message || String(e);
+          return;
+        }
+        if (token !== WK_EDITOR_STATE.renderToken) return;
+        await loadProject();
+      }
+
+      async function renderWatermelonKatanaEditor(g) {
+        installWKProjectEditorHostStyles();
+        g.viewBody.innerHTML = '';
+        const page = framedoc.createElement('div');
+        g.viewBody.appendChild(page);
+
+        const auth = await getWKAuth();
+        WK_EDITOR_STATE.auth = auth;
+        if (!auth?.user) {
+          renderSimpleMessage(
+            page,
+            'Please sign in',
+            'Please sign in to WatermelonKatana to use this extension.',
+            'Sign in to WatermelonKatana',
+            () => {
+              const returnUrl = new URL(location.href);
+              returnUrl.searchParams.set('wkExtension', '1');
+              location.assign('/login?redir=' + encodeURIComponent(returnUrl.href));
+            }
+          );
+          return;
+        }
+
+        if (WK_EDITOR_STATE.directProjectId) {
+          const repo = workspaceRepository();
+          if (!repo) {
+            renderSimpleMessage(page, 'Please open a GitHub repository', 'Please open a GitHub repository to use the extension.');
+            return;
+          }
+          WK_EDITOR_STATE.repo = repo;
+          await renderEditMode(g, page, WK_EDITOR_STATE.directProjectId, repo);
+          return;
+        }
+
+        const info = workspaceInfo();
+        if (info.loading) {
+          renderSimpleMessage(page, 'Loading workspace', 'The editor is still loading the current workspace. Open the extension again once the workspace has finished loading.');
+          return;
+        }
+        const repo = workspaceRepository();
+        if (!repo) {
+          renderSimpleMessage(
+            page,
+            'Please open a GitHub repository',
+            'Please open a GitHub repository with Source Control enabled to use the extension.',
+            'Open GitHub repository',
+            async () => {
+              try {
+                await editor.EditorApp?.openRemoteProject?.({skipGuard:true});
+              } catch (e) {
+                editor.EditorApp?.logError?.(e);
+              }
+            }
+          );
+          return;
+        }
+        WK_EDITOR_STATE.repo = repo;
+        await renderSelectPublishOrEdit(g, page, auth, repo);
+      }
+
+      factories.watermelonkatanaEditor = function () {
+        return {
+          title: 'WatermelonKatana Editor',
+          icon: WK_EXTENSION.icon,
+          async render(g) {
+            await renderWatermelonKatanaEditor(g);
+          }
+        };
+      };
+
+      // --------------------------------------------------------------------------
+      // WatermelonKatana AI tools.
+      // These are exposed to the Editor's built-in AI through the extension API.
+      // Mutating operations use the Editor's extensionActions permission.
+      // --------------------------------------------------------------------------
+
+      async function wkAIAuth() {
+        const auth = await getWKAuth();
+        if (!auth?.user) throw new Error('Sign in to WatermelonKatana before using WatermelonKatana publication tools.');
+        return auth;
+      }
+
+      async function wkAIRequest(path, options = {}) {
+        const response = await fetch(path, {...options, cache:'no-store'});
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          const detail = data?.error ? `${data.message || 'WatermelonKatana request failed'}. ${data.error}` : (data?.message || data?.error || `WatermelonKatana request failed (${response.status}).`);
+          throw new Error(detail);
+        }
+        return data;
+      }
+
+      async function wkAIListPublications() {
+        const auth = await wkAIAuth();
+        const repo = workspaceRepository();
+        if (!repo) throw new Error('Open a GitHub repository before using WatermelonKatana publication tools.');
+        const projects = await loadWKProjects(repo, auth.user.username);
+        return projects.map(project => ({
+          id:String(project.id),
+          title:project.title || '',
+          description:project.content || '',
+          thumbnail:project.thumbnail || '',
+          tags:Array.isArray(project.tags) ? project.tags : [],
+          mature:!!project.mature,
+          hidden:!!project.hidden,
+          repository:project.editorRepository || project.link || repo.url
+        }));
+      }
+
+      async function wkAIPublishRepository(args = {}) {
+        await wkAIAuth();
+        const repo = workspaceRepository();
+        if (!repo) throw new Error('Open a GitHub repository before publishing it to WatermelonKatana.');
+        const data = await wkAIRequest('/api/project/publish', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            title:String(args.title || repo.name),
+            link:repo.url,
+            content:String(args.description || ''),
+            thumbnail:String(args.thumbnail || ''),
+            tags:Array.isArray(args.tags) ? args.tags : [],
+            mature:!!args.mature,
+            hidden:!!args.hidden,
+            privateRecipients:[],
+            editorProject:true,
+            editorRepository:repo.url
+          })
+        });
+        WK_EDITOR_STATE.currentProjectId = String(data.id || '');
+        return {id:String(data.id || ''),title:data.title || args.title || repo.name,repository:repo.url,published:true};
+      }
+
+      async function wkAIUpdatePublication(args = {}) {
+        await wkAIAuth();
+        const projectId = String(args.projectId || '').trim();
+        if (!projectId) throw new Error('projectId is required.');
+        const current = await wkAIRequest('/api/project/data/' + encodeURIComponent(projectId));
+        if (!current?.editorProject) throw new Error('The selected project is not a WatermelonKatana Editor publication.');
+        const repository = normalizeWKRepository(args.repository || current.editorRepository || current.link || workspaceRepository()?.url);
+        if (!repository) throw new Error('The publication does not have a valid GitHub repository.');
+        const tags = args.tags == null ? (Array.isArray(current.tags) ? current.tags : []) : args.tags;
+        const data = await wkAIRequest('/api/project/update/' + encodeURIComponent(projectId), {
+          method:'PUT',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            title:args.title == null ? (current.title || '') : String(args.title),
+            link:repository,
+            content:args.description == null ? (current.content || '') : String(args.description),
+            thumbnail:args.thumbnail == null ? (current.thumbnail || '') : String(args.thumbnail),
+            tags:Array.isArray(tags) ? tags : [],
+            mature:args.mature == null ? !!current.mature : !!args.mature,
+            hidden:args.hidden == null ? !!current.hidden : !!args.hidden,
+            privateRecipients:[],
+            editorProject:true,
+            editorRepository:repository
+          })
+        });
+        WK_EDITOR_STATE.currentProjectId = projectId;
+        return {id:projectId,title:data.title || args.title || current.title || '',updated:true};
+      }
+
+      const wkAITools = [
+                {
+                  name:'wk_list_publications',
+                  description:'List the current user\'s WatermelonKatana publications attached to the open GitHub repository.',
+                  permission:'extensionActions',
+                  parameters:{type:'object',properties:{},additionalProperties:false},
+                  execute:async () => ({publications:await wkAIListPublications()})
+                },
+                {
+                  name:'wk_publish_project',
+                  description:'Publish the currently open GitHub repository as a WatermelonKatana project. This creates a publication.',
+                  permission:'extensionActions',
+                  parameters:{type:'object',properties:{
+                    title:{type:'string',description:'Publication title. Defaults to the repository name.'},
+                    description:{type:'string'},
+                    thumbnail:{type:'string'},
+                    tags:{type:'array',items:{type:'string'}},
+                    mature:{type:'boolean'},
+                    hidden:{type:'boolean'}
+                  },additionalProperties:false},
+                  execute:wkAIPublishRepository
+                },
+                {
+                  name:'wk_update_project',
+                  description:'Edit an existing WatermelonKatana Editor publication. Only WatermelonKatana Editor publications can be changed with this tool.',
+                  permission:'extensionActions',
+                  parameters:{type:'object',required:['projectId'],properties:{
+                    projectId:{type:'string'},
+                    title:{type:'string'},
+                    description:{type:'string'},
+                    thumbnail:{type:'string'},
+                    tags:{type:'array',items:{type:'string'}},
+                    mature:{type:'boolean'},
+                    hidden:{type:'boolean'},
+                    repository:{type:'string'}
+                  },additionalProperties:false},
+                  execute:wkAIUpdatePublication
+                }
+              ];
+
+      if (editor.EditorExtensionAPI) {
+        editor.EditorExtensionAPI.register({
+          ...WK_EXTENSION,
+          ai:{tools:wkAITools},
+          open() {
+            editor.EditorApp.openBuiltin('watermelonkatana');
+          }
+        });
+      }
+
+      // --------------------------------------------------------------------------
+      // Add the separate custom page to Welcome.
+      // --------------------------------------------------------------------------
+
+      if (editor.EditorApp?.addWelcomeBuiltin) {
+        editor.EditorApp.addWelcomeBuiltin(
+          'watermelonkatanaEditor',
+          'WatermelonKatana Editor'
+        );
+      }
+
+      // After WatermelonKatana login, return directly to this extension.
+      if (!pid && new URLSearchParams(location.search).get('wkExtension') === '1') {
+        const autoOpenTimer = setInterval(() => {
+          const chooser = framedoc.querySelector('.startup-modal');
+          const info = editor.EditorApp?.getWorkspaceInfo?.();
+          if (!editor.EditorApp?.openBuiltin) return;
+          if (!chooser && !info?.gitRemote && !info?.loading) return;
+          chooser?.remove();
+          clearInterval(autoOpenTimer);
+          const cleanURL = new URL(location.href);
+          cleanURL.searchParams.delete('wkExtension');
+          history.replaceState({}, document.title, cleanURL.pathname + cleanURL.search + cleanURL.hash);
+          editor.EditorApp.openBuiltin('watermelonkatanaEditor');
+        }, 100);
+        setTimeout(() => clearInterval(autoOpenTimer), 15000);
+      }
+
+      // ---------------------------------------------------------------------------
+      
+      var style = framedoc.createElement('style');
+      style.innerHTML = `
+   /* WatermelonKatana-inspired accent skin for Node Editor. Add AFTER existing styles. */
+:root{--wk-pink:rgb(221,109,127);--wk-pink-soft:rgba(221,109,127,.18);--wk-pink-faint:rgba(221,109,127,.08);--wk-green:rgb(60,223,169);--wk-green-hover:rgb(82,232,181);--wk-green-soft:rgba(60,223,169,.16);}
+
+/* Pink = structure, borders, edges */
+.border-indigo-500,.border-indigo-600{border-color:var(--wk-pink)!important}
+.border-gray-500,.border-gray-600,.border-gray-700{border-color:rgba(221,109,127,.38)!important}
+.modal-box,.modal-content,.dialog,.card,.panel,.welcome-card,.project-card{border-color:rgba(221,109,127,.38)!important}
+.tab.active,.editor-tab.active,.tab[aria-selected="true"],.editor-tab[aria-selected="true"]{border-bottom-color:var(--wk-pink)!important}
+.resizer:hover,.resize-handle:hover,.splitter:hover{background:var(--wk-pink)!important}
+
+/* Green = actions and interactive accents */
+button.bg-indigo-600,button.bg-indigo-500,.bg-indigo-600,.bg-indigo-500{background:var(--wk-green)!important;border-color:var(--wk-green)!important;color:#101512!important}
+button.bg-indigo-600:hover,button.bg-indigo-500:hover{background:var(--wk-green-hover)!important;border-color:var(--wk-green-hover)!important}
+input:focus,select:focus,textarea:focus{border-color:var(--wk-green)!important;box-shadow:0 0 0 2px var(--wk-green-soft)!important}
+
+/* Selected UI */
+.explorer .selected,.file-explorer .selected,.explorer [aria-selected="true"],.file-explorer [aria-selected="true"]{background:var(--wk-green-soft)!important;color:var(--wk-green)!important}
+.explorer .selected::before,.file-explorer .selected::before{background:var(--wk-green)!important}
+
+/* Replace blue/indigo text accents */
+.text-indigo-300,.text-indigo-400,.text-indigo-500,.text-indigo-600{color:var(--wk-green)!important}
+.modal-box h1,.modal-box h2,.modal-box h3,.modal-content h1,.modal-content h2,.modal-content h3,.dialog h1,.dialog h2,.dialog h3{color:var(--wk-pink)!important}
+a{color:var(--wk-green)!important}a:hover{color:var(--wk-green-hover)!important}
+
+/* Pink hover outlines */
+button:hover:not(:disabled){border-color:rgba(221,109,127,.65) !important; background:rgba(221,109,127,.33) !important;}
+button.bg-indigo-600:hover,button.bg-indigo-500:hover{border-color:var(--wk-green-hover)!important}
+
+.workbench-tab:hover {background:rgba(221,109,127,.33) !important;}
+
+/* Keep controls dark */
+input:not[type=checkbox],select,textarea{background:#202124!important;color:#e5e7eb!important}
+.address-bar,.browser-address{border-color:rgba(221,109,127,.45)!important}
+.browser-tab.active{border-color:var(--wk-pink)!important}
+.browser-tab.active::after{background:var(--wk-green)!important}
+
+/* Menus */
+.menu,.dropdown-menu,.context-menu,[role="menu"]{border-color:rgba(221,109,127,.42)!important}
+.menu-item:hover,.dropdown-item:hover,.context-menu-item:hover,[role="menuitem"]:hover{background:var(--wk-green-soft)!important}
+
+/* Terminal keeps its dark look, with a subtle pink edge */
+.terminal,.console,#terminal,#console,.terminal-container,.console-container{border-color:rgba(221,109,127,.35)!important}
+::selection{background:rgba(221,109,127,.35);color:white}
+
+/* Common Tailwind indigo replacements */
+.bg-indigo-50,.bg-indigo-100,.bg-indigo-200{background:var(--wk-green-soft)!important}
+.bg-indigo-600,.bg-indigo-500{background:var(--wk-green)!important}
+.border-indigo-300,.border-indigo-400{border-color:var(--wk-pink)!important}
+.ring-indigo-500,.focus\:ring-indigo-500:focus{--tw-ring-color:var(--wk-green)!important}
+
+#statusBar { background-color: #00d18f; }
+button.primary { background: #08a372 !important; border-color: #00d18f !important; }
+
+/* Keep the WatermelonKatana extension's own controls flat and neutral. */
+.wk-editor-button,
+#openWatermelonKatanaEditor,
+.wk-thumbnail-button,
+.wk-markdown-toolbar > button {
+  border-radius:0 !important;
+  background:#252525 !important;
+  background-image:none !important;
+  box-shadow:none !important;
+}
+.wk-editor-button:hover,
+#openWatermelonKatanaEditor:hover,
+.wk-thumbnail-button:hover,
+.wk-markdown-toolbar > button:hover {
+  background:#303030 !important;
+  border-color:#666 !important;
+}
+
+button.primary:hover:not(:disabled) { background: #02db97 !important; border-color: #00d18f !important; }
+
+.welcome-group-create button { background: #08a372 !important; border-color: #00d18f !important; }
+.welcome-group-create button:hover:not(:disabled) { background: #02db97 !important; border-color: #00d18f !important; }
+
+.source-control-commit { background: #08a372 !important; border-color: #00d18f !important; }
+.source-control-commit:hover:not(:disabled) { background: #02db97 !important; border-color: #00d18f !important; }
+
+#tree li.selected-file { background: #003314; }
+#tree li.selected-file:hover:not(:has(li:hover)) { background: #014d1e; }
+input[type=checkbox]:checked { background-color: #08a372 !important; border-color: #00d18f !important; }
+.ai-user .ai-bubble { background: #003314 !important; }
+      `;
+      framedoc.body.appendChild(style);
+    });
+  </script>
+</body>
+</html>

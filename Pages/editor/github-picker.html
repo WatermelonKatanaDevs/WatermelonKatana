@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Choose GitHub Repository | WatermelonKatana</title>
+  <link rel="stylesheet" type="text/css" href="/styles/style.css">
+  <script>
+    window.__githubWorkerConfigReady = fetch('/editor/workers.json',{cache:'no-store'}).then(async r => {
+      if (!r.ok) throw new Error(`Failed to load GitHub authentication configuration (${r.status}).`);
+      window.WorkerConfig = await r.json();
+      return window.WorkerConfig;
+    });
+  </script>
+  <script src="/editor/editor/github.js"></script>
+  <style>
+    body { max-width:760px; margin:0 auto; padding:24px; box-sizing:border-box; }
+    #status { margin:12px 0; }
+    #repos { display:flex; flex-direction:column; gap:8px; }
+    #repos button { justify-content:flex-start; text-align:left; width:100%; }
+    .repo-meta { opacity:.7; font-size:.9em; margin-left:8px; }
+  </style>
+</head>
+<body>
+  <h1>Choose GitHub Repository</h1>
+  <div id="status">Loading GitHub…</div>
+  <button id="signin" hidden>Sign in with GitHub</button>
+  <div id="repos"></div>
+  <script>
+    const statusEl=document.getElementById('status');
+    const signIn=document.getElementById('signin');
+    const reposEl=document.getElementById('repos');
+    function escapeHTML(value) { return String(value ?? '').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+    async function render() {
+      await window.__githubWorkerConfigReady;
+      const github=window.GitHubService;
+      await github.init();
+      if (!github.isSignedIn()) {
+        statusEl.textContent='Sign into GitHub to choose one of your repositories.';
+        signIn.hidden=false;
+        reposEl.textContent='';
+        return;
+      }
+      signIn.hidden=true;
+      statusEl.textContent='Loading your repositories…';
+      const user=github.getUser?.();
+      const repos=(await github.listRepositories()).filter(repo => !user?.login || repo.owner.toLowerCase()===String(user.login).toLowerCase());
+      reposEl.innerHTML=repos.length ? repos.map((repo,i)=>`<button data-index="${i}"><strong>${escapeHTML(repo.fullName)}</strong><span class="repo-meta">${repo.private?'Private':'Public'} • ${escapeHTML(repo.defaultBranch)}</span></button>`).join('') : '<p>No repositories found.</p>';
+      statusEl.textContent=`Signed in as @${user?.login || 'GitHub user'}. Choose a repository.`;
+      reposEl.querySelectorAll('[data-index]').forEach(button=>button.onclick=()=>{
+        const repo=repos[Number(button.dataset.index)];
+        if (!repo || !window.opener || window.opener.closed) return;
+        window.opener.postMessage({type:'wk-github-repository-selected',repository:{fullName:repo.fullName,htmlUrl:`https://github.com/${repo.fullName}`,owner:repo.owner,name:repo.name,defaultBranch:repo.defaultBranch,private:repo.private}},location.origin);
+        window.close();
+      });
+    }
+    signIn.onclick=async()=>{ try { await window.GitHubService.startLogin(); } catch(e) { statusEl.textContent=e?.message || String(e); } };
+    render().catch(e=>statusEl.textContent=e?.message||String(e));
+    window.addEventListener('github-auth-error',e=>{ statusEl.textContent=e.detail?.message||String(e.detail||e); });
+  </script>
+</body>
+</html>
