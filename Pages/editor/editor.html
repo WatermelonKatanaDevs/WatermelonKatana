@@ -918,7 +918,7 @@
             .wk-editor-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:24px; margin-bottom:26px; }
             .wk-editor-heading h1 { margin:0 0 7px; font-size:25px; font-weight:600; letter-spacing:.1px; }
             .wk-editor-heading p { margin:0; color:#aaa; line-height:1.5; }
-            .wk-editor-card { background:#1e1e1e; border:1px solid #333; border-radius:10px; padding:22px; box-sizing:border-box; }
+            .wk-editor-card { background:#1e1e1e; border:1px solid #333; border-radius:10px; padding:22px; box-sizing:border-box; container-type:inline-size; container-name:wk-editor-card; }
             .wk-editor-card + .wk-editor-card { margin-top:16px; }
             .wk-editor-actions { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
             .wk-editor-button { appearance:none; border:1px solid #444; background:#252525; color:#eee; border-radius:0; padding:8px 13px; font-size:14px; cursor:pointer; }
@@ -957,9 +957,14 @@
             /* The embedded editor has less usable width than the browser window
                suggests because of the Node Editor chrome/sidebar. Stack the WK form
                before the workbench becomes cramped. */
+            /* The project form lives inside the Node Editor center pane, so its
+               usable width can be much smaller than the browser viewport. Respond to
+               the card's real width rather than the outer iframe viewport. */
+            @container wk-editor-card (max-width:760px) {
+              .wk-editor-form-row { grid-template-columns:1fr; }
+            }
             @media (max-width:1200px) {
               .wk-editor-heading { flex-direction:column; }
-              .wk-editor-form-row { grid-template-columns:1fr; }
               .wk-editor-grid { grid-template-columns:1fr; }
               .wk-project-row { grid-template-columns:58px minmax(0,1fr); }
               .wk-project-row .wk-editor-button { grid-column:2; justify-self:start; }
