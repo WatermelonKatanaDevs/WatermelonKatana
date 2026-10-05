@@ -1217,6 +1217,14 @@
                   </div>
                 </div>
                 <div class="wk-field" style="margin-top:20px;"><label>GitHub repository</label><div class="wk-readonly" data-repository></div></div>
+                <div class="wk-field" style="margin-top:20px;">
+                  <label>Deployment</label>
+                  <div class="wk-readonly" data-deployment-summary>No deployment configured.</div>
+                  <div class="wk-editor-actions" style="margin-top:10px;">
+                    <button type="button" class="wk-editor-button" data-set-deployment-preview>Set Deployment from Deployment Preview</button>
+                  </div>
+                  <div class="wk-readonly" style="margin-top:7px;">Uses the exact branch and commit selected in Run &amp; Debug. This updates the WatermelonKatana publication, not <code>.editor/deployment.json</code>.</div>
+                </div>
 
               </div>
             </div>
