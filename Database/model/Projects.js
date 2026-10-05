@@ -91,7 +91,6 @@ const ProjectSchema = new Mongoose.Schema({
       type: String,
       enum: ["iframe", "emulate"],
     },
-    hookUrl: String,
     saveEnvironmentVariables: Boolean,
   },
   optimalViewSize: {
