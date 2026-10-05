@@ -344,14 +344,10 @@
              editorRepository: editorProject.checked && selectedGithub ? `https://github.com/${selectedGithub.fullName}` : (editorProject.checked ? link.value : ""),
             editorDeployment: editorProject.checked ? {
               thirdParty: false,
+              externalUrl: '',
               branch: editorBranch.value,
               commit: editorCommit.value || 'latest',
-              path: '/',
-              usePeerServer: false,
-              peerLayer: 'peer',
-              externalUrl: '',
-              externalMode: 'iframe',
-              saveEnvironmentVariables: false
+              path: '/'
             } : null
           }),
           headers: { 'Content-Type': 'application/json' }
