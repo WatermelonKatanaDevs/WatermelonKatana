@@ -101,7 +101,7 @@
             <b>Plays:</b> <span id="plays">${data.plays || 0}</span>
 
             ${await createActionButton("edit", `onclick="window.location.href += '/edit'"`)}
-            ${data.editorProject ? '<button onclick="window.location.href = \'/editor/project/' + data.id + \'\">' + (projectOwner ? "Edit Code" : "View Code") + '</button>' : ""}
+             ${data.editorProject ? `<button onclick="window.location.href='/editor/project/${data.id}'">${projectOwner ? "Edit Code" : "View Code"}</button>` : ""}
             ${await createDeleteButton("project", "search")}
             </div>
             <br>
