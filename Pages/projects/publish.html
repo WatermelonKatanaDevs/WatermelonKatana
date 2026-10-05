@@ -55,7 +55,11 @@
       <label for="editorBranch">Branch</label><br>
       <select id="editorBranch" style="max-width:520px;"></select><br>
       <label for="editorCommit">Commit</label><br>
-      <select id="editorCommit" style="max-width:520px;"><option value="latest">Latest</option></select>
+      <select id="editorCommit" style="max-width:520px;"><option value="latest">Latest</option></select><br>
+      <label for="editorUsePeerServer">
+        <input type="checkbox" id="editorUsePeerServer">
+        Use peer server
+      </label>
       <div style="opacity:.7; margin-top:6px;">Latest resolves to the newest commit on the selected branch each time the project is loaded.</div>
     </div>
     <div id="linkField">
@@ -105,6 +109,7 @@
     const editorDeployment = document.querySelector('#editorDeployment');
     const editorBranch = document.querySelector('#editorBranch');
     const editorCommit = document.querySelector('#editorCommit');
+    const editorUsePeerServer = document.querySelector('#editorUsePeerServer');
     let selectedGithub = null;
     let githubRepos = [];
     let editorBranches = [];
@@ -347,6 +352,7 @@
               externalUrl: '',
               branch: editorBranch.value,
               commit: editorCommit.value || 'latest',
+              usePeerServer: editorUsePeerServer.checked,
               path: '/'
             } : null
           }),
