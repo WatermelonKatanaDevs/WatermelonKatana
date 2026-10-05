@@ -38,7 +38,7 @@ const limiter = RateLimit({
 /*
   Database Connection
 */
-connectDB();
+const databaseReady = connectDB();
 
 /*
   Middleware setup
@@ -136,6 +136,52 @@ app.get("/gamejams", (req, res) => res.sendFile(cldir + "/projects/gamejams.html
 app.get("/search", (req, res) => res.sendFile(cldir + "/projects/search.html")); // Search page
 app.get("/publish", userAuth, makeFormToken, (req, res) => res.sendFile(cldir + "/projects/publish.html")); // Publish page, users only
 const Projects = require("./Database/model/Projects");
+
+
+/**
+ * Temporary migration for the Editor deployment data schema.
+ * Converts legacy deployment records to the five-field representation.
+ * Remove this block after the production database has been migrated.
+ */
+async function migrateEditorDeployments() {
+  const cursor = Projects.collection.find({
+    editorProject: true,
+    editorDeployment: { $exists: true },
+    $or: [
+      { "editorDeployment.thirdParty": { $exists: false } },
+      { "editorDeployment.mode": { $exists: true } },
+      { "editorDeployment.usePeerServer": { $exists: true } },
+      { "editorDeployment.peerLayer": { $exists: true } },
+      { "editorDeployment.externalMode": { $exists: true } },
+      { "editorDeployment.saveEnvironmentVariables": { $exists: true } },
+      { "editorDeployment.hookUrl": { $exists: true } }
+    ]
+  });
+
+  let migrated = 0;
+  for await (const project of cursor) {
+    const deployment = project.editorDeployment || {};
+    const normalized = {
+      thirdParty: deployment.thirdParty === true || deployment.mode === "third-party",
+      externalUrl: String(deployment.externalUrl || ""),
+      branch: String(deployment.branch || ""),
+      commit: String(deployment.commit || "latest"),
+      path: String(deployment.path ?? deployment.url ?? "/")
+    };
+
+    await Projects.collection.updateOne(
+      { _id: project._id },
+      { $set: { editorDeployment: normalized } }
+    );
+    migrated++;
+  }
+
+  console.log(logInfo(`Editor deployment migration complete: ${migrated} project(s) migrated.`));
+}
+
+databaseReady
+  .then(migrateEditorDeployments)
+  .catch(error => console.error("Editor deployment migration failed:", error));
 
 function sendEditorForbidden(res) {
   return res.status(403).sendFile(__dirname + "/Middleware/403.html");
