@@ -81,6 +81,10 @@ const ProjectSchema = new Mongoose.Schema({
       type: Boolean,
       default: false,
     },
+    mode: {
+      type: String,
+      enum: ["editor", "third-party"],
+    },
     branch: String,
     commit: String,
     path: String,
