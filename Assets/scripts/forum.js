@@ -1,9 +1,10 @@
 async function createPost(post,data,txt,name,reload) {
-  var dispname = data.poster;
+  data = data || {};
+  var dispname = data.poster || "Unknown User";
   var dispavatar = data.authoravatar || "/images/default_pfp.png";
   var disppos = data.authorpos || {};
-  var displink = "/user/" + (data.realposter || data.poster);
-  var disptitle = data.realposter ? ` title="Posted anonymously by ${data.realposter}"` : "";
+  var displink = "/user/" + encodeURIComponent(data.realposter || data.poster || "Unknown User");
+  var disptitle = data.realposter ? ` title="Posted anonymously by ${makeLiteralChars(data.realposter)}"` : "";
   post.innerHTML = `
   <div id="display">
     <h2 class="post-name">${verifiedmark(data.verified)}${makeLiteralChars(data.title)}</h2>
@@ -14,10 +15,10 @@ async function createPost(post,data,txt,name,reload) {
         <p class="comment-username">${dispname}</p>
       </a>
     </div>
-    ${convertMarkdown(data.content)} <br>
+    ${convertMarkdown(data.content || "")} <br>
     ${txt}
     <div style="display: flex; flex-wrap: wrap">
-      ${data.tags.map(t=>(t.length > 0 ? `<a href="/search?includeTags=${encodeURIComponent(t)}">#${makeLiteralChars(t)}</a>`: ""))} <br>
+      ${(Array.isArray(data.tags) ? data.tags : []).map(t=>(typeof t === "string" && t.length > 0 ? `<a href="/search?includeTags=${encodeURIComponent(t)}">#${makeLiteralChars(t)}</a>`: ""))} <br>
     </div>
   </div>
   <div id="comments" class="comment-list">
@@ -26,7 +27,7 @@ async function createPost(post,data,txt,name,reload) {
   `;
   var tok = await getAuth();
   const commentlist = document.querySelector("#comments");
-  await listComments(commentlist,data.comments,tok.user,commentEvents(name,reload));
+  await listComments(commentlist,Array.isArray(data.comments) ? data.comments : [],tok.user,commentEvents(name,reload));
   const display = document.querySelector("#display");
   if (!tok.user) return;
   document.body.innerHTML += `
@@ -68,8 +69,8 @@ async function createPost(post,data,txt,name,reload) {
       <svg viewBox="0 0 448 512" height="1em" xmlns="http://www.w3.org/2000/svg" class="report-icon"><path d="M64 32C64 14.3 49.7 0 32 0S0 14.3 0 32V64 368 480c0 17.7 14.3 32 32 32s32-14.3 32-32V352l64.3-16.1c41.1-10.3 84.6-5.5 122.5 13.4c44.2 22.1 95.5 24.8 141.7 7.4l34.7-13c12.5-4.7 20.8-16.6 20.8-30V66.1c0-23-24.2-38-44.8-27.7l-9.6 4.8c-46.3 23.2-100.8 23.2-147.1 0c-35.1-17.6-75.4-22-113.5-12.5L64 48V32z"></path></svg>
     </button>
     <label class="upvote-container">
-      ${data.upvotes.length}
-      <input class="comment-upvote-box" name="comment-vpvote" type="checkbox" value="reply" ${data.upvotes.includes(tok.user.id) ? "checked" : ""} onclick="window.onupvoteclick('main',this.checked);">
+      ${(Array.isArray(data.upvotes) ? data.upvotes : []).length}
+      <input class="comment-upvote-box" name="comment-vpvote" type="checkbox" value="reply" ${(Array.isArray(data.upvotes) ? data.upvotes : []).includes(tok.user.id) ? "checked" : ""} onclick="window.onupvoteclick('main',this.checked);">
       <svg viewBox="0 0 512 512" height="1em" xmlns="http://www.w3.org/2000/svg" class="upvote-icon"><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"></path></svg>
     </label>
   </div>`;
@@ -79,13 +80,15 @@ async function createPost(post,data,txt,name,reload) {
   display.innerHTML += `<a class="edit button" href="/${name}/${pid}/edit">Edit</a>`;
 }
 async function listComments(list,comments,self,events) {
+  comments = Array.isArray(comments) ? comments : [];
   var users = {};
   for (var i = 0; i < comments.length; i++) {
     var c = comments[i];
-    var cname = c.poster;
+    c = c || {};
+    var cname = c.poster || "Unknown User";
     var cavatar = c.authoravatar || "/images/default_pfp.png";
     var cpos = c.authorpos || {};
-    var clink = "/user/" + (c.realposter || c.poster);
+    var clink = "/user/" + encodeURIComponent(c.realposter || c.poster || "Unknown User");
     var ctitle = c.realposter ? ` title="Posted anonymously by ${c.realposter}"` : "";
     if (self) {
       var options = `<input type="button" value="reply" onclick="window.onreplybtnclick(${i});">`;
@@ -117,12 +120,12 @@ async function listComments(list,comments,self,events) {
           <svg viewBox="0 0 448 512" height="1em" xmlns="http://www.w3.org/2000/svg" class="report-icon"><path d="M64 32C64 14.3 49.7 0 32 0S0 14.3 0 32V64 368 480c0 17.7 14.3 32 32 32s32-14.3 32-32V352l64.3-16.1c41.1-10.3 84.6-5.5 122.5 13.4c44.2 22.1 95.5 24.8 141.7 7.4l34.7-13c12.5-4.7 20.8-16.6 20.8-30V66.1c0-23-24.2-38-44.8-27.7l-9.6 4.8c-46.3 23.2-100.8 23.2-147.1 0c-35.1-17.6-75.4-22-113.5-12.5L64 48V32z"></path></svg>
         </button>
         <label class="upvote-container">
-          ${c.upvotes.length}
-          <input class="comment-upvote-box" type="checkbox" value="reply" ${c.upvotes.includes(self.id) ? "checked" : ""} onclick="window.onupvoteclick(${i},this.checked);">
+          ${(Array.isArray(c.upvotes) ? c.upvotes : []).length}
+          <input class="comment-upvote-box" type="checkbox" value="reply" ${(Array.isArray(c.upvotes) ? c.upvotes : []).includes(self.id) ? "checked" : ""} onclick="window.onupvoteclick(${i},this.checked);">
           <svg viewBox="0 0 512 512" height="1em" xmlns="http://www.w3.org/2000/svg" class="upvote-icon"><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"></path></svg>
         </label>
       </div>`:""}
-      <p class="comment-content">${convertMarkdown(c.content)}</p>
+      <p class="comment-content">${convertMarkdown(c.content || "")}</p>
       <br>
     </div>`;
     list.innerHTML += div;
@@ -221,7 +224,7 @@ function commentEvents(name,reload) {
     onreport:async(index)=>{
       var content = prompt("Why are you reporting this?");
       if (!content) return;
-      var link = "/"+{forum:"forum/discussion",project:"project"}[name]+"/"+pid;
+      var link = "/"+({forum:"forum/discussion",project:"project"}[name] || name)+"/"+pid;
       if (index !== "main") link += "?comment="+index;
       const res = await fetch("/api/admin/reports/create",{
         method: "POST",
