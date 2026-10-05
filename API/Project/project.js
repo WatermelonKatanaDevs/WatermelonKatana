@@ -45,7 +45,7 @@ function normalizeEditorDeployment(value, fallback = null) {
 
   if (!mode) throw new Error("Editor deployment mode is invalid.");
   if (!branch) throw new Error("Editor deployment branch is required.");
-  if (!commit || commit === "latest") throw new Error("Editor deployment requires an exact commit.");
+  if (!commit || !/^[0-9a-f]{7,40}$/i.test(commit)) throw new Error("Editor deployment requires an exact commit SHA.");
   if (!url) throw new Error("Editor deployment URL is required.");
   if (!peerLayer) throw new Error("Editor deployment peer layer is required.");
   if (!externalMode) throw new Error("Editor deployment external mode is invalid.");
