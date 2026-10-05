@@ -195,6 +195,60 @@ async publish(req, res, next) {
   }
 };
 
+async updateDeployment(req, res, next) {
+  try {
+    const pid = req.params.id;
+    const project = await this.model.findOne({ _id: pid });
+    if (!project) return res.status(404).json({
+      message: "Deployment not updated",
+      error: "Project not found",
+    });
+    if (!project.editorProject) return res.status(400).json({
+      message: "Deployment not updated",
+      error: "This project is not an Editor project.",
+    });
+
+    const user = res.locals.userToken;
+    if (project.posterId !== user.id && !isadmin(user.role)) return res.status(403).json({
+      message: "Not Authorized. You do not own this project",
+    });
+
+    let editorDeployment;
+    try {
+      editorDeployment = normalizeEditorDeployment(req.body?.editorDeployment);
+    } catch (error) {
+      return res.status(400).json({
+        message: "Deployment not updated",
+        error: error.message,
+      });
+    }
+
+    const repository = normalizeGithubRepository(project.editorRepository || project.link);
+    if (!repository) return res.status(400).json({
+      message: "Deployment not updated",
+      error: "This project does not have a valid GitHub repository.",
+    });
+
+    project.editorRepository = repository;
+    project.link = repository;
+    project.editorDeployment = editorDeployment;
+    project.activeAt = Date.now();
+    await project.save();
+
+    res.status(201).json({
+      message: "Deployment successfully updated",
+      id: project._id,
+      editorDeployment: project.editorDeployment,
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: "Deployment not updated",
+      error: error.message,
+    });
+    console.log(error.message);
+  }
+}
+
 async update(req, res, next) {
   var { title, link, content, thumbnail, tags, mature, hidden, privateRecipients, platform, editorProject, editorRepository, editorDeployment, optimalViewSize } = req.body;
   console.log(title,link,thumbnail);
