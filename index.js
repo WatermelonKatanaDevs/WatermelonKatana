@@ -216,8 +216,11 @@ app.get("/editor/project/:id", checkAuth, async (req, res) => {
     if (project.hidden && !owner) return res.status(404).sendFile(cldir + "/404.html");
     if (project.privateRecipients?.length && !owner && !(tok && project.privateRecipients.includes(tok.id))) return sendEditorForbidden(res);
     if (project.mature && !owner && !viewer?.mature) return sendEditorForbidden(res);
-    const params = new URLSearchParams({
+    const deployment = project.editorDeployment || {};
+     const params = new URLSearchParams({
       github: String(project.editorRepository),
+      branch: String(deployment.branch || 'main'),
+      commit: String(deployment.commit || 'latest'),
       projectId: String(project._id),
       projectOwner: owner ? '1' : '0',
       git: owner ? '1' : '0'
