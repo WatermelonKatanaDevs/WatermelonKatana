@@ -293,7 +293,9 @@
         style.id = 'wk-monaco-semantic-styles';
         style.textContent = [
           '.wk-monaco-function-token{color:#3cdfa9 !important;}',
+          '.wk-monaco-keyword-token{color:#ff465d !important;}',
           '.wk-monaco-class-token{color:#00c23a !important;}',
+          '.wk-monaco-variable-token{color:#d7eee0 !important;}',
           '.wk-monaco-object-key-token{color:#afcc8f !important;}',
           '.wk-monaco-property-token{color:#c98f9c !important;}',
           '.wk-monaco-operator-token{color:#c7c7c7 !important;}',
@@ -305,7 +307,7 @@
       function isWKCodeModel(model) {
         const id = model?.getLanguageId?.();
         return id === 'javascript' || id === 'typescript' ||
-          id === 'javascriptreact' || id === 'typescriptreact';
+          id === 'javascriptreact' || id === 'typescriptreact' || id === 'html';
       }
 
       function addWKRange(ranges, monaco, model, start, end, className) {
@@ -411,6 +413,21 @@
 
           const add = className => ranges.push({start:token.start,end:token.end,className});
 
+          // The JavaScript keyword itself is a keyword, not a function name.
+          // In particular, in `this.position_N = function (...)` the word
+          // `function` must stay red while actual function names/calls are green.
+          if (token.value === 'function') {
+            add('wk-monaco-keyword-token');
+            continue;
+          }
+
+          // Variable declarations should never be treated as classes merely
+          // because Monaco's semantic classifier guessed a class/type.
+          if (p?.value === 'var' || p?.value === 'let' || p?.value === 'const') {
+            add('wk-monaco-variable-token');
+            continue;
+          }
+
           // Color actual function parameters, not call-site arguments.
           // Parameters are detected from function declarations and arrow functions.
           let parameterList = false;
@@ -499,11 +516,49 @@
       }
 
       function collectWKCodeDecorations(monaco, model) {
-        return classifyWKCode(model.getValue()).map(item => {
-          const ranges = [];
-          addWKRange(ranges, monaco, model, item.start, item.end, item.className);
-          return ranges[0];
-        });
+        const languageId = model?.getLanguageId?.();
+        const source = model.getValue();
+        const decorations = [];
+
+        const addClassified = (code, offset = 0) => {
+          for (const item of classifyWKCode(code)) {
+            const ranges = [];
+            addWKRange(
+              ranges,
+              monaco,
+              model,
+              item.start + offset,
+              item.end + offset,
+              item.className
+            );
+            if (ranges[0]) decorations.push(ranges[0]);
+          }
+        };
+
+        if (
+          languageId === 'javascript' ||
+          languageId === 'typescript' ||
+          languageId === 'javascriptreact' ||
+          languageId === 'typescriptreact'
+        ) {
+          addClassified(source);
+          return decorations;
+        }
+
+        // Monaco uses an HTML model for .html files, including their embedded
+        // <script> blocks. Run the WK JavaScript classifier over those blocks
+        // only, so HTML tags/attributes keep Monaco's normal HTML highlighting.
+        if (languageId === 'html') {
+          const scriptPattern = /<script\\b[^>]*>([\\s\\S]*?)<\\/script\\s*>/gi;
+          let match;
+          while ((match = scriptPattern.exec(source))) {
+            const code = match[1] || '';
+            const offset = match.index + match[0].indexOf(code);
+            addClassified(code, offset);
+          }
+        }
+
+        return decorations;
       }
 
       const wkEditorDecorations = new WeakMap();
