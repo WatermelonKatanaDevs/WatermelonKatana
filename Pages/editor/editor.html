@@ -165,9 +165,12 @@
           'peekViewResult.background': '#181818',
           'peekViewBorder': '#de6c83aa',
           'editorCursor.foreground': '#3cdfa9',
-          'editor.selectionBackground': '#3cdfa938',
-          'editor.inactiveSelectionBackground': '#3cdfa922',
+          'editor.selectionBackground': '#de6c8366',
+          'editor.inactiveSelectionBackground': '#de6c8338',
+          'editor.selectionHighlightBackground': '#de6c8328',
           'editor.lineHighlightBackground': '#3cdfa90d',
+          'editor.wordHighlightBackground': '#de6c8328',
+          'editor.wordHighlightStrongBackground': '#de6c8338',
           'editorLineNumber.foreground': '#666666',
           'editorLineNumber.activeForeground': '#3cdfa9',
           'editorIndentGuide.background': '#ffffff12',
@@ -1935,6 +1938,42 @@ input:not[type=checkbox],select,textarea{background:#202124!important;color:#e5e
 /* Terminal keeps its dark look, with a subtle pink edge */
 .terminal,.console,#terminal,#console,.terminal-container,.console-container{border-color:rgba(221,109,127,.35)!important}
 ::selection{background:rgba(221,109,127,.35);color:white}
+
+/* WK window/workbench selection and docking accents. Keep these pink/red
+   rather than using the editor's green action accent. */
+.monaco-sash.hover,.monaco-sash.active,.monaco-sash.disabled.active,
+.sash.hover,.sash.active,.resizer.active,.resize-handle.active,.splitter.active{
+  background:var(--wk-pink)!important;
+}
+.monaco-workbench .editor-group-container.dragged-over,
+.monaco-workbench .editor-group-container.drop-target,
+.editor-group-container.dragged-over,.editor-group-container.drop-target,
+.editor-group-drop-target,.editor-drop-target,.window-drop-target{
+  outline:1px solid var(--wk-pink)!important;
+  background:var(--wk-pink-soft)!important;
+}
+.monaco-workbench .editor-group-container.dragged-over::before,
+.monaco-workbench .editor-group-container.drop-target::before,
+.editor-group-container.dragged-over::before,.editor-group-container.drop-target::before,
+.editor-group-drop-target::before,.editor-drop-target::before,.window-drop-target::before{
+  background:var(--wk-pink-soft)!important;
+  border-color:var(--wk-pink)!important;
+}
+.monaco-workbench .drop-overlay,.monaco-workbench .editor-group-drop-overlay,
+.drop-overlay,.editor-group-drop-overlay,.window-drop-overlay{
+  background:var(--wk-pink-soft)!important;
+  border:1px solid var(--wk-pink)!important;
+}
+.monaco-workbench .drop-overlay .drop-overlay-border,
+.monaco-workbench .editor-group-drop-overlay .drop-overlay-border{
+  border-color:var(--wk-pink)!important;
+}
+
+/* Monaco text selections use the same WK pink/red accent. */
+.monaco-editor .selected-text,.monaco-editor .selected-text-overlay,
+.monaco-editor .selectionHighlight{
+  background:rgba(221,109,127,.38)!important;
+}
 
 /* Common Tailwind indigo replacements */
 .bg-indigo-50,.bg-indigo-100,.bg-indigo-200{background:var(--wk-green-soft)!important}
