@@ -174,9 +174,7 @@ app.get("/editor/project/:id/deployment", checkAuth, async (req, res) => {
     } else if (
       !String(deployment.branch || '').trim() ||
       !String(deployment.commit || '').trim() ||
-      !String(deployment.path || '').trim() ||
-      !String(deployment.peerLayer || '').trim() ||
-      !['iframe', 'emulate'].includes(String(deployment.externalMode || ''))
+      !String(deployment.path || '').trim()
     ) {
       return res.status(409).send('This WatermelonKatana project does not have a configured deployment.');
     }
