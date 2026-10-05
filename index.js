@@ -181,21 +181,18 @@ app.get("/editor/project/:id/deployment", checkAuth, async (req, res) => {
       return res.status(409).send('This WatermelonKatana project does not have a configured deployment.');
     }
 
-    const params = new URLSearchParams({
-      deploymentMode: thirdParty ? 'third-party' : 'editor',
-      projectId: String(project._id)
-    });
+    let src;
     if (thirdParty) {
-      params.set('url', String(deployment.externalUrl));
+      src = String(deployment.externalUrl).trim();
     } else {
-      params.set('github', String(project.editorRepository));
-      params.set('branch', String(deployment.branch));
-      params.set('commit', String(deployment.commit));
-      params.set('path', String(deployment.path));
+      const params = new URLSearchParams({
+        github: String(project.editorRepository),
+        branch: String(deployment.branch),
+        commit: String(deployment.commit),
+        path: String(deployment.path)
+      });
+      src = "/editor/deployment.html?" + params.toString();
     }
-
-
-    const src = "/editor/deployment.html?" + params.toString();
     sendFileReplace(
       res,
       "./Pages/editor/deployment.html",
