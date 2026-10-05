@@ -30,29 +30,33 @@ function normalizeGithubRepository(value) {
 
 function normalizeEditorDeployment(value, fallback = null) {
   if (value == null) return null;
-  if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("Editor deployment must be an object.");
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("Editor deployment must be an object.");
+  }
 
-  const mode = value.mode === "third-party" ? "third-party" : value.mode === "editor" ? "editor" : "";
-  const branch = String(value.branch || "").trim();
-  const commit = String(value.commit || "").trim();
-  const url = String(value.url || "").trim();
-  const externalUrl = String(value.externalUrl || "").trim();
-  const externalMode = value.externalMode === "emulate" ? "emulate" : value.externalMode === "iframe" ? "iframe" : "";
-  const peerLayer = String(value.peerLayer || "").trim();
-  const hookUrl = Object.prototype.hasOwnProperty.call(value, "hookUrl")
-    ? String(value.hookUrl || "").trim()
-    : String(fallback?.hookUrl || "").trim();
+  const source = { ...(fallback || {}), ...value };
+  const mode = source.mode === "third-party" ? "third-party" : "editor";
+  const branch = String(source.branch || "").trim();
+  const commit = String(source.commit || "latest").trim() || "latest";
+  const url = String(source.url || "/").trim() || "/";
+  const usePeerServer = source.usePeerServer === true;
+  const peerLayer = String(source.peerLayer || "peer").trim() || "peer";
+  const externalUrl = String(source.externalUrl || "").trim();
+  const externalMode = source.externalMode === "emulate" ? "emulate" : "iframe";
+  const hookUrl = String(source.hookUrl || "").trim();
 
-  if (!mode) throw new Error("Editor deployment mode is invalid.");
   if (!branch) throw new Error("Editor deployment branch is required.");
-  if (!commit || !/^[0-9a-f]{7,40}$/i.test(commit)) throw new Error("Editor deployment requires an exact commit SHA.");
-  if (!url) throw new Error("Editor deployment URL is required.");
-  if (!peerLayer) throw new Error("Editor deployment peer layer is required.");
-  if (!externalMode) throw new Error("Editor deployment external mode is invalid.");
-  if (mode === "third-party" && !externalUrl) throw new Error("Third-party Editor deployments require a deployment URL.");
+  if (!/^(latest|[0-9a-f]{7,40})$/i.test(commit)) {
+    throw new Error("Editor deployment commit must be "latest" or a commit SHA.");
+  }
+  if (!/^\//.test(url) && !/^https?:\/\//i.test(url)) {
+    throw new Error("Editor deployment URL must be a path or HTTP(S) URL.");
+  }
+  if (mode === "third-party" && !externalUrl) {
+    throw new Error("Third-party Editor deployments require a deployment URL.");
+  }
 
   for (const [label, raw, allowBlank] of [
-    ["deployment URL", url, false],
     ["third-party deployment URL", externalUrl, true],
     ["deployment hook URL", hookUrl, true]
   ]) {
@@ -70,12 +74,12 @@ function normalizeEditorDeployment(value, fallback = null) {
     branch,
     commit,
     url,
-    usePeerServer: value.usePeerServer === true,
+    usePeerServer,
     peerLayer,
     externalUrl,
     externalMode,
     hookUrl,
-    saveEnvironmentVariables: value.saveEnvironmentVariables === true
+    saveEnvironmentVariables: source.saveEnvironmentVariables === true
   };
 }
 
@@ -136,7 +140,7 @@ async publish(req, res, next) {
       });
       link = editorRepository;
       try {
-        editorDeployment = editorDeployment == null ? null : normalizeEditorDeployment(editorDeployment);
+        editorDeployment = normalizeEditorDeployment(editorDeployment);
       } catch (error) {
         return res.status(400).json({
           message: "Project not successfully published",
@@ -197,60 +201,6 @@ async publish(req, res, next) {
   }
 };
 
-async updateDeployment(req, res, next) {
-  try {
-    const pid = req.params.id;
-    const project = await this.model.findOne({ _id: pid });
-    if (!project) return res.status(404).json({
-      message: "Deployment not updated",
-      error: "Project not found",
-    });
-    if (!project.editorProject) return res.status(400).json({
-      message: "Deployment not updated",
-      error: "This project is not an Editor project.",
-    });
-
-    const user = res.locals.userToken;
-    if (project.posterId !== user.id && !isadmin(user.role)) return res.status(403).json({
-      message: "Not Authorized. You do not own this project",
-    });
-
-    let editorDeployment;
-    try {
-      editorDeployment = normalizeEditorDeployment(req.body?.editorDeployment);
-    } catch (error) {
-      return res.status(400).json({
-        message: "Deployment not updated",
-        error: error.message,
-      });
-    }
-
-    const repository = normalizeGithubRepository(project.editorRepository || project.link);
-    if (!repository) return res.status(400).json({
-      message: "Deployment not updated",
-      error: "This project does not have a valid GitHub repository.",
-    });
-
-    project.editorRepository = repository;
-    project.link = repository;
-    project.editorDeployment = editorDeployment;
-    project.activeAt = Date.now();
-    await project.save();
-
-    res.status(201).json({
-      message: "Deployment successfully updated",
-      id: project._id,
-      editorDeployment: project.editorDeployment,
-    });
-  } catch (error) {
-    res.status(400).json({
-      message: "Deployment not updated",
-      error: error.message,
-    });
-    console.log(error.message);
-  }
-}
-
 async update(req, res, next) {
   var { title, link, content, thumbnail, tags, mature, hidden, privateRecipients, platform, editorProject, editorRepository, editorDeployment, optimalViewSize } = req.body;
   console.log(title,link,thumbnail);
@@ -275,7 +225,7 @@ async update(req, res, next) {
       link = editorRepository;
       if (editorDeployment !== undefined) {
         try {
-          editorDeployment = editorDeployment == null ? null : normalizeEditorDeployment(editorDeployment, project.editorDeployment);
+          editorDeployment = normalizeEditorDeployment(editorDeployment, project.editorDeployment);
         } catch (error) {
           return res.status(400).json({
             message: "Project not successfully updated",
@@ -283,7 +233,7 @@ async update(req, res, next) {
           });
         }
       } else {
-        editorDeployment = project.editorDeployment || null;
+        editorDeployment = project.editorDeployment || normalizeEditorDeployment({branch:"main", commit:"latest"});
       }
     } else {
       editorRepository = "";
