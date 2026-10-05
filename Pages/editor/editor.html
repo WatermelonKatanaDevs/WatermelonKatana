@@ -1341,6 +1341,57 @@
 
         reloadButton.addEventListener('click', () => loadProject());
 
+        setDeploymentPreviewButton.addEventListener('click', async () => {
+          if (!loadedProject || setDeploymentPreviewButton.disabled) return;
+          setDeploymentPreviewButton.disabled = true;
+          saveStatus.className = 'wk-editor-status';
+          saveStatus.textContent = 'Reading Deployment Preview…';
+          try {
+            const preview = await editor.EditorApp?.getDeploymentPreview?.();
+            if (!preview?.github || !preview.branch || !preview.commit) {
+              throw new Error('Configure a Deployment Preview with a GitHub repository, branch, and commit first.');
+            }
+            const repository = normalizeWKRepository(loadedProject.editorRepository || loadedProject.link || repo?.url);
+            const previewRepository = normalizeWKRepository(preview.github);
+            if (!repository || previewRepository !== repository) {
+              throw new Error('The Deployment Preview must use this WatermelonKatana project’s GitHub repository.');
+            }
+
+            const editorDeployment = {
+              mode: preview.deploymentMode === 'third-party' ? 'third-party' : 'editor',
+              branch: String(preview.branch),
+              commit: String(preview.commit),
+              url: String(preview.url || ''),
+              usePeerServer: preview.peerServer === true,
+              peerLayer: String(preview.peerLayer || ''),
+              externalUrl: String(preview.externalUrl || ''),
+              externalMode: preview.externalMode === 'emulate' ? 'emulate' : 'iframe',
+              hookUrl: String(preview.hookUrl || ''),
+              saveEnvironmentVariables: preview.saveEnvironmentVariables === true
+            };
+
+            const response = await fetch('/api/project/deployment/' + encodeURIComponent(projectId), {
+              method:'PUT',
+              headers:{'Content-Type':'application/json'},
+              body:JSON.stringify({editorDeployment})
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) {
+              throw new Error(data?.error ? `${data.message || 'Deployment not updated'}. ${data.error}` : (data?.message || `Deployment update failed (${response.status}).`));
+            }
+
+            loadedProject = {...loadedProject, editorDeployment: data.editorDeployment || editorDeployment};
+            deploymentSummary.innerHTML = deploymentFromPreviewLabel(loadedProject.editorDeployment);
+            saveStatus.className = 'wk-editor-status wk-editor-success';
+            saveStatus.textContent = 'Deployment set from the current preview.';
+          } catch (e) {
+            saveStatus.className = 'wk-editor-status wk-editor-error';
+            saveStatus.textContent = e?.message || String(e);
+          } finally {
+            setDeploymentPreviewButton.disabled = false;
+          }
+        });
+
         form.addEventListener('submit', async event => {
           event.preventDefault();
           saveStatus.className = 'wk-editor-status';
