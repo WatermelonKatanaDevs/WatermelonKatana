@@ -163,10 +163,11 @@ app.get("/editor/project/:id/deployment", checkAuth, async (req, res) => {
     if (project.mature && !owner && !viewer?.mature) return sendEditorForbidden(res);
 
     const deployment = project.editorDeployment;
-    if (!deployment || !['editor', 'third-party'].includes(String(deployment.mode || ''))) {
+    const thirdParty = deployment?.thirdParty === true || deployment?.mode === 'third-party';
+    if (!deployment) {
       return res.status(409).send('This WatermelonKatana project does not have a configured deployment.');
     }
-    if (deployment.mode === 'third-party') {
+    if (thirdParty) {
       if (!String(deployment.externalUrl || '').trim()) {
         return res.status(409).send('This WatermelonKatana project has an incomplete third-party deployment configuration.');
       }
@@ -181,14 +182,14 @@ app.get("/editor/project/:id/deployment", checkAuth, async (req, res) => {
     }
 
     const params = new URLSearchParams({
-      deploymentMode: String(deployment.mode),
+      deploymentMode: thirdParty ? 'third-party' : 'editor',
       externalMode: String(deployment.externalMode || 'iframe'),
-      peerServer: deployment.mode === 'editor' && deployment.usePeerServer ? '1' : '0',
+      peerServer: !thirdParty && deployment.usePeerServer ? '1' : '0',
       peerLayer: String(deployment.peerLayer || 'peer'),
-      saveEnvironmentVariables: deployment.mode === 'editor' && deployment.saveEnvironmentVariables ? '1' : '0',
+      saveEnvironmentVariables: !thirdParty && deployment.saveEnvironmentVariables ? '1' : '0',
       projectId: String(project._id)
     });
-    if (deployment.mode === 'third-party') {
+    if (thirdParty) {
       params.set('url', String(deployment.externalUrl));
     } else {
       params.set('github', String(project.editorRepository));
