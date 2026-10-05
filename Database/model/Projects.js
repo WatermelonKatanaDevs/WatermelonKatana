@@ -77,6 +77,11 @@ const ProjectSchema = new Mongoose.Schema({
     default: "",
   },
   editorDeployment: {
+    thirdParty: {
+      type: Boolean,
+      default: false,
+    },
+    // Legacy field retained so existing documents can still be interpreted.
     mode: {
       type: String,
       enum: ["editor", "third-party"],
@@ -149,6 +154,8 @@ const ProjectSchema = new Mongoose.Schema({
         const deployment = this.editorDeployment.toObject
           ? this.editorDeployment.toObject()
           : { ...this.editorDeployment };
+        deployment.thirdParty = deployment.thirdParty === true || deployment.mode === "third-party";
+        delete deployment.mode;
         delete deployment.hookUrl;
         container.editorDeployment = deployment;
       } else {
