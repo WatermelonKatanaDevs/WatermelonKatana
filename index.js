@@ -137,6 +137,35 @@ app.get("/search", (req, res) => res.sendFile(cldir + "/projects/search.html"));
 app.get("/publish", userAuth, makeFormToken, (req, res) => res.sendFile(cldir + "/projects/publish.html")); // Publish page, users only
 const Projects = require("./Database/model/Projects");
 
+// One-time migration for older Editor projects that never received an editorDeployment.
+databaseReady.then(async () => {
+  try {
+    const result = await Projects.updateMany(
+      {
+        editorProject: true,
+        $or: [
+          { editorDeployment: null },
+          { editorDeployment: { $exists: false } },
+        ],
+      },
+      {
+        $set: {
+          editorDeployment: {
+            thirdParty: false,
+            branch: "main",
+            commit: "latest",
+            path: "/",
+            usePeerServer: false,
+          },
+        },
+      },
+    );
+    console.log(logInfo(`Editor deployment migration: matched ${result.matchedCount || 0}, modified ${result.modifiedCount || 0} old projects.`));
+  } catch (error) {
+    console.log(logError(`Editor deployment migration failed: ${error.message}`));
+  }
+});
+
 
 
 function sendEditorForbidden(res) {
