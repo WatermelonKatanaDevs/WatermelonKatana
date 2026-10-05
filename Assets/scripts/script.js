@@ -448,6 +448,7 @@ async function getuserbyname(username) {
 var _previewcard = null;
 var _previewtimer = null;
 var _previewtoken = 0;
+var _previewanchor = null;
 
 function ensurepreviewcard() {
   if (_previewcard) return _previewcard;
@@ -510,14 +511,21 @@ async function showpreview(anchor, username) {
       <div><span class="up-role" style="${rolecss}">${makeLiteralChars(u.role)}</span></div>
       <div class="up-bio">${convertMarkdown(u.biography || "")}</div>
     </div>`;
-  const rect = anchor.getBoundingClientRect();
+  _previewanchor = anchor;
   card.style.display = "block";
-  let left = window.scrollX + rect.left;
-  const cw = card.offsetWidth;
-  const maxleft = window.scrollX + document.documentElement.clientWidth - cw - 8;
+  positionpreview();
+}
+
+function positionpreview() {
+  if (!_previewcard || !_previewanchor || _previewcard.style.display === "none") return;
+  const rect = _previewanchor.getBoundingClientRect();
+  const cw = _previewcard.offsetWidth;
+  const viewportWidth = document.documentElement.clientWidth;
+  let left = rect.left;
+  const maxleft = viewportWidth - cw - 8;
   if (left > maxleft) left = maxleft;
-  card.style.top = (window.scrollY + rect.bottom + 6) + "px";
-  card.style.left = Math.max(8, left) + "px";
+  _previewcard.style.top = (rect.bottom + 6) + "px";
+  _previewcard.style.left = Math.max(8, left) + "px";
 }
 
 function hidepreview() {
@@ -540,3 +548,12 @@ document.addEventListener("mouseout", (e) => {
   if (!e.target.closest('a[href^="/user/"]')) return;
   hidepreview();
 });
+
+// Scroll events do not bubble, so capture them from every scrollable ancestor.
+// This keeps the preview attached to its author link on pages such as Home,
+// where the project list scrolls inside .container instead of the document.
+document.addEventListener("scroll", () => {
+  positionpreview();
+}, true);
+
+window.addEventListener("resize", positionpreview);
