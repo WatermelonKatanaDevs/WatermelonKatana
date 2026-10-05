@@ -162,10 +162,34 @@ app.get("/editor/project/:id/deployment", checkAuth, async (req, res) => {
     if (project.privateRecipients?.length && !owner && !(tok && project.privateRecipients.includes(tok.id))) return sendEditorForbidden(res);
     if (project.mature && !owner && !viewer?.mature) return sendEditorForbidden(res);
 
-    // The project URL is a wrapper around the canonical Editor deployment page.
-    // Pass only the repository and project id; the Editor deployment defaults to /. 
+    const deployment = project.editorDeployment;
+    if (
+      !deployment ||
+      !['editor', 'third-party'].includes(String(deployment.mode || '')) ||
+      !String(deployment.branch || '').trim() ||
+      !String(deployment.commit || '').trim() ||
+      String(deployment.commit || '').trim() === 'latest' ||
+      !String(deployment.url || '').trim() ||
+      !String(deployment.peerLayer || '').trim() ||
+      !['iframe', 'emulate'].includes(String(deployment.externalMode || ''))
+    ) {
+      return res.status(409).send('This WatermelonKatana project does not have a configured deployment.');
+    }
+    if (deployment.mode === 'third-party' && !String(deployment.externalUrl || '').trim()) {
+      return res.status(409).send('This WatermelonKatana project has an incomplete third-party deployment configuration.');
+    }
+
     const params = new URLSearchParams({
       github: String(project.editorRepository),
+      branch: String(deployment.branch),
+      commit: String(deployment.commit),
+      url: String(deployment.url),
+      deploymentMode: String(deployment.mode),
+      externalUrl: String(deployment.externalUrl || ''),
+      externalMode: String(deployment.externalMode),
+      peerServer: deployment.usePeerServer ? '1' : '0',
+      peerLayer: String(deployment.peerLayer),
+      saveEnvironmentVariables: deployment.saveEnvironmentVariables ? '1' : '0',
       projectId: String(project._id)
     });
     const src = "/editor/deployment.html?" + params.toString();
