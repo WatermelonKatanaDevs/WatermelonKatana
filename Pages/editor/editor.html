@@ -1427,6 +1427,7 @@
                 privateRecipients:[],
                 editorProject:true,
                 editorRepository:repository,
+                editorDeployment:loadedProject.editorDeployment || null,
                 optimalViewSize:{
                   enabled:optimalUseInput.checked,
                   width:Math.max(1, Number(optimalWidthInput.value) || 1),
