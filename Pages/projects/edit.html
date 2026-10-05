@@ -9,6 +9,7 @@
     <script src="/scripts/script.js"></script>
     <script src="/scripts/EmojiPicker.js"></script>
     <script src="/scripts/markdowntextbox.js"></script>
+    <script src="/editor/editor/github.js"></script>
   </head>
   <body>
     <script src="/scripts/mediaupload.js"></script>
@@ -24,6 +25,13 @@
       <div id="editorInfo" style="display:none;">
         <b>Node Editor project</b><br/>
         <span id="editorRepository"></span><br/>
+        <div id="editorRevision" style="margin-top:10px; display:none;">
+          <label for="editorBranch">Branch</label><br/>
+          <select id="editorBranch"></select><br/>
+          <label for="editorCommit">Commit</label><br/>
+          <select id="editorCommit"><option value="latest">Latest</option></select>
+          <div style="opacity:.7; margin-top:6px;">Latest resolves to the newest commit on the selected branch each time the project is loaded.</div>
+        </div>
       </div>
       <div id="linkField">
         <label for="link">Link</label><br/>
@@ -98,6 +106,10 @@
       const editorRepositoryEl = document.querySelector("#editorRepository");
       let editorProject = false;
       let editorRepository = "";
+      let editorDeployment = null;
+      const editorRevision = document.querySelector("#editorRevision");
+      const editorBranch = document.querySelector("#editorBranch");
+      const editorCommit = document.querySelector("#editorCommit");
       const desc = document.querySelector("#desc");
       const descPreview = document.querySelector("#descPreview");
       const thumb = document.querySelector("#thumb");
@@ -126,6 +138,73 @@
       const adminStatus = document.querySelector("#adminStatus");
       let projectFeatured = false;
       let projectVerified = false;
+
+      async function githubConfig() {
+        await fetch('/editor/workers.json', {cache:'no-store'}).then(async response => {
+          if (!response.ok) throw new Error(`Failed to load GitHub authentication configuration (${response.status}).`);
+          window.WorkerConfig = await response.json();
+        });
+        await window.GitHubService?.init?.();
+        if (!window.GitHubService) throw new Error('GitHub support is unavailable.');
+        return window.GitHubService;
+      }
+
+      function parseRepository(url) {
+        try {
+          const parsed = new URL(String(url || '').trim());
+          if (!/^https?:$/i.test(parsed.protocol) || !/^(www\.)?github\.com$/i.test(parsed.hostname)) return null;
+          const parts = parsed.pathname.split('/').filter(Boolean);
+          if (parts.length !== 2) return null;
+          return {owner:parts[0], repo:parts[1]};
+        } catch (_) {
+          return null;
+        }
+      }
+
+      async function loadEditorRevisionOptions(initial = null) {
+        const repository = parseRepository(editorRepository);
+        if (!repository) {
+          editorRevision.style.display = 'none';
+          return;
+        }
+        editorRevision.style.display = '';
+        const github = await githubConfig();
+        let branches = [];
+        try {
+          branches = await github.listBranches(repository.owner, repository.repo);
+        } catch (_) {}
+        const savedBranch = String(initial?.branch || '').trim();
+        const branch = savedBranch || branches[0] || 'main';
+        if (!branches.includes(branch)) branches.unshift(branch);
+        editorBranch.innerHTML = branches.map(value => `<option value="${escapeHTML(value)}">${escapeHTML(value)}</option>`).join('');
+        editorBranch.value = branch;
+        await loadEditorCommits(initial?.commit || 'latest');
+      }
+
+      async function loadEditorCommits(savedCommit = 'latest') {
+        const repository = parseRepository(editorRepository);
+        if (!repository || !editorBranch.value) return;
+        const github = await githubConfig();
+        let commits = [];
+        try {
+          commits = await github.listCommits(repository.owner, repository.repo, editorBranch.value, 30);
+        } catch (_) {}
+        const desired = String(savedCommit || 'latest').trim() || 'latest';
+        const options = [
+          '<option value="latest">Latest</option>',
+          ...commits.map(commit => `<option value="${escapeHTML(commit.sha)}">${escapeHTML(commit.message || commit.sha.slice(0, 12))}</option>`)
+        ];
+        if (desired !== 'latest' && !commits.some(commit => commit.sha === desired)) {
+          options.splice(1, 0, `<option value="${escapeHTML(desired)}">Pinned ${escapeHTML(desired.slice(0, 12))}</option>`);
+        }
+        editorCommit.innerHTML = options.join('');
+        editorCommit.value = desired;
+        if (editorCommit.value !== desired) editorCommit.value = 'latest';
+      }
+
+      editorBranch.addEventListener('change', () => loadEditorCommits('latest').catch(err => {
+        display.textContent = err?.message || String(err);
+      }));
 
       function updateAdminButtons() {
         featureProjectBtn.textContent = projectFeatured ? "Unfeature Project" : "Feature Project";
@@ -183,11 +262,13 @@
         link.value = data.link;
         editorProject = !!data.editorProject;
         editorRepository = data.editorRepository || "";
+        editorDeployment = data.editorDeployment || null;
         if (editorProject) {
           linkField.style.display = "none";
           link.required = false;
           editorInfo.style.display = "";
           editorRepositoryEl.textContent = editorRepository || data.link || "";
+          await loadEditorRevisionOptions(editorDeployment || {branch:'main', commit:'latest'});
         }
         desc.value = data.content;
         thumb.src = data.thumbnail || "";
@@ -258,6 +339,19 @@
               privateRecipients: [],
               editorProject,
               editorRepository,
+              editorDeployment: editorProject ? {
+                ...(editorDeployment || {}),
+                mode: editorDeployment?.mode === 'third-party' ? 'third-party' : 'editor',
+                branch: editorBranch.value,
+                commit: editorCommit.value || 'latest',
+                url: editorDeployment?.url || '/',
+                usePeerServer: editorDeployment?.usePeerServer === true,
+                peerLayer: editorDeployment?.peerLayer || 'peer',
+                externalUrl: editorDeployment?.externalUrl || '',
+                externalMode: editorDeployment?.externalMode === 'emulate' ? 'emulate' : 'iframe',
+                hookUrl: editorDeployment?.hookUrl || '',
+                saveEnvironmentVariables: editorDeployment?.saveEnvironmentVariables === true
+              } : null,
               optimalViewSize: {
                 enabled: optimalUse.checked,
                 width: Math.max(1, Number(optimalWidth.value) || 1),
