@@ -143,9 +143,11 @@ const ProjectSchema = new Mongoose.Schema({
       container.editorProject = this.editorProject;
       container.editorRepository = this.editorRepository;
       if (this.editorDeployment) {
-        const deployment = this.editorDeployment.toObject
-          ? this.editorDeployment.toObject()
-          : { ...this.editorDeployment };
+        const deployment = (
+          typeof this.editorDeployment.toObject === "function"
+            ? this.editorDeployment.toObject()
+            : this.editorDeployment
+        ) || {};
         container.editorDeployment = {
           thirdParty: deployment.thirdParty === true,
           externalUrl: String(deployment.externalUrl || ''),
