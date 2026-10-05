@@ -343,7 +343,7 @@
             editorProject: editorProject.checked,
              editorRepository: editorProject.checked && selectedGithub ? `https://github.com/${selectedGithub.fullName}` : (editorProject.checked ? link.value : ""),
             editorDeployment: editorProject.checked ? {
-              mode: 'editor',
+              thirdParty: false,
               branch: editorBranch.value,
               commit: editorCommit.value || 'latest',
               path: '/',
