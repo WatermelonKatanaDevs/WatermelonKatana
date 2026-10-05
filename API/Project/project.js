@@ -28,7 +28,7 @@ function normalizeGithubRepository(value) {
   }
 }
 
-function normalizeEditorDeployment(value) {
+function normalizeEditorDeployment(value, fallback = null) {
   if (value == null) return null;
   if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("Editor deployment must be an object.");
 
@@ -39,7 +39,9 @@ function normalizeEditorDeployment(value) {
   const externalUrl = String(value.externalUrl || "").trim();
   const externalMode = value.externalMode === "emulate" ? "emulate" : value.externalMode === "iframe" ? "iframe" : "";
   const peerLayer = String(value.peerLayer || "").trim();
-  const hookUrl = String(value.hookUrl || "").trim();
+  const hookUrl = Object.prototype.hasOwnProperty.call(value, "hookUrl")
+    ? String(value.hookUrl || "").trim()
+    : String(fallback?.hookUrl || "").trim();
 
   if (!mode) throw new Error("Editor deployment mode is invalid.");
   if (!branch) throw new Error("Editor deployment branch is required.");
@@ -273,7 +275,7 @@ async update(req, res, next) {
       link = editorRepository;
       if (editorDeployment !== undefined) {
         try {
-          editorDeployment = editorDeployment == null ? null : normalizeEditorDeployment(editorDeployment);
+          editorDeployment = editorDeployment == null ? null : normalizeEditorDeployment(editorDeployment, project.editorDeployment);
         } catch (error) {
           return res.status(400).json({
             message: "Project not successfully updated",
