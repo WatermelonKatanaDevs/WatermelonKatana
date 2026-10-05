@@ -857,7 +857,7 @@
           : 'Editor';
         const target = deployment.mode === 'third-party'
           ? String(deployment.externalUrl || '')
-          : String(deployment.url || '');
+          : String(deployment.path || deployment.url || '');
         return `<strong>${mode}</strong> · ${escapeHTML(branch)} @ <code>${commit}</code><br><span style="color:#aaa;">${escapeHTML(target || 'No target URL')}</span>`;
       }
 
@@ -1371,7 +1371,7 @@
             updateOptimalViewVisibility();
             setThumbnail(data.thumbnail || '');
             repoEl.textContent = data.editorRepository || data.link || repo?.url || '';
-            const loadedDeployment = data.editorDeployment || {mode:'editor', branch:'main', commit:'latest', url:'/', usePeerServer:false, peerLayer:'peer', externalUrl:'', externalMode:'iframe', hookUrl:'', saveEnvironmentVariables:false};
+            const loadedDeployment = data.editorDeployment || {mode:'editor', branch:'main', commit:'latest', path:'/', usePeerServer:false, peerLayer:'peer', externalUrl:'', externalMode:'iframe', hookUrl:'', saveEnvironmentVariables:false};
             const revisionOptions = await loadWKRevisionOptions(repo, loadedDeployment.branch, loadedDeployment.commit);
             deploymentBranchInput.innerHTML = revisionOptions.branches.map(branch => `<option value="${escapeHTML(branch)}">${escapeHTML(branch)}</option>`).join('');
             deploymentBranchInput.value = revisionOptions.branch;
@@ -1445,7 +1445,7 @@
               mode: preview.deploymentMode === 'third-party' ? 'third-party' : 'editor',
               branch: String(preview.branch),
               commit: String(preview.commitSelection || preview.commit || 'latest'),
-              url: String(preview.url || '/'),
+              path: String(preview.path || '/'),
               usePeerServer: preview.peerServer === true,
               peerLayer: String(preview.peerLayer || 'peer'),
               externalUrl: String(preview.externalUrl || ''),
