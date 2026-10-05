@@ -168,7 +168,6 @@ app.get("/editor/project/:id/deployment", checkAuth, async (req, res) => {
       !['editor', 'third-party'].includes(String(deployment.mode || '')) ||
       !String(deployment.branch || '').trim() ||
       !String(deployment.commit || '').trim() ||
-      String(deployment.commit || '').trim() === 'latest' ||
       !String(deployment.url || '').trim() ||
       !String(deployment.peerLayer || '').trim() ||
       !['iframe', 'emulate'].includes(String(deployment.externalMode || ''))
