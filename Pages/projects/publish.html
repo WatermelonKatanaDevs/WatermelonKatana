@@ -56,6 +56,10 @@
     </div>
     <label for="desc">Description</label><br>
     <textarea id="desc"></textarea><br>
+    <div class="mk-description-preview-wrap">
+      <div class="mk-description-preview-title">Preview</div>
+      <div id="descPreview" class="mk-description-preview" aria-live="polite"></div>
+    </div>
     <label for="thumb">Thumbnail</label><br>
     <button type="button" class="uploadbutton" onclick="uploadThumb()">
       Set Thumbnail<br>
@@ -94,6 +98,10 @@
     let githubRepos = [];
     let manualLink = '';
     const desc = document.querySelector('#desc');
+    const descPreview = document.querySelector('#descPreview');
+    function renderDescriptionPreview() {
+      descPreview.innerHTML = convertMarkdown(desc.value || "");
+    }
     const thumb = document.querySelector('#thumb');
     const storage = document.querySelector('#storage');
     const tags = document.querySelector('#tags');
@@ -228,6 +236,8 @@
     })();
 
     markdownTextbox('#desc');
+    renderDescriptionPreview();
+    desc.addEventListener('input', renderDescriptionPreview);
 
     (async () => {
       var tok = await getAuth();
