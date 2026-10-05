@@ -127,7 +127,7 @@ processLink(link,thumbnail) {
     link = isswf[0];
     platform = "swf";
   }
-  return { link, platform, thumbnail }
+  return { link, platform, thumbnail, cdoType: iscdo?.[1] || null }
 }
   
 async publish(req, res, next) {
@@ -183,7 +183,12 @@ async publish(req, res, next) {
       editorRepository,
       editorDeployment,
       optimalViewSize: e.platform === "cdo"
-        ? (normalizeOptimalViewSize(optimalViewSize, {enabled:true,width:1,height:1,mode:"ratio"}))
+        ? (normalizeOptimalViewSize(
+            optimalViewSize,
+            e.cdoType === "applab"
+              ? {enabled:true,width:5,height:7,mode:"ratio"}
+              : {enabled:true,width:1,height:1,mode:"ratio"}
+          ))
         : normalizeOptimalViewSize(optimalViewSize, null),
       postedAt: Date.now(),
       activeAt: Date.now(),
