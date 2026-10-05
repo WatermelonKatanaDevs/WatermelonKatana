@@ -81,10 +81,6 @@ const ProjectSchema = new Mongoose.Schema({
       type: Boolean,
       default: false,
     },
-    mode: {
-      type: String,
-      enum: ["editor", "third-party"],
-    },
     branch: String,
     commit: String,
     path: String,
@@ -146,15 +142,8 @@ const ProjectSchema = new Mongoose.Schema({
         const deployment = this.editorDeployment.toObject
           ? this.editorDeployment.toObject()
           : { ...this.editorDeployment };
-        deployment.thirdParty = deployment.thirdParty === true || deployment.mode === "third-party";
-        delete deployment.mode;
-        delete deployment.usePeerServer;
-        delete deployment.peerLayer;
-        delete deployment.externalMode;
-        delete deployment.saveEnvironmentVariables;
-        delete deployment.hookUrl;
         container.editorDeployment = {
-          thirdParty: !!deployment.thirdParty,
+          thirdParty: deployment.thirdParty === true,
           externalUrl: String(deployment.externalUrl || ''),
           branch: String(deployment.branch || ''),
           commit: String(deployment.commit || ''),
