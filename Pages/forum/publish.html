@@ -24,6 +24,10 @@
       <input type="text" id="name" required/><br>
       <label for="content">Content</label><br>
       <textarea id="content"></textarea><br>
+      <div class="mk-description-preview-wrap">
+        <div class="mk-description-preview-title">Preview</div>
+        <div id="contentPreview" class="mk-description-preview" aria-live="polite"></div>
+      </div>
       <label for="tags">Tags (separate with comma)</label><br>
       <input type="text" id="tags"><br>
       <label for="mature">Mature
@@ -41,11 +45,17 @@
       const form = document.querySelector('form');
       const name = document.querySelector('#name');
       const content = document.querySelector('#content');
+      const contentPreview = document.querySelector('#contentPreview');
+      function renderContentPreview() {
+        contentPreview.innerHTML = convertMarkdown(content.value || "");
+      }
       const tags = document.querySelector('#tags');
       const mature = document.querySelector('#mature');
       const hidden = document.querySelector('#hidden');
       const display = document.querySelector('.error');
       markdownTextbox('#content');
+      renderContentPreview();
+      content.addEventListener('input', renderContentPreview);
       
       (async ()=>{
         var tok = await getAuth();
