@@ -7,6 +7,7 @@ const poster = new ProjectAPI(Projects);
 const { adminAuth, userAuth, checkAuth } = require("../../Middleware/auth");
 
 poster.route(router,userAuth,adminAuth,checkAuth);
+router.route("/deployment/:id").put(userAuth, poster.updateDeployment.bind(poster));
 router.route("/verify/:id").get(adminAuth, poster.verify.bind(poster));
 router.route("/unverify/:id").get(adminAuth, poster.unverify.bind(poster));
 router.route("/favorite/:id").get(userAuth, poster.favorite.bind(poster));
