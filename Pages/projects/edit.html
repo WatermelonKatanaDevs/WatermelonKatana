@@ -293,7 +293,7 @@
           editorInfo.style.display = "";
           editorRepositoryEl.textContent = editorRepository || data.link || "";
           await loadEditorRevisionOptions(editorDeployment || {branch:'main', commit:'latest'});
-          editorDeploymentMode.value = editorDeployment?.mode === 'third-party' ? 'third-party' : 'editor';
+          editorDeploymentMode.value = editorDeployment?.thirdParty === true || editorDeployment?.mode === 'third-party' ? 'third-party' : 'editor';
           editorPath.value = editorDeployment?.path || editorDeployment?.url || '/';
           editorExternalUrl.value = editorDeployment?.externalUrl || '';
           syncEditorDeploymentMode(editorDeploymentMode.value);
@@ -368,15 +368,15 @@
               editorProject,
               editorRepository,
               editorDeployment: editorProject ? {
-                mode: editorDeploymentMode.value === 'third-party' ? 'third-party' : 'editor',
-                branch: editorDeploymentMode.value === 'editor' ? editorBranch.value : '',
-                commit: editorDeploymentMode.value === 'editor' ? (editorCommit.value || 'latest') : '',
-                path: editorDeploymentMode.value === 'editor' ? (editorPath.value || '/') : '',
-                usePeerServer: editorDeploymentMode.value === 'editor' ? (editorDeployment?.usePeerServer === true) : false,
+                thirdParty: editorDeploymentMode.value === 'third-party',
+                branch: editorBranch.value,
+                commit: editorCommit.value || 'latest',
+                path: editorPath.value || '/',
+                usePeerServer: editorDeployment?.usePeerServer === true,
                 peerLayer: editorDeployment?.peerLayer || 'peer',
-                externalUrl: editorDeploymentMode.value === 'third-party' ? editorExternalUrl.value.trim() : '',
+                externalUrl: editorExternalUrl.value.trim(),
                 externalMode: 'iframe',
-                saveEnvironmentVariables: editorDeploymentMode.value === 'editor' ? (editorDeployment?.saveEnvironmentVariables === true) : false
+                saveEnvironmentVariables: editorDeployment?.saveEnvironmentVariables === true
               } : null,
               optimalViewSize: {
                 enabled: optimalUse.checked,
