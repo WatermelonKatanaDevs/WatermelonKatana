@@ -81,22 +81,10 @@ const ProjectSchema = new Mongoose.Schema({
       type: Boolean,
       default: false,
     },
-    // Legacy field retained so existing documents can still be interpreted.
-    mode: {
-      type: String,
-      enum: ["editor", "third-party"],
-    },
     branch: String,
     commit: String,
     path: String,
-    usePeerServer: Boolean,
-    peerLayer: String,
     externalUrl: String,
-    externalMode: {
-      type: String,
-      enum: ["iframe", "emulate"],
-    },
-    saveEnvironmentVariables: Boolean,
   },
   optimalViewSize: {
     enabled: { type: Boolean, default: false },
@@ -156,8 +144,18 @@ const ProjectSchema = new Mongoose.Schema({
           : { ...this.editorDeployment };
         deployment.thirdParty = deployment.thirdParty === true || deployment.mode === "third-party";
         delete deployment.mode;
+        delete deployment.usePeerServer;
+        delete deployment.peerLayer;
+        delete deployment.externalMode;
+        delete deployment.saveEnvironmentVariables;
         delete deployment.hookUrl;
-        container.editorDeployment = deployment;
+        container.editorDeployment = {
+          thirdParty: !!deployment.thirdParty,
+          externalUrl: String(deployment.externalUrl || ''),
+          branch: String(deployment.branch || ''),
+          commit: String(deployment.commit || ''),
+          path: String(deployment.path || '/')
+        };
       } else {
         container.editorDeployment = null;
       }
