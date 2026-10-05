@@ -83,7 +83,7 @@ const ProjectSchema = new Mongoose.Schema({
     },
     branch: String,
     commit: String,
-    url: String,
+    path: String,
     usePeerServer: Boolean,
     peerLayer: String,
     externalUrl: String,
