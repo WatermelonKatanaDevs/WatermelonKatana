@@ -26,13 +26,25 @@
         <b>Node Editor project</b><br/>
         <span id="editorRepository"></span><br/>
         <div id="editorRevision" style="margin-top:10px; display:none;">
-          <label for="editorBranch">Branch</label><br/>
-          <select id="editorBranch"></select><br/>
-          <label for="editorCommit">Commit</label><br/>
-          <select id="editorCommit"><option value="latest">Latest</option></select>
-          <div style="opacity:.7; margin-top:6px;">Latest resolves to the newest commit on the selected branch each time the project is loaded.</div>
-        </div>
-      </div>
+          <label for="editorDeploymentMode">Deployment</label><br/>
+          <select id="editorDeploymentMode">
+            <option value="editor">Editor</option>
+            <option value="third-party">Third Party</option>
+          </select>
+          <div id="editorDeploymentEditorFields" style="margin-top:10px;">
+            <label for="editorBranch">Branch</label><br/>
+            <select id="editorBranch"></select><br/>
+            <label for="editorCommit">Commit</label><br/>
+            <select id="editorCommit"><option value="latest">Latest</option></select><br/>
+            <label for="editorPath">Deployment Path</label><br/>
+            <input id="editorPath" type="text" placeholder="/"><br/>
+            <div style="opacity:.7; margin-top:6px;">Latest resolves to the newest commit on the selected branch each time the project is loaded.</div>
+          </div>
+          <div id="editorDeploymentThirdPartyFields" style="display:none; margin-top:10px;">
+            <label for="editorExternalUrl">External URL</label><br/>
+            <input id="editorExternalUrl" type="url" placeholder="https://example.com/">
+          </div>
+        </div>>
       <div id="linkField">
         <label for="link">Link</label><br/>
         <input type="text" id="link" required/><br/>
@@ -110,6 +122,11 @@
       const editorRevision = document.querySelector("#editorRevision");
       const editorBranch = document.querySelector("#editorBranch");
       const editorCommit = document.querySelector("#editorCommit");
+      const editorDeploymentMode = document.querySelector("#editorDeploymentMode");
+      const editorDeploymentEditorFields = document.querySelector("#editorDeploymentEditorFields");
+      const editorDeploymentThirdPartyFields = document.querySelector("#editorDeploymentThirdPartyFields");
+      const editorPath = document.querySelector("#editorPath");
+      const editorExternalUrl = document.querySelector("#editorExternalUrl");
       const desc = document.querySelector("#desc");
       const descPreview = document.querySelector("#descPreview");
       const thumb = document.querySelector("#thumb");
@@ -205,6 +222,12 @@
       editorBranch.addEventListener('change', () => loadEditorCommits('latest').catch(err => {
         display.textContent = err?.message || String(err);
       }));
+      function syncEditorDeploymentMode(mode) {
+        const thirdParty = mode === 'third-party';
+        editorDeploymentEditorFields.style.display = thirdParty ? 'none' : '';
+        editorDeploymentThirdPartyFields.style.display = thirdParty ? '' : 'none';
+      }
+      editorDeploymentMode.addEventListener('change', () => syncEditorDeploymentMode(editorDeploymentMode.value));
 
       function updateAdminButtons() {
         featureProjectBtn.textContent = projectFeatured ? "Unfeature Project" : "Feature Project";
@@ -269,6 +292,10 @@
           editorInfo.style.display = "";
           editorRepositoryEl.textContent = editorRepository || data.link || "";
           await loadEditorRevisionOptions(editorDeployment || {branch:'main', commit:'latest'});
+          editorDeploymentMode.value = editorDeployment?.mode === 'third-party' ? 'third-party' : 'editor';
+          editorPath.value = editorDeployment?.path || editorDeployment?.url || '/';
+          editorExternalUrl.value = editorDeployment?.externalUrl || '';
+          syncEditorDeploymentMode(editorDeploymentMode.value);
         }
         desc.value = data.content;
         thumb.src = data.thumbnail || "";
@@ -340,16 +367,15 @@
               editorProject,
               editorRepository,
               editorDeployment: editorProject ? {
-                ...(editorDeployment || {}),
-                mode: editorDeployment?.mode === 'third-party' ? 'third-party' : 'editor',
-                branch: editorBranch.value,
-                commit: editorCommit.value || 'latest',
-                path: editorDeployment?.path || editorDeployment?.url || '/',
-                usePeerServer: editorDeployment?.usePeerServer === true,
+                mode: editorDeploymentMode.value === 'third-party' ? 'third-party' : 'editor',
+                branch: editorDeploymentMode.value === 'editor' ? editorBranch.value : '',
+                commit: editorDeploymentMode.value === 'editor' ? (editorCommit.value || 'latest') : '',
+                path: editorDeploymentMode.value === 'editor' ? (editorPath.value || '/') : '',
+                usePeerServer: editorDeploymentMode.value === 'editor' ? (editorDeployment?.usePeerServer === true) : false,
                 peerLayer: editorDeployment?.peerLayer || 'peer',
-                externalUrl: editorDeployment?.externalUrl || '',
-                externalMode: editorDeployment?.externalMode === 'emulate' ? 'emulate' : 'iframe',
-                saveEnvironmentVariables: editorDeployment?.saveEnvironmentVariables === true
+                externalUrl: editorDeploymentMode.value === 'third-party' ? editorExternalUrl.value.trim() : '',
+                externalMode: 'iframe',
+                saveEnvironmentVariables: editorDeploymentMode.value === 'editor' ? (editorDeployment?.saveEnvironmentVariables === true) : false
               } : null,
               optimalViewSize: {
                 enabled: optimalUse.checked,
