@@ -1168,6 +1168,374 @@
                 editorProject: true,
                 editorRepository: repo.url,
                 editorDeployment: {
+                  mode: 'editor',
+                  branch: publishBranch.value,
+                  commit: publishCommit.value || 'latest',
+                  url: '/',
+                  usePeerServer: false,
+                  peerLayer: 'peer',
+                  externalUrl: '',
+                  externalMode: 'iframe',
+                  hookUrl: '',
+                  saveEnvironmentVariables: false
+                }
+              })
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(data?.error ? `${data.message || 'Project not successfully published'}. ${data.error}` : (data?.message || `Project publish failed (${response.status}).`));
+            WK_EDITOR_STATE.currentProjectId = String(data.id || '');
+            publishStatus.className = 'wk-editor-status wk-editor-success';
+            publishStatus.textContent = 'Published. Opening project editor…';
+            await renderEditMode(g, page, WK_EDITOR_STATE.currentProjectId, repo);
+          } catch (e) {
+            publishButton.disabled = false;
+            publishStatus.className = 'wk-editor-status wk-editor-error';
+            publishStatus.textContent = e?.message || String(e);
+          }
+        });
+
+        try {
+          const projects = await loadWKProjects(repo, auth.user.username);
+          if (token !== WK_EDITOR_STATE.renderToken) return;
+          projectStatus.remove();
+          if (!projects.length) {
+            list.innerHTML = '<div class="wk-editor-empty">No WatermelonKatana projects are currently attached to this repository.</div>';
+            return;
+          }
+          for (const project of projects) {
+            const row = framedoc.createElement('div');
+            row.className = 'wk-project-row';
+            const thumbnail = escapeHTML(project.thumbnail || '/images/blank_project.png');
+            const desc = String(project.content || '').replace(/\s+/g,' ').trim();
+            row.innerHTML = `
+              <img class="wk-project-thumb" src="${thumbnail}" alt="">
+              <div><div class="wk-project-title">${escapeHTML(project.title || 'Untitled project')}</div><div class="wk-project-desc">${escapeHTML(desc ? (desc.length > 140 ? desc.slice(0,137) + '…' : desc) : 'No description')}</div></div>
+            `;
+            const action = framedoc.createElement('button');
+            action.type = 'button';
+            action.className = 'wk-editor-button';
+            action.textContent = 'Edit';
+            action.addEventListener('click', () => {
+              WK_EDITOR_STATE.currentProjectId = String(project.id);
+              renderEditMode(g, page, WK_EDITOR_STATE.currentProjectId, repo).catch(err => editor.EditorApp?.logError?.(err));
+            });
+            row.appendChild(action);
+            list.appendChild(row);
+          }
+        } catch (e) {
+          projectStatus.className = 'wk-editor-status wk-editor-error';
+          projectStatus.textContent = e?.message || String(e);
+        }
+      }
+
+      async function renderEditMode(g, page, projectId, repo) {
+        const token = ++WK_EDITOR_STATE.renderToken;
+        // Render the shell immediately so tool-loading/API failures are visible
+        // instead of leaving a blank builtin page.
+        const wrap = wkEditorShell(page, 'Edit WatermelonKatana project', 'Edit the project metadata without leaving the editor.');
+        const card = framedoc.createElement('div');
+        card.className = 'wk-editor-card';
+        card.innerHTML = `
+          <div class="wk-editor-status" data-load-status>Loading project…</div>
+          <form data-wk-project-form style="display:none;">
+            <div class="wk-editor-form-row">
+              <div>
+                <div class="wk-field"><label for="wk-project-name">Name</label><input id="wk-project-name" type="text" required></div>
+                <div class="wk-field wk-description-field">
+                  <label for="wk-project-description">Description</label>
+                  <div class="wk-description-layout">
+                    <div class="wk-description-pane wk-description-edit">
+                      <div class="wk-description-pane-title">Edit</div>
+                      <textarea id="wk-project-description"></textarea>
+                      <div class="wk-markdown-toolbar" data-description-toolbar></div>
+                    </div>
+                    <div class="wk-description-pane">
+                      <div class="wk-description-pane-title">Preview</div>
+                      <div class="wk-description-preview" data-description-preview></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div class="wk-field"><label>Thumbnail</label>
+                  <div class="wk-thumbnail-box">
+                    <button type="button" class="wk-thumbnail-button" data-upload-thumbnail><img data-thumbnail-preview src="/images/blank_project.png" alt="Project thumbnail"></button>
+                  </div>
+                  <div class="wk-readonly">Use the thumbnail button to insert an uploaded image or a direct image URL.</div>
+                </div>
+                <div class="wk-field"><label for="wk-project-tags">Tags</label><input id="wk-project-tags" type="text" placeholder="comma, separated, tags"></div>
+                <div class="wk-checks">
+                  <label class="wk-check"><input type="checkbox" id="wk-project-mature"> Mature</label>
+                  <label class="wk-check"><input type="checkbox" id="wk-project-hidden"> Hidden</label>
+                </div>
+                <div class="wk-field" style="margin-top:20px;">
+                  <label>Optimal View Size</label>
+                  <label class="wk-check"><input type="checkbox" id="wk-optimal-view-use"> Use custom view size</label>
+                  <div id="wk-optimal-view-options" style="display:none; margin-top:10px; padding:12px; border:1px solid #444;">
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                      <label>Width<br><input id="wk-optimal-view-width" type="number" min="1" max="10000" step="1"></label>
+                      <label>Height<br><input id="wk-optimal-view-height" type="number" min="1" max="10000" step="1"></label>
+                    </div>
+                    <label style="display:block; margin-top:10px;">Scaling
+                      <select id="wk-optimal-view-mode">
+                        <option value="ratio">Scale to fit ratio</option>
+                        <option value="fixed">Fixed pixel size</option>
+                      </select>
+                    </label>
+                  </div>
+                </div>
+                <div class="wk-field" style="margin-top:20px;"><label>GitHub repository</label><div class="wk-readonly" data-repository></div></div>
+                <div class="wk-field" style="margin-top:20px;">
+                  <label>Deployment</label>
+                  <div class="wk-field"><label>Mode</label><select data-deployment-mode><option value="editor">Editor</option><option value="third-party">Third Party</option></select></div>
+                  <div data-deployment-editor-fields>
+                    <div class="wk-field"><label>Branch</label><select data-deployment-branch></select></div>
+                    <div class="wk-field"><label>Commit</label><select data-deployment-commit></select></div>
+                    <div class="wk-field"><label>Deployment Path</label><input data-deployment-path type="text" placeholder="/"></div>
+                  </div>
+                  <div data-deployment-third-party-fields style="display:none;">
+                    <div class="wk-field"><label>External URL</label><input data-deployment-external-url type="url" placeholder="https://example.com/"></div>
+                  </div>
+                  <div class="wk-readonly" data-deployment-summary>No deployment configured.</div>
+                  <div class="wk-editor-actions" style="margin-top:10px;">
+                    <button type="button" class="wk-editor-button" data-set-deployment-preview>Use Current Deployment Preview</button>
+                  </div>
+                  <div class="wk-readonly" style="margin-top:7px;">Uses the deployment selection from Run &amp; Debug. Save changes to publish it.</div>
+                </div>
+
+              </div>
+            </div>
+            <div class="wk-form-actions">
+              <div class="wk-editor-actions"><button type="button" class="wk-editor-button subtle" data-reload-project>Discard changes</button></div>
+              <div class="wk-editor-actions"><span class="wk-editor-status" data-save-status></span><button type="submit" class="wk-editor-button primary" data-save-project>Save changes</button></div>
+            </div>
+          </form>
+        `;
+        wrap.appendChild(card);
+
+        const status = card.querySelector('[data-load-status]');
+        const form = card.querySelector('[data-wk-project-form]');
+        const nameInput = card.querySelector('#wk-project-name');
+        const descInput = card.querySelector('#wk-project-description');
+        const descriptionToolbar = card.querySelector('[data-description-toolbar]');
+        const descriptionPreview = card.querySelector('[data-description-preview]');
+        const tagsInput = card.querySelector('#wk-project-tags');
+        const matureInput = card.querySelector('#wk-project-mature');
+        const hiddenInput = card.querySelector('#wk-project-hidden');
+        const thumbPreview = card.querySelector('[data-thumbnail-preview]');
+        const repoEl = card.querySelector('[data-repository]');
+        const optimalUseInput = card.querySelector('#wk-optimal-view-use');
+        const optimalOptions = card.querySelector('#wk-optimal-view-options');
+        const optimalWidthInput = card.querySelector('#wk-optimal-view-width');
+        const optimalHeightInput = card.querySelector('#wk-optimal-view-height');
+        const optimalModeInput = card.querySelector('#wk-optimal-view-mode');
+        const saveStatus = card.querySelector('[data-save-status]');
+        const saveButton = card.querySelector('[data-save-project]');
+        const uploadButton = card.querySelector('[data-upload-thumbnail]');
+        const reloadButton = card.querySelector('[data-reload-project]');
+        const deploymentSummary = card.querySelector('[data-deployment-summary]');
+        const deploymentModeInput = card.querySelector('[data-deployment-mode]');
+        const deploymentEditorFields = card.querySelector('[data-deployment-editor-fields]');
+        const deploymentThirdPartyFields = card.querySelector('[data-deployment-third-party-fields]');
+        const deploymentBranchInput = card.querySelector('[data-deployment-branch]');
+        const deploymentCommitInput = card.querySelector('[data-deployment-commit]');
+        const deploymentPathInput = card.querySelector('[data-deployment-path]');
+        const deploymentExternalUrlInput = card.querySelector('[data-deployment-external-url]');
+        const setDeploymentPreviewButton = card.querySelector('[data-set-deployment-preview]');
+        let thumbValue = '';
+        let loadedProject = null;
+        function syncDeploymentMode() {
+          const thirdParty = deploymentModeInput.value === 'third-party';
+          deploymentEditorFields.style.display = thirdParty ? 'none' : '';
+          deploymentThirdPartyFields.style.display = thirdParty ? '' : 'none';
+        }
+        deploymentModeInput.addEventListener('change', syncDeploymentMode);
+        function updateOptimalViewVisibility() {
+          optimalOptions.style.display = optimalUseInput.checked ? '' : 'none';
+        }
+        optimalUseInput.addEventListener('change', updateOptimalViewVisibility);
+
+        descInput.addEventListener('input', () => {
+          renderWKDescriptionPreview(descriptionPreview, descInput.value);
+        });
+
+        function setThumbnail(url) {
+          thumbValue = String(url || '');
+          thumbPreview.src = thumbValue || '/images/blank_project.png';
+          thumbPreview.onerror = () => { thumbPreview.src = '/images/blank_project.png'; };
+        }
+
+        async function loadProject() {
+          saveStatus.textContent = '';
+          status.className = 'wk-editor-status';
+          status.textContent = 'Loading project…';
+          form.style.display = 'none';
+          try {
+            const response = await fetch('/api/project/data/' + encodeURIComponent(projectId), {cache:'no-store'});
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(data?.error || data?.message || `Unable to load project (${response.status}).`);
+            if (!data.editorProject) throw new Error('This project is not a Node Editor project.');
+            loadedProject = data;
+            nameInput.value = data.title || '';
+            descInput.value = data.content || '';
+            tagsInput.value = Array.isArray(data.tags) ? data.tags.join(', ') : '';
+            matureInput.checked = !!data.mature;
+            hiddenInput.checked = !!data.hidden;
+            const optimal = data.optimalViewSize || {};
+            optimalUseInput.checked = !!optimal.enabled;
+            optimalWidthInput.value = Number(optimal.width) > 0 ? Number(optimal.width) : 1;
+            optimalHeightInput.value = Number(optimal.height) > 0 ? Number(optimal.height) : 1;
+            optimalModeInput.value = optimal.mode === 'fixed' ? 'fixed' : 'ratio';
+            updateOptimalViewVisibility();
+            setThumbnail(data.thumbnail || '');
+            repoEl.textContent = data.editorRepository || data.link || repo?.url || '';
+            const loadedDeployment = data.editorDeployment || {mode:'editor', branch:'main', commit:'latest', path:'/', usePeerServer:false, peerLayer:'peer', externalUrl:'', externalMode:'iframe', saveEnvironmentVariables:false};
+            deploymentModeInput.value = loadedDeployment.mode === 'third-party' ? 'third-party' : 'editor';
+            deploymentPathInput.value = loadedDeployment.path || '/';
+            deploymentExternalUrlInput.value = loadedDeployment.externalUrl || '';
+            syncDeploymentMode();
+            const revisionOptions = await loadWKRevisionOptions(repo, loadedDeployment.branch || repo.branch || 'main', loadedDeployment.commit || 'latest');
+            deploymentBranchInput.innerHTML = revisionOptions.branches.map(branch => `<option value="${escapeHTML(branch)}">${escapeHTML(branch)}</option>`).join('');
+            deploymentModeInput.value = previewDeployment.mode;
+            deploymentPathInput.value = previewDeployment.path || '/';
+            deploymentExternalUrlInput.value = previewDeployment.externalUrl || '';
+            syncDeploymentMode();
+            deploymentBranchInput.value = revisionOptions.branch;
+            deploymentCommitInput.innerHTML =
+              '<option value="latest">Latest</option>' +
+              revisionOptions.commits.map(commit => `<option value="${escapeHTML(commit.sha)}">${escapeHTML(commit.message || commit.sha.slice(0, 12))}</option>`).join('');
+            if (loadedDeployment.commit !== 'latest' && !revisionOptions.commits.some(commit => commit.sha === loadedDeployment.commit)) {
+              deploymentCommitInput.innerHTML += `<option value="${escapeHTML(loadedDeployment.commit)}">Pinned ${escapeHTML(String(loadedDeployment.commit).slice(0, 12))}</option>`;
+            }
+            deploymentCommitInput.value = loadedDeployment.commit || 'latest';
+            if (deploymentCommitInput.value !== (loadedDeployment.commit || 'latest')) deploymentCommitInput.value = 'latest';
+            loadedProject = {...data, editorDeployment:loadedDeployment};
+            deploymentSummary.innerHTML = deploymentFromPreviewLabel(loadedProject.editorDeployment);
+            status.remove();
+            form.style.display = '';
+            await ensureWKProjectEditorTools();
+            if (!descInput.classList.contains('mk-textbox')) {
+              editor.markdownTextbox?.('#wk-project-description', true);
+            }
+            if (descriptionToolbar && !descriptionToolbar.children.length) {
+              let node = descInput.nextSibling;
+              while (node) {
+                const next = node.nextSibling;
+                if (node.nodeType === 3 && !node.textContent.trim()) {
+                  node.remove();
+                } else if (node.nodeType === 1 && node.tagName === 'BUTTON') {
+                  descriptionToolbar.appendChild(node);
+                } else if (node.nodeType === 1 && node.tagName === 'BR') {
+                  node.remove();
+                } else {
+                  break;
+                }
+                node = next;
+              }
+            }
+            renderWKDescriptionPreview(descriptionPreview, descInput.value);
+          } catch (e) {
+            status.className = 'wk-editor-status wk-editor-error';
+            status.textContent = e?.message || String(e);
+          }
+        }
+
+        uploadButton.addEventListener('click', async () => {
+          try {
+            const url = await editor.getFileUpload?.(thumbValue);
+            if (url != null) setThumbnail(url);
+          } catch (e) {
+            saveStatus.className = 'wk-editor-status wk-editor-error';
+            saveStatus.textContent = e?.message || String(e);
+          }
+        });
+
+        reloadButton.addEventListener('click', () => loadProject());
+
+        setDeploymentPreviewButton.addEventListener('click', async () => {
+          if (!loadedProject || setDeploymentPreviewButton.disabled) return;
+          setDeploymentPreviewButton.disabled = true;
+          saveStatus.className = 'wk-editor-status';
+          saveStatus.textContent = 'Reading Deployment Preview…';
+          try {
+            const preview = await editor.EditorApp?.getDeploymentPreview?.();
+            if (!preview?.github || !preview.branch || !preview.commit) {
+              throw new Error('Configure a Deployment Preview with a GitHub repository, branch, and commit first.');
+            }
+            const repository = normalizeWKRepository(loadedProject.editorRepository || loadedProject.link || repo?.url);
+            const previewRepository = normalizeWKRepository(preview.github);
+            if (!repository || previewRepository !== repository) {
+              throw new Error('The Deployment Preview must use this WatermelonKatana project’s GitHub repository.');
+            }
+            const previewDeployment = {
+              mode: preview.deploymentMode === 'third-party' ? 'third-party' : 'editor',
+              branch: String(preview.branch),
+              commit: String(preview.commitSelection || preview.commit || 'latest'),
+              path: String(preview.path || '/'),
+              usePeerServer: preview.peerServer === true,
+              peerLayer: String(preview.peerLayer || 'peer'),
+              externalUrl: String(preview.externalUrl || ''),
+              externalMode: preview.externalMode === 'emulate' ? 'emulate' : 'iframe',
+              saveEnvironmentVariables: preview.saveEnvironmentVariables === true
+            };
+            const revisionOptions = await loadWKRevisionOptions(repo, previewDeployment.branch, previewDeployment.commit);
+            deploymentBranchInput.innerHTML = revisionOptions.branches.map(branch => `<option value="${escapeHTML(branch)}">${escapeHTML(branch)}</option>`).join('');
+            deploymentBranchInput.value = revisionOptions.branch;
+            deploymentCommitInput.innerHTML =
+              '<option value="latest">Latest</option>' +
+              revisionOptions.commits.map(commit => `<option value="${escapeHTML(commit.sha)}">${escapeHTML(commit.message || commit.sha.slice(0, 12))}</option>`).join('');
+            if (previewDeployment.commit !== 'latest' && !revisionOptions.commits.some(commit => commit.sha === previewDeployment.commit)) {
+              deploymentCommitInput.innerHTML += `<option value="${escapeHTML(previewDeployment.commit)}">Pinned ${escapeHTML(previewDeployment.commit.slice(0, 12))}</option>`;
+            }
+            deploymentCommitInput.value = previewDeployment.commit;
+            loadedProject.editorDeployment = previewDeployment;
+            deploymentSummary.innerHTML = deploymentFromPreviewLabel(previewDeployment);
+            saveStatus.className = 'wk-editor-status wk-editor-success';
+            saveStatus.textContent = 'Deployment preview copied into the project editor. Save changes to publish it.';
+          } catch (e) {
+            saveStatus.className = 'wk-editor-status wk-editor-error';
+            saveStatus.textContent = e?.message || String(e);
+          } finally {
+            setDeploymentPreviewButton.disabled = false;
+          }
+        });
+
+        form.addEventListener('submit', async event => {
+          event.preventDefault();
+          saveStatus.className = 'wk-editor-status';
+          saveStatus.textContent = '';
+          if (!loadedProject) return;
+          const taglist = tagsInput.value.toLowerCase().replace(/[^,\w\d_-]/g, '').split(',');
+          if (taglist.length < 3) {
+            saveStatus.className = 'wk-editor-status wk-editor-error';
+            saveStatus.textContent = 'Choose at least 3 tags';
+            return;
+          }
+          if (taglist.length > 10) {
+            saveStatus.className = 'wk-editor-status wk-editor-error';
+            saveStatus.textContent = 'You can only choose a maximum of 10 tags';
+            return;
+          }
+          saveButton.disabled = true;
+          saveStatus.textContent = 'Saving…';
+          try {
+            const repository = normalizeWKRepository(loadedProject.editorRepository || loadedProject.link || repo?.url);
+            if (!repository) throw new Error('This project does not have a valid GitHub repository.');
+            const response = await fetch('/api/project/update/' + encodeURIComponent(projectId), {
+              method:'PUT',
+              headers:{'Content-Type':'application/json'},
+              body:JSON.stringify({
+                title:nameInput.value,
+                link:repository,
+                content:descInput.value,
+                thumbnail:thumbValue,
+                tags:taglist,
+                mature:matureInput.checked,
+                hidden:hiddenInput.checked,
+                privateRecipients:[],
+                editorProject:true,
+                editorRepository:repository,
+                editorDeployment: {
                   mode: deploymentModeInput.value === 'third-party' ? 'third-party' : 'editor',
                   branch: deploymentModeInput.value === 'editor' ? deploymentBranchInput.value : '',
                   commit: deploymentModeInput.value === 'editor' ? (deploymentCommitInput.value || 'latest') : '',
