@@ -212,7 +212,8 @@ app.get("/project/:id", checkAuth, makeFormToken, async (req, res) => {
   var proj = await Projects.findOne({ _id: req.params.id });
   if (!proj) return res.status(404).sendFile(cldir + "/404.html");
   var tok = res.locals.userToken;
-  var user = await Users.findOne({ _id: tok.id });
+  var user = tok ? await Users.findOne({ _id: tok.id }) : null;
+  var projectOwner = !!tok && proj.posterId === tok.id;
   if (proj.mature && (!tok || !user || !user.mature)) return res.status(403).sendFile(__dirname + "/Middleware/403.html");
   if (tok && !proj.viewers.includes(tok.id)) {
     proj.viewers.push(tok.id);
@@ -234,7 +235,7 @@ app.get("/project/:id", checkAuth, makeFormToken, async (req, res) => {
     Score: ${proj.score} Views: ${proj.views} Platform: ${proj.platform} Featured: ${proj.featured}
   `).replace("<!--title-->", () => `
     <title>${makeLiteralChars(proj.title)} | WatermelonKatana</title>
-  `));
+  `).replace("<!--project-owner-->", () => String(projectOwner)));
   await proj.save();
 });
 app.get("/project/:id/edit", userAuth, async (req, res) => {
