@@ -1299,6 +1299,7 @@
             updateOptimalViewVisibility();
             setThumbnail(data.thumbnail || '');
             repoEl.textContent = data.editorRepository || data.link || repo?.url || '';
+            deploymentSummary.innerHTML = deploymentFromPreviewLabel(data.editorDeployment);
             status.remove();
             form.style.display = '';
             await ensureWKProjectEditorTools();
