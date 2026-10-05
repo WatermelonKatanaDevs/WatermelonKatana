@@ -933,11 +933,14 @@
         `;
         page.innerHTML = `
           <style>
-            .wk-editor-wrap { max-width:980px; margin:0 auto; }
+            .wk-editor-wrap { width:100%; max-width:980px; min-width:0; margin:0 auto; box-sizing:border-box; }
             .wk-editor-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:24px; margin-bottom:26px; }
             .wk-editor-heading h1 { margin:0 0 7px; font-size:25px; font-weight:600; letter-spacing:.1px; }
             .wk-editor-heading p { margin:0; color:#aaa; line-height:1.5; }
-            .wk-editor-card { background:#1e1e1e; border:1px solid #333; border-radius:10px; padding:22px; box-sizing:border-box; container-type:inline-size; container-name:wk-editor-card; }
+            .wk-editor-card { width:100%; max-width:100%; min-width:0; background:#1e1e1e; border:1px solid #333; border-radius:10px; padding:22px; box-sizing:border-box; container-type:inline-size; container-name:wk-editor-card; }
+            .wk-editor-card > form { width:100%; max-width:100%; min-width:0; box-sizing:border-box; }
+            .wk-editor-form-row, .wk-editor-form-row > * { min-width:0; max-width:100%; box-sizing:border-box; }
+            .wk-field, .wk-description-layout, .wk-description-pane { min-width:0; max-width:100%; box-sizing:border-box; }
             .wk-editor-card + .wk-editor-card { margin-top:16px; }
             .wk-editor-actions { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
             .wk-editor-button { appearance:none; border:1px solid #444; background:#252525; color:#eee; border-radius:0; padding:8px 13px; font-size:14px; cursor:pointer; }
