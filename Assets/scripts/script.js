@@ -456,7 +456,7 @@ function ensurepreviewcard() {
   style.textContent = `
     @keyframes flair-shift { from { background-position: 0% 50%; } to { background-position: 300% 50%; } }
     .user-preview {
-      position: absolute; z-index: 3000; width: 300px; max-width: 80vw;
+      position: fixed; z-index: 3000; width: 300px; max-width: 80vw;
       background: var(--palette-background-card); color: var(--palette-textcolor);
       border-radius: 10px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
     }
