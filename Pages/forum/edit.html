@@ -22,6 +22,10 @@
       <input type="text" id="name" required/><br/>
       <label for="content">Content</label><br/>
       <textarea id="content"></textarea><br/>
+      <div class="mk-description-preview-wrap">
+        <div class="mk-description-preview-title">Preview</div>
+        <div id="contentPreview" class="mk-description-preview" aria-live="polite"></div>
+      </div>
       <label for="tags">Tags</label><br/>
       <input type="text" id="tags"><br/>
       <label for="mature">Mature
@@ -74,6 +78,8 @@
         mature.checked = data.mature;
         hidden.checked = data.hidden;
         markdownTextbox('#content');
+        renderContentPreview();
+        content.addEventListener('input', renderContentPreview);
         var tok = await getAuth();
         if (tok.user?.mature) return;
         mature.outerHTML = data.mature.toString();
