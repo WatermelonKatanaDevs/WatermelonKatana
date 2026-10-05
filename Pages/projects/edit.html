@@ -344,7 +344,7 @@
                 mode: editorDeployment?.mode === 'third-party' ? 'third-party' : 'editor',
                 branch: editorBranch.value,
                 commit: editorCommit.value || 'latest',
-                url: editorDeployment?.url || '/',
+                path: editorDeployment?.path || editorDeployment?.url || '/',
                 usePeerServer: editorDeployment?.usePeerServer === true,
                 peerLayer: editorDeployment?.peerLayer || 'peer',
                 externalUrl: editorDeployment?.externalUrl || '',
