@@ -47,7 +47,7 @@ function normalizeEditorDeployment(value, fallback = null) {
 
   if (!branch) throw new Error("Editor deployment branch is required.");
   if (!/^(latest|[0-9a-f]{7,40})$/i.test(commit)) {
-    throw new Error("Editor deployment commit must be "latest" or a commit SHA.");
+    throw new Error('Editor deployment commit must be "latest" or a commit SHA.');
   }
   if (!/^\//.test(url) && !/^https?:\/\//i.test(url)) {
     throw new Error("Editor deployment URL must be a path or HTTP(S) URL.");
