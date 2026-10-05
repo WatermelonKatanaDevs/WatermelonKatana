@@ -848,6 +848,19 @@
         }
       }
 
+      function deploymentFromPreviewLabel(deployment) {
+        if (!deployment?.commit) return 'No deployment configured.';
+        const commit = escapeHTML(String(deployment.commit).slice(0, 12));
+        const branch = escapeHTML(String(deployment.branch || ''));
+        const mode = deployment.mode === 'third-party'
+          ? 'Third Party'
+          : 'Editor';
+        const target = deployment.mode === 'third-party'
+          ? String(deployment.externalUrl || '')
+          : String(deployment.url || '');
+        return `<strong>${mode}</strong> · ${escapeHTML(branch)} @ <code>${commit}</code><br><span style="color:#aaa;">${escapeHTML(target || 'No target URL')}</span>`;
+      }
+
       function workspaceInfo() {
         try {
           return editor.EditorApp?.getWorkspaceInfo?.() || {};
