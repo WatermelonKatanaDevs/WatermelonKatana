@@ -1392,10 +1392,6 @@
             syncDeploymentMode();
             const revisionOptions = await loadWKRevisionOptions(repo, loadedDeployment.branch || repo.branch || 'main', loadedDeployment.commit || 'latest');
             deploymentBranchInput.innerHTML = revisionOptions.branches.map(branch => `<option value="${escapeHTML(branch)}">${escapeHTML(branch)}</option>`).join('');
-            deploymentModeInput.value = previewDeployment.mode;
-            deploymentPathInput.value = previewDeployment.path || '/';
-            deploymentExternalUrlInput.value = previewDeployment.externalUrl || '';
-            syncDeploymentMode();
             deploymentBranchInput.value = revisionOptions.branch;
             deploymentCommitInput.innerHTML =
               '<option value="latest">Latest</option>' +
