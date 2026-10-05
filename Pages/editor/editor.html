@@ -549,7 +549,7 @@
         // <script> blocks. Run the WK JavaScript classifier over those blocks
         // only, so HTML tags/attributes keep Monaco's normal HTML highlighting.
         if (languageId === 'html') {
-          const scriptPattern = /<script\\b[^>]*>([\\s\\S]*?)<\\/script\\s*>/gi;
+          const scriptPattern = /<script\b[^>]*>([\s\S]*?)<\/script\s*>/gi;
           let match;
           while ((match = scriptPattern.exec(source))) {
             const code = match[1] || '';
