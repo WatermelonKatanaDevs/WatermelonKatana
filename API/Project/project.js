@@ -43,21 +43,6 @@ function normalizeDeploymentPath(value) {
   }
 }
 
-function normalizeDeploymentPath(value) {
-  const raw = String(value ?? '').trim();
-  if (!raw) return '/';
-  try {
-    const parsed = new URL(raw, 'http://deployment.local');
-    let path = parsed.pathname || '/';
-    if (!path.startsWith('/')) path = '/' + path;
-    const suffix = (parsed.search || '') + (parsed.hash || '');
-    return (path === '/' ? '/' : path.replace(/\/+$/, '')) + suffix;
-  } catch (_) {
-    const path = raw.startsWith('/') ? raw : '/' + raw;
-    return path === '/' ? '/' : path.replace(/\/+$/, '');
-  }
-}
-
 function normalizeEditorDeployment(value, fallback = null) {
   if (value == null) return null;
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Editor deployment must be an object.');
