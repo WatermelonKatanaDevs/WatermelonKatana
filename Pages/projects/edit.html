@@ -127,6 +127,7 @@
       const editorDeploymentEditorFields = document.querySelector("#editorDeploymentEditorFields");
       const editorDeploymentThirdPartyFields = document.querySelector("#editorDeploymentThirdPartyFields");
       const editorPath = document.querySelector("#editorPath");
+      const editorUsePeerServer = document.querySelector("#editorUsePeerServer");
       const editorExternalUrl = document.querySelector("#editorExternalUrl");
       const desc = document.querySelector("#desc");
       const descPreview = document.querySelector("#descPreview");
@@ -297,6 +298,7 @@
           await loadEditorRevisionOptions(editorDeployment || {branch:'main', commit:'latest'});
           editorDeploymentMode.value = editorDeployment?.thirdParty === true || editorDeployment?.mode === 'third-party' ? 'third-party' : 'editor';
           editorPath.value = editorDeployment?.path || editorDeployment?.url || '/';
+          editorUsePeerServer.checked = editorDeployment?.usePeerServer === true;
           editorExternalUrl.value = editorDeployment?.externalUrl || '';
           syncEditorDeploymentMode(editorDeploymentMode.value);
         }
@@ -374,6 +376,7 @@
                 externalUrl: editorExternalUrl.value.trim(),
                 branch: editorBranch.value,
                 commit: editorCommit.value || 'latest',
+                usePeerServer: editorUsePeerServer.checked,
                 path: editorPath.value || '/'
               } : null,
               optimalViewSize: {
