@@ -176,7 +176,7 @@ app.get("/editor/project/:id/deployment", checkAuth, async (req, res) => {
     if (deployment.mode === 'third-party' && !String(deployment.externalUrl || '').trim()) {
       return res.status(409).send('This WatermelonKatana project has an incomplete third-party deployment configuration.');
     }
-    if (deployment.mode === 'editor' && !String(deployment.path || deployment.url || '').trim()) {
+    if (deployment.mode === 'editor' && !String(deployment.path || '').trim()) {
       return res.status(409).send('This WatermelonKatana project does not have an Editor deployment path.');
     }
 
@@ -194,7 +194,7 @@ app.get("/editor/project/:id/deployment", checkAuth, async (req, res) => {
     if (deployment.mode === 'third-party') {
       params.set('url', String(deployment.externalUrl));
     } else {
-      params.set('path', String(deployment.path || deployment.url || '/'));
+      params.set('path', String(deployment.path || '/'));
     }
 
     const src = "/editor/deployment.html?" + params.toString();
