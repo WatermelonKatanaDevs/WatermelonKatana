@@ -38,6 +38,10 @@
             <select id="editorCommit"><option value="latest">Latest</option></select><br/>
             <label for="editorPath">Deployment Path</label><br/>
             <input id="editorPath" type="text" placeholder="/"><br/>
+            <label for="editorUsePeerServer">
+              <input type="checkbox" id="editorUsePeerServer">
+              Use peer server
+            </label><br/>
             <div style="opacity:.7; margin-top:6px;">Latest resolves to the newest commit on the selected branch each time the project is loaded.</div>
           </div>
           <div id="editorDeploymentThirdPartyFields" style="display:none; margin-top:10px;">
@@ -290,21 +294,39 @@
         editorProject = !!data.editorProject;
         editorRepository = data.editorRepository || "";
         editorDeployment = data.editorDeployment || null;
+
+        // Populate ordinary project fields before GitHub-specific loading so a
+        // GitHub/API error cannot prevent the rest of the edit form from loading.
+        desc.value = data.content || "";
+        thumb.src = data.thumbnail || "";
+        thumb.value = data.thumbnail || "";
+        tags.value = Array.isArray(data.tags) ? data.tags.join(", ") : "";
+        mature.checked = !!data.mature;
+        hidden.checked = !!data.hidden;
+        const optimal = data.optimalViewSize || {};
+        optimalUse.checked = !!optimal.enabled;
+        optimalWidth.value = Number(optimal.width) > 0 ? Number(optimal.width) : 1;
+        optimalHeight.value = Number(optimal.height) > 0 ? Number(optimal.height) : 1;
+        optimalMode.value = optimal.mode === 'fixed' ? 'fixed' : 'ratio';
+        updateOptimalViewVisibility();
+
         if (editorProject) {
           linkField.style.display = "none";
           link.required = false;
           editorInfo.style.display = "";
           editorRepositoryEl.textContent = editorRepository || data.link || "";
-          await loadEditorRevisionOptions(editorDeployment || {branch:'main', commit:'latest'});
           editorDeploymentMode.value = editorDeployment?.thirdParty === true || editorDeployment?.mode === 'third-party' ? 'third-party' : 'editor';
           editorPath.value = editorDeployment?.path || editorDeployment?.url || '/';
           editorUsePeerServer.checked = editorDeployment?.usePeerServer === true;
           editorExternalUrl.value = editorDeployment?.externalUrl || '';
           syncEditorDeploymentMode(editorDeploymentMode.value);
+          try {
+            await loadEditorRevisionOptions(editorDeployment || {branch:'main', commit:'latest'});
+          } catch (err) {
+            display.textContent = err?.message || "Unable to load GitHub deployment settings.";
+          }
         }
-        desc.value = data.content;
-        thumb.src = data.thumbnail || "";
-        thumb.value = data.thumbnail || "";
+
         // data only gets fetched once it will not try to grab other projects data if updated
         if(!editorProject && isCDOStorage(link.value)) {
           storage.textContent = "fetching data.... please wait"
@@ -314,15 +336,6 @@
           });
           link.onchange = null;
         }
-        tags.value = data.tags.join(", ");
-        mature.checked = data.mature;
-        hidden.checked = data.hidden;
-        const optimal = data.optimalViewSize || {};
-        optimalUse.checked = !!optimal.enabled;
-        optimalWidth.value = Number(optimal.width) > 0 ? Number(optimal.width) : 1;
-        optimalHeight.value = Number(optimal.height) > 0 ? Number(optimal.height) : 1;
-        optimalMode.value = optimal.mode === 'fixed' ? 'fixed' : 'ratio';
-        updateOptimalViewVisibility();
         projectFeatured = !!data.featured;
         projectVerified = !!data.verified;
         updateAdminButtons();
