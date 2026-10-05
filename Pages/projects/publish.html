@@ -316,6 +316,8 @@
         return (display.textContent = "Choose a GitHub branch");
       if (editorProject.checked && !editorCommit.value)
         return (display.textContent = "Choose a GitHub commit");
+      if (editorProject.checked && editorCommit.value === 'latest' && editorCommits.length === 0)
+        return (display.textContent = "The selected branch has no commits yet");
       if (!editorProject.checked && !link.value.match(/^https?:\/\/[^"]+$/))
         return (display.textContent = "Link is not a vaild URL");
       if (thumb.value && !thumb.value.match(/^https?:\/\/[^"]+$/) && !thumb.value.match(/^\/api\/media\/[^"]+$/))
