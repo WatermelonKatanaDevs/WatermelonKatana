@@ -67,6 +67,7 @@ function normalizeEditorDeployment(value, fallback = null) {
   const commit = String(source.commit || 'latest').trim() || 'latest';
   const path = normalizeDeploymentPath(source.path ?? source.url ?? '/');
   const externalUrl = String(source.externalUrl || '').trim();
+  const usePeerServer = source.usePeerServer === true;
 
   if (thirdParty) {
     if (!externalUrl) throw new Error('Third-party Editor deployments require a deployment URL.');
@@ -86,6 +87,7 @@ function normalizeEditorDeployment(value, fallback = null) {
     externalUrl,
     branch,
     commit,
+    usePeerServer,
     path
   };
 }
