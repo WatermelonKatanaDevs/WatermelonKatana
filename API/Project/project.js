@@ -189,7 +189,12 @@ async publish(req, res, next) {
               ? {enabled:true,width:5,height:7,mode:"ratio"}
               : {enabled:true,width:1,height:1,mode:"ratio"}
           ))
-        : normalizeOptimalViewSize(optimalViewSize, null),
+        : e.platform === "scratch"
+          ? normalizeOptimalViewSize(
+              optimalViewSize,
+              {enabled:true,width:5,height:4,mode:"ratio"}
+            )
+          : normalizeOptimalViewSize(optimalViewSize, null),
       postedAt: Date.now(),
       activeAt: Date.now(),
       posterId: user.id,
@@ -312,7 +317,7 @@ async delete(req, res, next) {
       await users[i].save();
     }
     //await project.remove();
-    await this.model.deleteOne({_id: pid});
+    await this.model.deleteOne({_id:pid});
     console.log("deleted "+pid);
     res.status(201).json({
       message: "Project successfully deleted",
@@ -414,12 +419,7 @@ async unverify(req, res, next) {
     const project = await this.model.findOne({ _id: pid });
     if (!project) return res.status(404).json({
       message: "Fetch not successful",
-      error: "Project not found",
-    });
-    project.verified = false;
-    await project.save();
-    res.status(201).json({
-      message: "Project successfully unverified",
+      error: "Project not successfully unverified",
       id: project._id,
       title: project.title,
     });
