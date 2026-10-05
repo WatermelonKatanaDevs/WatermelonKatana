@@ -84,6 +84,7 @@ function updateCursorScheme(pref) {
 }
 
 function relativeDate(time) {
+  time = Number(time) || 0;
   var seconds = (Date.now() - time) / 1000;
 
   if (time == 0) return "never";
@@ -165,6 +166,7 @@ function convertMarkdown(string) {
 }
 
 function previewContent(str, len) {
+  str = String(str ?? "");
   return makeLiteralChars(str).replace(/\n[^]*$/, "").slice(0, len) + ((str.includes("\n") || str.length > len) ? "..." : "");
 }
 
@@ -330,7 +332,7 @@ async function getCDOStorage(url) {
 }
 
 function tagHTML(tags) {
-  return tags.map(e => `#${makeLiteralChars(e)}`).join(", ");
+  return (Array.isArray(tags) ? tags : []).map(e => `#${makeLiteralChars(e)}`).join(", ");
 }
 
 function isadmin(role) {
