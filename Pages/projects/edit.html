@@ -369,14 +369,10 @@
               editorRepository,
               editorDeployment: editorProject ? {
                 thirdParty: editorDeploymentMode.value === 'third-party',
+                externalUrl: editorExternalUrl.value.trim(),
                 branch: editorBranch.value,
                 commit: editorCommit.value || 'latest',
-                path: editorPath.value || '/',
-                usePeerServer: editorDeployment?.usePeerServer === true,
-                peerLayer: editorDeployment?.peerLayer || 'peer',
-                externalUrl: editorExternalUrl.value.trim(),
-                externalMode: 'iframe',
-                saveEnvironmentVariables: editorDeployment?.saveEnvironmentVariables === true
+                path: editorPath.value || '/'
               } : null,
               optimalViewSize: {
                 enabled: optimalUse.checked,
