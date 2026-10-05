@@ -120,6 +120,7 @@ function relativeDate(time) {
 }
 
 function makeLiteralChars(string) {
+  string = String(string ?? "");
   string = string.replace(/\&/g, "&amp;");
   string = string.replace(/</g, "&lt;");
   string = string.replace(/>/g, "&gt;");
