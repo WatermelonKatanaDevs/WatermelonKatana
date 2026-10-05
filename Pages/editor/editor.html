@@ -1060,6 +1060,19 @@
         });
       }
 
+      async function loadWKRevisionOptions(repo, branchValue = '', commitValue = 'latest') {
+        const github = editor.GitHubService;
+        if (!github?.listBranches || !github?.listCommits) throw new Error('GitHub support is unavailable.');
+        let branches = [];
+        try { branches = await github.listBranches(repo.owner, repo.repo); } catch (_) {}
+        const branch = String(branchValue || repo.branch || branches[0] || 'main');
+        if (!branches.includes(branch)) branches.unshift(branch);
+        let commits = [];
+        try { commits = await github.listCommits(repo.owner, repo.repo, branch, 30); } catch (_) {}
+        const commit = String(commitValue || 'latest').trim() || 'latest';
+        return {branches, commits, branch, commit};
+      }
+
       async function renderSelectPublishOrEdit(g, page, auth, repo) {
         const token = ++WK_EDITOR_STATE.renderToken;
         const wrap = wkEditorShell(page, 'WatermelonKatana', 'Publish this repository or edit a project already attached to it.');
@@ -1067,6 +1080,18 @@
         top.className = 'wk-editor-card';
         appendRepoBadge(top, repo);
         top.insertAdjacentHTML('beforeend', `
+          <div style="margin-top:15px;font-size:19px;font-weight:600;">Publish current repository</div>
+          <div class="wk-editor-empty">Publish <strong>${escapeHTML(repo.name)}</strong> with its repository name as the project title.</div>
+          <div class="wk-field" style="margin-top:14px;">
+            <label>Branch</label>
+            <select data-publish-branch></select>
+          </div>
+          <div class="wk-field">
+            <label>Commit</label>
+            <select data-publish-commit></select>
+            <div class="wk-readonly">Latest tracks the newest commit on the selected branch.</div>
+          </div>
+        `);        top.insertAdjacentHTML('beforeend', `
           <div style="margin-top:15px;font-size:19px;font-weight:600;">Publish current repository</div>
           <div class="wk-editor-empty">Publish <strong>${escapeHTML(repo.name)}</strong> with its repository name as the project title. Tags and the normal publishing form are skipped.</div>
         `);
@@ -1083,6 +1108,30 @@
         publishStatus.className = 'wk-editor-status';
         top.appendChild(publishStatus);
         wrap.appendChild(top);
+
+        const publishBranch = top.querySelector('[data-publish-branch]');
+        const publishCommit = top.querySelector('[data-publish-commit]');
+        const publishOptions = await loadWKRevisionOptions(repo);
+        publishBranch.innerHTML = publishOptions.branches.map(branch => `<option value="${escapeHTML(branch)}">${escapeHTML(branch)}</option>`).join('');
+        publishBranch.value = publishOptions.branch;
+        publishCommit.innerHTML =
+          '<option value="latest">Latest</option>' +
+          publishOptions.commits.map(commit => `<option value="${escapeHTML(commit.sha)}">${escapeHTML(commit.message || commit.sha.slice(0, 12))}</option>`).join('');
+        publishCommit.value = publishOptions.commit;
+        if (publishCommit.value !== publishOptions.commit) publishCommit.value = 'latest';
+        publishBranch.addEventListener('change', async () => {
+          try {
+            const next = await loadWKRevisionOptions(repo, publishBranch.value, 'latest');
+            publishBranch.innerHTML = next.branches.map(branch => `<option value="${escapeHTML(branch)}">${escapeHTML(branch)}</option>`).join('');
+            publishBranch.value = next.branch;
+            publishCommit.innerHTML =
+              '<option value="latest">Latest</option>' +
+              next.commits.map(commit => `<option value="${escapeHTML(commit.sha)}">${escapeHTML(commit.message || commit.sha.slice(0, 12))}</option>`).join('');
+            publishCommit.value = 'latest';
+          } catch (e) {
+            publishStatus.textContent = e?.message || String(e);
+          }
+        });
 
         const projectsCard = framedoc.createElement('div');
         projectsCard.className = 'wk-editor-card';
@@ -1110,7 +1159,19 @@
                 hidden: false,
                 privateRecipients: [],
                 editorProject: true,
-                editorRepository: repo.url
+                editorRepository: repo.url,
+                editorDeployment: {
+                  mode: 'editor',
+                  branch: publishBranch.value,
+                  commit: publishCommit.value || 'latest',
+                  url: '/',
+                  usePeerServer: false,
+                  peerLayer: 'peer',
+                  externalUrl: '',
+                  externalMode: 'iframe',
+                  hookUrl: '',
+                  saveEnvironmentVariables: false
+                }
               })
             });
             const data = await response.json().catch(() => ({}));
