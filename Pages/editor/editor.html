@@ -1280,9 +1280,11 @@
                 <div class="wk-field" style="margin-top:20px;"><label>GitHub repository</label><div class="wk-readonly" data-repository></div></div>
                 <div class="wk-field" style="margin-top:20px;">
                   <label>Deployment</label>
+                  <div class="wk-field"><label>Branch</label><select data-deployment-branch></select></div>
+                  <div class="wk-field"><label>Commit</label><select data-deployment-commit></select></div>
                   <div class="wk-readonly" data-deployment-summary>No deployment configured.</div>
                   <div class="wk-editor-actions" style="margin-top:10px;">
-                    <button type="button" class="wk-editor-button" data-set-deployment-preview>Set Deployment from Deployment Preview</button>
+                    <button type="button" class="wk-editor-button" data-set-deployment-preview>Use Current Deployment Preview</button>
                   </div>
                   <div class="wk-readonly" style="margin-top:7px;">Uses the exact branch and commit selected in Run &amp; Debug. This updates the WatermelonKatana publication, not <code>.editor/deployment.json</code>.</div>
                 </div>
@@ -1318,6 +1320,8 @@
         const uploadButton = card.querySelector('[data-upload-thumbnail]');
         const reloadButton = card.querySelector('[data-reload-project]');
         const deploymentSummary = card.querySelector('[data-deployment-summary]');
+        const deploymentBranchInput = card.querySelector('[data-deployment-branch]');
+        const deploymentCommitInput = card.querySelector('[data-deployment-commit]');
         const setDeploymentPreviewButton = card.querySelector('[data-set-deployment-preview]');
         let thumbValue = '';
         let loadedProject = null;
@@ -1360,7 +1364,20 @@
             updateOptimalViewVisibility();
             setThumbnail(data.thumbnail || '');
             repoEl.textContent = data.editorRepository || data.link || repo?.url || '';
-            deploymentSummary.innerHTML = deploymentFromPreviewLabel(data.editorDeployment);
+            const loadedDeployment = data.editorDeployment || {mode:'editor', branch:'main', commit:'latest', url:'/', usePeerServer:false, peerLayer:'peer', externalUrl:'', externalMode:'iframe', hookUrl:'', saveEnvironmentVariables:false};
+            const revisionOptions = await loadWKRevisionOptions(repo, loadedDeployment.branch, loadedDeployment.commit);
+            deploymentBranchInput.innerHTML = revisionOptions.branches.map(branch => `<option value="${escapeHTML(branch)}">${escapeHTML(branch)}</option>`).join('');
+            deploymentBranchInput.value = revisionOptions.branch;
+            deploymentCommitInput.innerHTML =
+              '<option value="latest">Latest</option>' +
+              revisionOptions.commits.map(commit => `<option value="${escapeHTML(commit.sha)}">${escapeHTML(commit.message || commit.sha.slice(0, 12))}</option>`).join('');
+            if (loadedDeployment.commit !== 'latest' && !revisionOptions.commits.some(commit => commit.sha === loadedDeployment.commit)) {
+              deploymentCommitInput.innerHTML += `<option value="${escapeHTML(loadedDeployment.commit)}">Pinned ${escapeHTML(String(loadedDeployment.commit).slice(0, 12))}</option>`;
+            }
+            deploymentCommitInput.value = loadedDeployment.commit || 'latest';
+            if (deploymentCommitInput.value !== (loadedDeployment.commit || 'latest')) deploymentCommitInput.value = 'latest';
+            loadedProject = {...data, editorDeployment:loadedDeployment};
+            deploymentSummary.innerHTML = deploymentFromPreviewLabel(loadedProject.editorDeployment);
             status.remove();
             form.style.display = '';
             await ensureWKProjectEditorTools();
@@ -1417,34 +1434,32 @@
             if (!repository || previewRepository !== repository) {
               throw new Error('The Deployment Preview must use this WatermelonKatana project’s GitHub repository.');
             }
-
-            const editorDeployment = {
+            const previewDeployment = {
               mode: preview.deploymentMode === 'third-party' ? 'third-party' : 'editor',
               branch: String(preview.branch),
               commit: String(preview.commit),
-              url: String(preview.url || ''),
+              url: String(preview.url || '/'),
               usePeerServer: preview.peerServer === true,
-              peerLayer: String(preview.peerLayer || ''),
+              peerLayer: String(preview.peerLayer || 'peer'),
               externalUrl: String(preview.externalUrl || ''),
               externalMode: preview.externalMode === 'emulate' ? 'emulate' : 'iframe',
               hookUrl: String(preview.hookUrl || ''),
               saveEnvironmentVariables: preview.saveEnvironmentVariables === true
             };
-
-            const response = await fetch('/api/project/deployment/' + encodeURIComponent(projectId), {
-              method:'PUT',
-              headers:{'Content-Type':'application/json'},
-              body:JSON.stringify({editorDeployment})
-            });
-            const data = await response.json().catch(() => ({}));
-            if (!response.ok) {
-              throw new Error(data?.error ? `${data.message || 'Deployment not updated'}. ${data.error}` : (data?.message || `Deployment update failed (${response.status}).`));
+            const revisionOptions = await loadWKRevisionOptions(repo, previewDeployment.branch, previewDeployment.commit);
+            deploymentBranchInput.innerHTML = revisionOptions.branches.map(branch => `<option value="${escapeHTML(branch)}">${escapeHTML(branch)}</option>`).join('');
+            deploymentBranchInput.value = revisionOptions.branch;
+            deploymentCommitInput.innerHTML =
+              '<option value="latest">Latest</option>' +
+              revisionOptions.commits.map(commit => `<option value="${escapeHTML(commit.sha)}">${escapeHTML(commit.message || commit.sha.slice(0, 12))}</option>`).join('');
+            if (previewDeployment.commit !== 'latest' && !revisionOptions.commits.some(commit => commit.sha === previewDeployment.commit)) {
+              deploymentCommitInput.innerHTML += `<option value="${escapeHTML(previewDeployment.commit)}">Pinned ${escapeHTML(previewDeployment.commit.slice(0, 12))}</option>`;
             }
-
-            loadedProject = {...loadedProject, editorDeployment: data.editorDeployment || editorDeployment};
-            deploymentSummary.innerHTML = deploymentFromPreviewLabel(loadedProject.editorDeployment);
+            deploymentCommitInput.value = previewDeployment.commit;
+            loadedProject.editorDeployment = previewDeployment;
+            deploymentSummary.innerHTML = deploymentFromPreviewLabel(previewDeployment);
             saveStatus.className = 'wk-editor-status wk-editor-success';
-            saveStatus.textContent = 'Deployment set from the current preview.';
+            saveStatus.textContent = 'Deployment preview copied into the project editor. Save changes to publish it.';
           } catch (e) {
             saveStatus.className = 'wk-editor-status wk-editor-error';
             saveStatus.textContent = e?.message || String(e);
@@ -1488,7 +1503,19 @@
                 privateRecipients:[],
                 editorProject:true,
                 editorRepository:repository,
-                editorDeployment:loadedProject.editorDeployment || null,
+                editorDeployment: {
+                  ...(loadedProject.editorDeployment || {}),
+                  mode: loadedProject.editorDeployment?.mode === 'third-party' ? 'third-party' : 'editor',
+                  branch: deploymentBranchInput.value,
+                  commit: deploymentCommitInput.value || 'latest',
+                  url: loadedProject.editorDeployment?.url || '/',
+                  usePeerServer: loadedProject.editorDeployment?.usePeerServer === true,
+                  peerLayer: loadedProject.editorDeployment?.peerLayer || 'peer',
+                  externalUrl: loadedProject.editorDeployment?.externalUrl || '',
+                  externalMode: loadedProject.editorDeployment?.externalMode === 'emulate' ? 'emulate' : 'iframe',
+                  hookUrl: loadedProject.editorDeployment?.hookUrl || '',
+                  saveEnvironmentVariables: loadedProject.editorDeployment?.saveEnvironmentVariables === true
+                },
                 optimalViewSize:{
                   enabled:optimalUseInput.checked,
                   width:Math.max(1, Number(optimalWidthInput.value) || 1),
