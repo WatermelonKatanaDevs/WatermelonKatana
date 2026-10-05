@@ -85,6 +85,10 @@ const ProjectSchema = new Mongoose.Schema({
     commit: String,
     path: String,
     externalUrl: String,
+    usePeerServer: {
+      type: Boolean,
+      default: false,
+    },
   },
   optimalViewSize: {
     enabled: { type: Boolean, default: false },
@@ -147,7 +151,8 @@ const ProjectSchema = new Mongoose.Schema({
           externalUrl: String(deployment.externalUrl || ''),
           branch: String(deployment.branch || ''),
           commit: String(deployment.commit || ''),
-          path: String(deployment.path || '/')
+          path: String(deployment.path || '/'),
+          usePeerServer: deployment.usePeerServer === true
         };
       } else {
         container.editorDeployment = null;
