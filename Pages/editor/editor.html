@@ -852,10 +852,11 @@
         if (!deployment?.commit) return 'No deployment configured.';
         const commit = escapeHTML(String(deployment.commit).slice(0, 12));
         const branch = escapeHTML(String(deployment.branch || ''));
-        const mode = deployment.mode === 'third-party'
+        const thirdParty = deployment.thirdParty === true || deployment.mode === 'third-party';
+        const mode = thirdParty
           ? 'Third Party'
           : 'Editor';
-        const target = deployment.mode === 'third-party'
+        const target = thirdParty
           ? String(deployment.externalUrl || '')
           : String(deployment.path || '');
         return `<strong>${mode}</strong> · ${escapeHTML(branch)} @ <code>${commit}</code><br><span style="color:#aaa;">${escapeHTML(target || 'No target URL')}</span>`;
@@ -1168,10 +1169,10 @@
                 editorProject: true,
                 editorRepository: repo.url,
                 editorDeployment: {
-                  mode: 'editor',
+                  thirdParty: false,
                   branch: publishBranch.value,
                   commit: publishCommit.value || 'latest',
-                  url: '/',
+                  path: '/',
                   usePeerServer: false,
                   peerLayer: 'peer',
                   externalUrl: '',
@@ -1388,8 +1389,8 @@
             updateOptimalViewVisibility();
             setThumbnail(data.thumbnail || '');
             repoEl.textContent = data.editorRepository || data.link || repo?.url || '';
-            const loadedDeployment = data.editorDeployment || {mode:'editor', branch:'main', commit:'latest', path:'/', usePeerServer:false, peerLayer:'peer', externalUrl:'', externalMode:'iframe', saveEnvironmentVariables:false};
-            deploymentModeInput.value = loadedDeployment.mode === 'third-party' ? 'third-party' : 'editor';
+            const loadedDeployment = data.editorDeployment || {thirdParty:false, branch:'main', commit:'latest', path:'/', usePeerServer:false, peerLayer:'peer', externalUrl:'', externalMode:'iframe', saveEnvironmentVariables:false};
+            deploymentModeInput.value = loadedDeployment.thirdParty === true || loadedDeployment.mode === 'third-party' ? 'third-party' : 'editor';
             deploymentPathInput.value = loadedDeployment.path || '/';
             deploymentExternalUrlInput.value = loadedDeployment.externalUrl || '';
             syncDeploymentMode();
@@ -1458,25 +1459,32 @@
           saveStatus.textContent = 'Reading Deployment Preview…';
           try {
             const preview = await editor.EditorApp?.getDeploymentPreview?.();
-            if (!preview?.github || !preview.branch || !preview.commit) {
+            const previewThirdParty = preview?.deploymentMode === 'third-party';
+            if (!previewThirdParty && (!preview?.github || !preview.branch || !preview.commit)) {
               throw new Error('Configure a Deployment Preview with a GitHub repository, branch, and commit first.');
             }
-            const repository = normalizeWKRepository(loadedProject.editorRepository || loadedProject.link || repo?.url);
-            const previewRepository = normalizeWKRepository(preview.github);
-            if (!repository || previewRepository !== repository) {
-              throw new Error('The Deployment Preview must use this WatermelonKatana project’s GitHub repository.');
+            if (!previewThirdParty) {
+              const repository = normalizeWKRepository(loadedProject.editorRepository || loadedProject.link || repo?.url);
+              const previewRepository = normalizeWKRepository(preview.github);
+              if (!repository || previewRepository !== repository) {
+                throw new Error('The Deployment Preview must use this WatermelonKatana project’s GitHub repository.');
+              }
             }
+            const existingDeployment = loadedProject.editorDeployment || {};
             const previewDeployment = {
-              mode: preview.deploymentMode === 'third-party' ? 'third-party' : 'editor',
-              branch: String(preview.branch),
-              commit: String(preview.commitSelection || preview.commit || 'latest'),
-              path: String(preview.path || '/'),
-              usePeerServer: preview.peerServer === true,
-              peerLayer: String(preview.peerLayer || 'peer'),
-              externalUrl: String(preview.externalUrl || ''),
+              thirdParty: previewThirdParty,
+              branch: String(preview.branch || existingDeployment.branch || repo?.branch || 'main'),
+              commit: String(preview.commitSelection || preview.commit || existingDeployment.commit || 'latest'),
+              path: String(preview.path || existingDeployment.path || '/'),
+              usePeerServer: preview.peerServer === true || existingDeployment.usePeerServer === true,
+              peerLayer: String(preview.peerLayer || existingDeployment.peerLayer || 'peer'),
+              externalUrl: String(preview.externalUrl || preview.url || existingDeployment.externalUrl || ''),
               externalMode: preview.externalMode === 'emulate' ? 'emulate' : 'iframe',
-              saveEnvironmentVariables: preview.saveEnvironmentVariables === true
+              saveEnvironmentVariables: preview.saveEnvironmentVariables === true || existingDeployment.saveEnvironmentVariables === true
             };
+            if (previewThirdParty && !previewDeployment.externalUrl) {
+              throw new Error('Set a third-party deployment URL before copying Deployment Preview.');
+            }
             const revisionOptions = await loadWKRevisionOptions(repo, previewDeployment.branch, previewDeployment.commit);
             deploymentBranchInput.innerHTML = revisionOptions.branches.map(branch => `<option value="${escapeHTML(branch)}">${escapeHTML(branch)}</option>`).join('');
             deploymentBranchInput.value = revisionOptions.branch;
@@ -1535,15 +1543,15 @@
                 editorProject:true,
                 editorRepository:repository,
                 editorDeployment: {
-                  mode: deploymentModeInput.value === 'third-party' ? 'third-party' : 'editor',
-                  branch: deploymentModeInput.value === 'editor' ? deploymentBranchInput.value : '',
-                  commit: deploymentModeInput.value === 'editor' ? (deploymentCommitInput.value || 'latest') : '',
-                  path: deploymentModeInput.value === 'editor' ? (deploymentPathInput.value || '/') : '',
-                  usePeerServer: deploymentModeInput.value === 'editor' ? (loadedProject.editorDeployment?.usePeerServer === true) : false,
+                  thirdParty: deploymentModeInput.value === 'third-party',
+                  branch: deploymentBranchInput.value,
+                  commit: deploymentCommitInput.value || 'latest',
+                  path: deploymentPathInput.value || '/',
+                  usePeerServer: loadedProject.editorDeployment?.usePeerServer === true,
                   peerLayer: loadedProject.editorDeployment?.peerLayer || 'peer',
-                  externalUrl: deploymentModeInput.value === 'third-party' ? deploymentExternalUrlInput.value.trim() : '',
+                  externalUrl: deploymentExternalUrlInput.value.trim(),
                   externalMode: 'iframe',
-                  saveEnvironmentVariables: deploymentModeInput.value === 'editor' ? (loadedProject.editorDeployment?.saveEnvironmentVariables === true) : false
+                  saveEnvironmentVariables: loadedProject.editorDeployment?.saveEnvironmentVariables === true
                 },
                 optimalViewSize:{
                   enabled:optimalUseInput.checked,
