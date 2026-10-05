@@ -28,6 +28,55 @@ function normalizeGithubRepository(value) {
   }
 }
 
+function normalizeEditorDeployment(value) {
+  if (value == null) return null;
+  if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("Editor deployment must be an object.");
+
+  const mode = value.mode === "third-party" ? "third-party" : value.mode === "editor" ? "editor" : "";
+  const branch = String(value.branch || "").trim();
+  const commit = String(value.commit || "").trim();
+  const url = String(value.url || "").trim();
+  const externalUrl = String(value.externalUrl || "").trim();
+  const externalMode = value.externalMode === "emulate" ? "emulate" : value.externalMode === "iframe" ? "iframe" : "";
+  const peerLayer = String(value.peerLayer || "").trim();
+  const hookUrl = String(value.hookUrl || "").trim();
+
+  if (!mode) throw new Error("Editor deployment mode is invalid.");
+  if (!branch) throw new Error("Editor deployment branch is required.");
+  if (!commit || commit === "latest") throw new Error("Editor deployment requires an exact commit.");
+  if (!url) throw new Error("Editor deployment URL is required.");
+  if (!peerLayer) throw new Error("Editor deployment peer layer is required.");
+  if (!externalMode) throw new Error("Editor deployment external mode is invalid.");
+  if (mode === "third-party" && !externalUrl) throw new Error("Third-party Editor deployments require a deployment URL.");
+
+  for (const [label, raw, allowBlank] of [
+    ["deployment URL", url, false],
+    ["third-party deployment URL", externalUrl, true],
+    ["deployment hook URL", hookUrl, true]
+  ]) {
+    if (!raw && allowBlank) continue;
+    try {
+      const parsed = new URL(raw);
+      if (!/^https?:$/i.test(parsed.protocol)) throw new Error();
+    } catch (_) {
+      throw new Error(`Editor ${label} must be a valid HTTP(S) URL.`);
+    }
+  }
+
+  return {
+    mode,
+    branch,
+    commit,
+    url,
+    usePeerServer: value.usePeerServer === true,
+    peerLayer,
+    externalUrl,
+    externalMode,
+    hookUrl,
+    saveEnvironmentVariables: value.saveEnvironmentVariables === true
+  };
+}
+
 module.exports = class extends PostAPI {
   constructor(model) {
     super(model,"projects")
@@ -67,7 +116,7 @@ processLink(link,thumbnail) {
 }
   
 async publish(req, res, next) {
-  var { title, link, content, thumbnail, tags, mature, hidden, privateRecipients, platform, editorProject, editorRepository, optimalViewSize } = req.body;
+  var { title, link, content, thumbnail, tags, mature, hidden, privateRecipients, platform, editorProject, editorRepository, editorDeployment, optimalViewSize } = req.body;
   console.log(title,link,thumbnail);
   try {
     const uid = res.locals.userToken.id;
@@ -84,8 +133,17 @@ async publish(req, res, next) {
         error: "A valid GitHub repository is required for an Editor project",
       });
       link = editorRepository;
+      try {
+        editorDeployment = editorDeployment == null ? null : normalizeEditorDeployment(editorDeployment);
+      } catch (error) {
+        return res.status(400).json({
+          message: "Project not successfully published",
+          error: error.message,
+        });
+      }
     } else {
       editorRepository = "";
+      editorDeployment = null;
     }
     if (!link.match(/^https?:\/\/[^\s"'<>]+$/)) return res.status(400).json({
       message: "Project not successfully published",
@@ -108,6 +166,7 @@ async publish(req, res, next) {
       platform: editorProject ? "editor" : e.platform,
       editorProject,
       editorRepository,
+      editorDeployment,
       optimalViewSize: e.platform === "cdo"
         ? (normalizeOptimalViewSize(optimalViewSize, {enabled:true,width:1,height:1,mode:"ratio"}))
         : normalizeOptimalViewSize(optimalViewSize, null),
@@ -137,7 +196,7 @@ async publish(req, res, next) {
 };
 
 async update(req, res, next) {
-  var { title, link, content, thumbnail, tags, mature, hidden, privateRecipients, platform, editorProject, editorRepository, optimalViewSize } = req.body;
+  var { title, link, content, thumbnail, tags, mature, hidden, privateRecipients, platform, editorProject, editorRepository, editorDeployment, optimalViewSize } = req.body;
   console.log(title,link,thumbnail);
   try {
     const pid = req.params.id;
@@ -158,8 +217,21 @@ async update(req, res, next) {
         error: "A valid GitHub repository is required for an Editor project",
       });
       link = editorRepository;
+      if (editorDeployment !== undefined) {
+        try {
+          editorDeployment = editorDeployment == null ? null : normalizeEditorDeployment(editorDeployment);
+        } catch (error) {
+          return res.status(400).json({
+            message: "Project not successfully updated",
+            error: error.message,
+          });
+        }
+      } else {
+        editorDeployment = project.editorDeployment || null;
+      }
     } else {
       editorRepository = "";
+      editorDeployment = null;
     }
     if (!link.match(/^https?:\/\/[^\s"'<>]+$/)) return res.status(400).json({
       message: "Project not successfully updated",
@@ -181,6 +253,7 @@ async update(req, res, next) {
     project.platform = editorProject ? "editor" : e.platform;
     project.editorProject = editorProject;
     project.editorRepository = editorRepository;
+    project.editorDeployment = editorDeployment;
     if (optimalViewSize !== undefined) {
       project.optimalViewSize = normalizeOptimalViewSize(optimalViewSize, project.optimalViewSize);
     }
