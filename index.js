@@ -183,10 +183,6 @@ app.get("/editor/project/:id/deployment", checkAuth, async (req, res) => {
 
     const params = new URLSearchParams({
       deploymentMode: thirdParty ? 'third-party' : 'editor',
-      externalMode: String(deployment.externalMode || 'iframe'),
-      peerServer: !thirdParty && deployment.usePeerServer ? '1' : '0',
-      peerLayer: String(deployment.peerLayer || 'peer'),
-      saveEnvironmentVariables: !thirdParty && deployment.saveEnvironmentVariables ? '1' : '0',
       projectId: String(project._id)
     });
     if (thirdParty) {
