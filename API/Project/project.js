@@ -43,59 +43,57 @@ function normalizeDeploymentPath(value) {
   }
 }
 
+function normalizeDeploymentPath(value) {
+  const raw = String(value ?? '').trim();
+  if (!raw) return '/';
+  try {
+    const parsed = new URL(raw, 'http://deployment.local');
+    let path = parsed.pathname || '/';
+    if (!path.startsWith('/')) path = '/' + path;
+    const suffix = (parsed.search || '') + (parsed.hash || '');
+    return (path === '/' ? '/' : path.replace(/\/+$/, '')) + suffix;
+  } catch (_) {
+    const path = raw.startsWith('/') ? raw : '/' + raw;
+    return path === '/' ? '/' : path.replace(/\/+$/, '');
+  }
+}
+
 function normalizeEditorDeployment(value, fallback = null) {
   if (value == null) return null;
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    throw new Error('Editor deployment must be an object.');
-  }
-
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Editor deployment must be an object.');
   const source = { ...(fallback || {}), ...value };
   const mode = source.mode === 'third-party' ? 'third-party' : 'editor';
-  const branch = String(source.branch || '').trim();
-  const commit = String(source.commit || 'latest').trim() || 'latest';
-  const path = normalizeDeploymentPath(source.path ?? source.url ?? '/');
   const usePeerServer = source.usePeerServer === true;
   const peerLayer = String(source.peerLayer || 'peer').trim() || 'peer';
   const externalUrl = String(source.externalUrl || '').trim();
   const externalMode = source.externalMode === 'emulate' ? 'emulate' : 'iframe';
-  const hookUrl = String(source.hookUrl || '').trim();
-
-  if (!branch) throw new Error('Editor deployment branch is required.');
-  if (!/^(latest|[0-9a-f]{7,40})$/i.test(commit)) {
-    throw new Error('Editor deployment commit must be "latest" or a commit SHA.');
-  }
-  if (mode === 'third-party' && !externalUrl) {
-    throw new Error('Third-party Editor deployments require a deployment URL.');
-  }
-
-  try {
-    if (externalUrl) {
+  if (mode === 'third-party') {
+    if (!externalUrl) throw new Error('Third-party Editor deployments require a deployment URL.');
+    try {
       const parsed = new URL(externalUrl);
       if (!/^https?:$/i.test(parsed.protocol)) throw new Error();
+    } catch (_) {
+      throw new Error('Editor third-party deployment URL must be a valid HTTP(S) URL.');
     }
-  } catch (_) {
-    throw new Error('Editor third-party deployment URL must be a valid HTTP(S) URL.');
+    return {
+      mode,
+      branch: '',
+      commit: '',
+      path: '',
+      usePeerServer: false,
+      peerLayer,
+      externalUrl,
+      externalMode: 'iframe',
+      saveEnvironmentVariables: false
+    };
   }
-
-  try {
-    if (hookUrl) {
-      const parsed = new URL(hookUrl);
-      if (!/^https?:$/i.test(parsed.protocol)) throw new Error();
-    }
-  } catch (_) {
-    throw new Error('Editor deployment hook URL must be a valid HTTP(S) URL.');
-  }
-
+  const branch = String(source.branch || '').trim();
+  const commit = String(source.commit || 'latest').trim() || 'latest';
+  const path = normalizeDeploymentPath(source.path ?? source.url ?? '/');
+  if (!branch) throw new Error('Editor deployment branch is required.');
+  if (!/^(latest|[0-9a-f]{7,40})$/i.test(commit)) throw new Error('Editor deployment commit must be "latest" or a commit SHA.');
   return {
-    mode,
-    branch,
-    commit,
-    path,
-    usePeerServer,
-    peerLayer,
-    externalUrl,
-    externalMode,
-    hookUrl,
+    mode, branch, commit, path, usePeerServer, peerLayer, externalUrl: '', externalMode,
     saveEnvironmentVariables: source.saveEnvironmentVariables === true
   };
 }
