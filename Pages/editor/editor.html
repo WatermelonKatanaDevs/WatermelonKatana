@@ -1091,9 +1091,6 @@
             <select data-publish-commit></select>
             <div class="wk-readonly">Latest tracks the newest commit on the selected branch.</div>
           </div>
-        `);        top.insertAdjacentHTML('beforeend', `
-          <div style="margin-top:15px;font-size:19px;font-weight:600;">Publish current repository</div>
-          <div class="wk-editor-empty">Publish <strong>${escapeHTML(repo.name)}</strong> with its repository name as the project title. Tags and the normal publishing form are skipped.</div>
         `);
         const publishActions = framedoc.createElement('div');
         publishActions.className = 'wk-editor-actions';
@@ -1142,6 +1139,16 @@
 
         publishButton.addEventListener('click', async () => {
           if (publishButton.disabled) return;
+          if (!publishBranch.value) {
+            publishStatus.className = 'wk-editor-status wk-editor-error';
+            publishStatus.textContent = 'Choose a GitHub branch.';
+            return;
+          }
+          if (!publishCommit.value || (publishCommit.value === 'latest' && publishOptions.commits.length === 0)) {
+            publishStatus.className = 'wk-editor-status wk-editor-error';
+            publishStatus.textContent = 'Choose a commit on the selected branch before publishing.';
+            return;
+          }
           publishButton.disabled = true;
           publishStatus.className = 'wk-editor-status';
           publishStatus.textContent = 'Publishing repository…';
