@@ -163,39 +163,40 @@ app.get("/editor/project/:id/deployment", checkAuth, async (req, res) => {
     if (project.mature && !owner && !viewer?.mature) return sendEditorForbidden(res);
 
     const deployment = project.editorDeployment;
-    if (
-      !deployment ||
-      !['editor', 'third-party'].includes(String(deployment.mode || '')) ||
+    if (!deployment || !['editor', 'third-party'].includes(String(deployment.mode || ''))) {
+      return res.status(409).send('This WatermelonKatana project does not have a configured deployment.');
+    }
+    if (deployment.mode === 'third-party') {
+      if (!String(deployment.externalUrl || '').trim()) {
+        return res.status(409).send('This WatermelonKatana project has an incomplete third-party deployment configuration.');
+      }
+    } else if (
       !String(deployment.branch || '').trim() ||
       !String(deployment.commit || '').trim() ||
+      !String(deployment.path || '').trim() ||
       !String(deployment.peerLayer || '').trim() ||
       !['iframe', 'emulate'].includes(String(deployment.externalMode || ''))
     ) {
       return res.status(409).send('This WatermelonKatana project does not have a configured deployment.');
     }
-    if (deployment.mode === 'third-party' && !String(deployment.externalUrl || '').trim()) {
-      return res.status(409).send('This WatermelonKatana project has an incomplete third-party deployment configuration.');
-    }
-    if (deployment.mode === 'editor' && !String(deployment.path || '').trim()) {
-      return res.status(409).send('This WatermelonKatana project does not have an Editor deployment path.');
-    }
 
     const params = new URLSearchParams({
-      github: String(project.editorRepository),
-      branch: String(deployment.branch),
-      commit: String(deployment.commit),
       deploymentMode: String(deployment.mode),
-      externalMode: String(deployment.externalMode),
-      peerServer: deployment.usePeerServer ? '1' : '0',
-      peerLayer: String(deployment.peerLayer),
-      saveEnvironmentVariables: deployment.saveEnvironmentVariables ? '1' : '0',
+      externalMode: String(deployment.externalMode || 'iframe'),
+      peerServer: deployment.mode === 'editor' && deployment.usePeerServer ? '1' : '0',
+      peerLayer: String(deployment.peerLayer || 'peer'),
+      saveEnvironmentVariables: deployment.mode === 'editor' && deployment.saveEnvironmentVariables ? '1' : '0',
       projectId: String(project._id)
     });
     if (deployment.mode === 'third-party') {
       params.set('url', String(deployment.externalUrl));
     } else {
-      params.set('path', String(deployment.path || '/'));
+      params.set('github', String(project.editorRepository));
+      params.set('branch', String(deployment.branch));
+      params.set('commit', String(deployment.commit));
+      params.set('path', String(deployment.path));
     }
+
 
     const src = "/editor/deployment.html?" + params.toString();
     sendFileReplace(
