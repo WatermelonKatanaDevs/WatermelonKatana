@@ -333,7 +333,7 @@
           method: 'POST',
           body: JSON.stringify({
             title: name.value,
-            link: editorProject.checked ? (selectedGithub?.htmlUrl || link.value) : link.value,
+             link: editorProject.checked ? (selectedGithub ? `https://github.com/${selectedGithub.fullName}` : link.value) : link.value,
             content: desc.value,
             thumbnail: thumb.value,
             tags: taglist,
@@ -341,7 +341,7 @@
             hidden: hidden.checked,
             privateRecipients: [],
             editorProject: editorProject.checked,
-            editorRepository: selectedGithub?.htmlUrl || (editorProject.checked ? link.value : ""),
+             editorRepository: editorProject.checked && selectedGithub ? `https://github.com/${selectedGithub.fullName}` : (editorProject.checked ? link.value : ""),
             editorDeployment: editorProject.checked ? {
               mode: 'editor',
               branch: editorBranch.value,
