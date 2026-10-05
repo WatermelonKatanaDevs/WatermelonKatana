@@ -857,7 +857,7 @@
           : 'Editor';
         const target = deployment.mode === 'third-party'
           ? String(deployment.externalUrl || '')
-          : String(deployment.path || deployment.url || '');
+          : String(deployment.path || '');
         return `<strong>${mode}</strong> · ${escapeHTML(branch)} @ <code>${commit}</code><br><span style="color:#aaa;">${escapeHTML(target || 'No target URL')}</span>`;
       }
 
