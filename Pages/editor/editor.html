@@ -1444,7 +1444,7 @@
             const previewDeployment = {
               mode: preview.deploymentMode === 'third-party' ? 'third-party' : 'editor',
               branch: String(preview.branch),
-              commit: String(preview.commit),
+              commit: String(preview.commitSelection || preview.commit || 'latest'),
               url: String(preview.url || '/'),
               usePeerServer: preview.peerServer === true,
               peerLayer: String(preview.peerLayer || 'peer'),
