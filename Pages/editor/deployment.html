@@ -19,14 +19,6 @@
     try {
       const deploymentURL = new URL(frame.src, location.href);
       const params = deploymentURL.searchParams;
-      // Run & Debug can opt the deployment into the peer server with the
-      // outer page's query parameter. The peer layer itself remains in
-      // /.editor/config.json and is read by the deployment document.
-      const usePeerServer = new URLSearchParams(location.search).get('usePeerServer');
-      if (usePeerServer === '1' || usePeerServer === '0') {
-        params.set('usePeerServer', usePeerServer);
-        frame.src = deploymentURL.href;
-      }
       const thirdPartyURL = params.get("url");
       if (params.get("deploymentMode") === "third-party" && thirdPartyURL) {
         const target = new URL(thirdPartyURL, location.href);
