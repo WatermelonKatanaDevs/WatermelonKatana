@@ -146,7 +146,15 @@ const ProjectSchema = new Mongoose.Schema({
       container.platform = this.platform;
       container.editorProject = this.editorProject;
       container.editorRepository = this.editorRepository;
-      container.editorDeployment = this.editorDeployment || null;
+      if (this.editorDeployment) {
+        const deployment = this.editorDeployment.toObject
+          ? this.editorDeployment.toObject()
+          : { ...this.editorDeployment };
+        delete deployment.hookUrl;
+        container.editorDeployment = deployment;
+      } else {
+        container.editorDeployment = null;
+      }
       container.optimalViewSize = {
         enabled: !!this.optimalViewSize?.enabled,
         width: Number(this.optimalViewSize?.width) || 1,
