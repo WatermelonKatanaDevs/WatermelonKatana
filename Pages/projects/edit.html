@@ -132,6 +132,8 @@
       const descPreview = document.querySelector("#descPreview");
       const thumb = document.querySelector("#thumb");
 
+      function escapeHTML(value) { return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+
       function renderDescriptionPreview() {
         descPreview.innerHTML = convertMarkdown(desc.value || "");
       }
