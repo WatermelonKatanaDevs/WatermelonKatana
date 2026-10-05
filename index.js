@@ -138,50 +138,6 @@ app.get("/publish", userAuth, makeFormToken, (req, res) => res.sendFile(cldir + 
 const Projects = require("./Database/model/Projects");
 
 
-/**
- * Temporary migration for the Editor deployment data schema.
- * Converts legacy deployment records to the five-field representation.
- * Remove this block after the production database has been migrated.
- */
-async function migrateEditorDeployments() {
-  const cursor = Projects.collection.find({
-    editorProject: true,
-    editorDeployment: { $exists: true },
-    $or: [
-      { "editorDeployment.thirdParty": { $exists: false } },
-      { "editorDeployment.mode": { $exists: true } },
-      { "editorDeployment.usePeerServer": { $exists: true } },
-      { "editorDeployment.peerLayer": { $exists: true } },
-      { "editorDeployment.externalMode": { $exists: true } },
-      { "editorDeployment.saveEnvironmentVariables": { $exists: true } },
-      { "editorDeployment.hookUrl": { $exists: true } }
-    ]
-  });
-
-  let migrated = 0;
-  for await (const project of cursor) {
-    const deployment = project.editorDeployment || {};
-    const normalized = {
-      thirdParty: deployment.thirdParty === true || deployment.mode === "third-party",
-      externalUrl: String(deployment.externalUrl || ""),
-      branch: String(deployment.branch || ""),
-      commit: String(deployment.commit || "latest"),
-      path: String(deployment.path ?? deployment.url ?? "/")
-    };
-
-    await Projects.collection.updateOne(
-      { _id: project._id },
-      { $set: { editorDeployment: normalized } }
-    );
-    migrated++;
-  }
-
-  console.log(logInfo(`Editor deployment migration complete: ${migrated} project(s) migrated.`));
-}
-
-databaseReady
-  .then(migrateEditorDeployments)
-  .catch(error => console.error("Editor deployment migration failed:", error));
 
 function sendEditorForbidden(res) {
   return res.status(403).sendFile(__dirname + "/Middleware/403.html");
@@ -209,7 +165,7 @@ app.get("/editor/project/:id/deployment", checkAuth, async (req, res) => {
     if (project.mature && !owner && !viewer?.mature) return sendEditorForbidden(res);
 
     const deployment = project.editorDeployment;
-    const thirdParty = deployment?.thirdParty === true || deployment?.mode === 'third-party';
+    const thirdParty = deployment?.thirdParty === true;
     if (!deployment) {
       return res.status(409).send('This WatermelonKatana project does not have a configured deployment.');
     }
