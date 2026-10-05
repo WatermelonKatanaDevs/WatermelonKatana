@@ -76,6 +76,24 @@ const ProjectSchema = new Mongoose.Schema({
     type: String,
     default: "",
   },
+  editorDeployment: {
+    mode: {
+      type: String,
+      enum: ["editor", "third-party"],
+    },
+    branch: String,
+    commit: String,
+    url: String,
+    usePeerServer: Boolean,
+    peerLayer: String,
+    externalUrl: String,
+    externalMode: {
+      type: String,
+      enum: ["iframe", "emulate"],
+    },
+    hookUrl: String,
+    saveEnvironmentVariables: Boolean,
+  },
   optimalViewSize: {
     enabled: { type: Boolean, default: false },
     width: { type: Number, default: 1 },
