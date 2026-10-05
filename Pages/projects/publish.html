@@ -50,6 +50,14 @@
       </div>
       <span id="githubSelection"></span>
     </div>
+    <div id="editorDeployment" style="display:none; margin:12px 0; padding:12px; border:1px solid var(--palette-background-item); border-radius:8px;">
+      <b>GitHub revision</b><br>
+      <label for="editorBranch">Branch</label><br>
+      <select id="editorBranch" style="max-width:520px;"></select><br>
+      <label for="editorCommit">Commit</label><br>
+      <select id="editorCommit" style="max-width:520px;"><option value="latest">Latest</option></select>
+      <div style="opacity:.7; margin-top:6px;">Latest resolves to the newest commit on the selected branch each time the project is loaded.</div>
+    </div>
     <div id="linkField">
       <label for="link">Link</label><br>
       <input type="text" id="link" required><br>
@@ -94,8 +102,13 @@
     const githubSearch = document.querySelector('#githubSearch');
     const githubRepoList = document.querySelector('#githubRepoList');
     const githubSelection = document.querySelector('#githubSelection');
+    const editorDeployment = document.querySelector('#editorDeployment');
+    const editorBranch = document.querySelector('#editorBranch');
+    const editorCommit = document.querySelector('#editorCommit');
     let selectedGithub = null;
     let githubRepos = [];
+    let editorBranches = [];
+    let editorCommits = [];
     let manualLink = '';
     const desc = document.querySelector('#desc');
     const descPreview = document.querySelector('#descPreview');
@@ -151,6 +164,43 @@
       githubSelection.textContent = repo ? `Selected: ${repo.fullName}` : '';
       githubSignIn.textContent = repo ? 'Change GitHub account' : 'Sign in with GitHub';
     }
+
+    async function loadEditorRevisionOptions() {
+      if (!selectedGithub) {
+        editorDeployment.style.display = 'none';
+        editorBranch.innerHTML = '';
+        editorCommit.innerHTML = '<option value="latest">Latest</option>';
+        editorBranches = [];
+        editorCommits = [];
+        return;
+      }
+      editorDeployment.style.display = '';
+      const github = await githubConfig();
+      try {
+        editorBranches = await github.listBranches(selectedGithub.owner, selectedGithub.name || selectedGithub.repo);
+      } catch (_) {
+        editorBranches = [];
+      }
+      const defaultBranch = String(selectedGithub.defaultBranch || editorBranches[0] || 'main');
+      if (!editorBranches.includes(defaultBranch)) editorBranches.unshift(defaultBranch);
+      editorBranch.innerHTML = editorBranches.map(branch => `<option value="${escapeHTML(branch)}">${escapeHTML(branch)}</option>`).join('');
+      editorBranch.value = defaultBranch;
+      await loadEditorCommits();
+    }
+
+    async function loadEditorCommits() {
+      if (!selectedGithub || !editorBranch.value) return;
+      const github = await githubConfig();
+      try {
+        editorCommits = await github.listCommits(selectedGithub.owner, selectedGithub.name || selectedGithub.repo, editorBranch.value, 30);
+      } catch (_) {
+        editorCommits = [];
+      }
+      editorCommit.innerHTML =
+        '<option value="latest">Latest</option>' +
+        editorCommits.map(commit => `<option value="${escapeHTML(commit.sha)}">${escapeHTML(commit.message || commit.sha.slice(0, 12))}</option>`).join('');
+      editorCommit.value = 'latest';
+    }
     function renderGithubRepoList() {
       const query = githubSearch.value.trim().toLowerCase();
       const filtered = githubRepos.filter(repo => {
@@ -168,6 +218,7 @@
           selectedGithub = githubRepos[Number(button.dataset.repoIndex)] || null;
           renderGithubSelection();
           renderGithubRepoList();
+          loadEditorRevisionOptions().catch(e => display.textContent = e?.message || String(e));
         };
       });
     }
@@ -215,6 +266,7 @@
       }
     }
     editorProject.onchange = () => applyEditorProjectMode(editorProject.checked);
+    editorBranch.onchange = () => loadEditorCommits().catch(e => display.textContent = e?.message || String(e));
     githubSignIn.onclick = async () => {
       try {
         display.textContent = '';
@@ -260,6 +312,10 @@
       display.textContent = '';
       if (editorProject.checked && !selectedGithub)
         return (display.textContent = "Choose a GitHub repository first");
+      if (editorProject.checked && !editorBranch.value)
+        return (display.textContent = "Choose a GitHub branch");
+      if (editorProject.checked && !editorCommit.value)
+        return (display.textContent = "Choose a GitHub commit");
       if (!editorProject.checked && !link.value.match(/^https?:\/\/[^"]+$/))
         return (display.textContent = "Link is not a vaild URL");
       if (thumb.value && !thumb.value.match(/^https?:\/\/[^"]+$/) && !thumb.value.match(/^\/api\/media\/[^"]+$/))
@@ -284,6 +340,18 @@
             privateRecipients: [],
             editorProject: editorProject.checked,
             editorRepository: selectedGithub?.htmlUrl || (editorProject.checked ? link.value : ""),
+            editorDeployment: editorProject.checked ? {
+              mode: 'editor',
+              branch: editorBranch.value,
+              commit: editorCommit.value || 'latest',
+              url: '/',
+              usePeerServer: false,
+              peerLayer: 'peer',
+              externalUrl: '',
+              externalMode: 'iframe',
+              hookUrl: '',
+              saveEnvironmentVariables: false
+            } : null
           }),
           headers: { 'Content-Type': 'application/json' }
         });
