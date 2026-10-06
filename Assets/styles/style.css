@@ -255,6 +255,8 @@ textarea:focus,
 	min-height: 0;
 	max-height: none;
 	overflow: auto;
+	overflow-wrap: anywhere;
+	word-break: break-word;
 	padding: 12px;
 	border: 2px solid var(--palette-midtone);
 	border-radius: 5px;
