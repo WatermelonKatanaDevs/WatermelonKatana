@@ -187,7 +187,8 @@ app.get("/editor/project/:id/deployment", checkAuth, async (req, res) => {
         github: String(project.editorRepository),
         branch: String(deployment.branch),
         commit: String(deployment.commit),
-        path: String(deployment.path)
+        path: String(deployment.path),
+        usePeerServer: deployment.usePeerServer === true ? '1' : '0'
       });
       src = "/editor/deployment.html?" + params.toString();
     }

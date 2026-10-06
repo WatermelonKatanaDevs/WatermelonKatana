@@ -1153,6 +1153,9 @@
             <select data-publish-commit></select>
             <div class="wk-readonly">Latest tracks the newest commit on the selected branch.</div>
           </div>
+          <div class="wk-field">
+            <label class="wk-check"><input type="checkbox" data-publish-use-peer> Use peer server</label>
+          </div>
         `);
         const publishActions = framedoc.createElement('div');
         publishActions.className = 'wk-editor-actions';
@@ -1170,6 +1173,7 @@
 
         const publishBranch = top.querySelector('[data-publish-branch]');
         const publishCommit = top.querySelector('[data-publish-commit]');
+        const publishUsePeer = top.querySelector('[data-publish-use-peer]');
         const publishOptions = await loadWKRevisionOptions(repo);
         publishBranch.innerHTML = publishOptions.branches.map(branch => `<option value="${escapeHTML(branch)}">${escapeHTML(branch)}</option>`).join('');
         publishBranch.value = publishOptions.branch;
@@ -1234,7 +1238,8 @@
                   externalUrl: '',
                   branch: publishBranch.value,
                   commit: publishCommit.value || 'latest',
-                  path: '/'
+                  path: '/',
+                  usePeerServer: publishUsePeer.checked
                 }
               })
             });
@@ -1349,6 +1354,7 @@
                     <div class="wk-field"><label>Branch</label><select data-deployment-branch></select></div>
                     <div class="wk-field"><label>Commit</label><select data-deployment-commit></select></div>
                     <div class="wk-field"><label>Deployment Path</label><input data-deployment-path type="text" placeholder="/"></div>
+                    <label class="wk-check"><input type="checkbox" data-deployment-use-peer> Use peer server</label>
                   </div>
                   <div data-deployment-third-party-fields style="display:none;">
                     <div class="wk-field"><label>External URL</label><input data-deployment-external-url type="url" placeholder="https://example.com/"></div>
@@ -1397,6 +1403,7 @@
         const deploymentBranchInput = card.querySelector('[data-deployment-branch]');
         const deploymentCommitInput = card.querySelector('[data-deployment-commit]');
         const deploymentPathInput = card.querySelector('[data-deployment-path]');
+        const deploymentUsePeerInput = card.querySelector('[data-deployment-use-peer]');
         const deploymentExternalUrlInput = card.querySelector('[data-deployment-external-url]');
         const setDeploymentPreviewButton = card.querySelector('[data-set-deployment-preview]');
         let thumbValue = '';
@@ -1529,7 +1536,8 @@
               externalUrl: String(preview.externalUrl || preview.url || existingDeployment.externalUrl || ''),
               branch: String(preview.branch || existingDeployment.branch || repo?.branch || 'main'),
               commit: String(preview.commitSelection || preview.commit || existingDeployment.commit || 'latest'),
-              path: String(preview.path || existingDeployment.path || '/')
+              path: String(preview.path || existingDeployment.path || '/'),
+              usePeerServer: preview?.usePeerServer === true || existingDeployment.usePeerServer === true
             };
             if (previewThirdParty && !previewDeployment.externalUrl) {
               throw new Error('Set a third-party deployment URL before copying Deployment Preview.');
@@ -1544,6 +1552,7 @@
               deploymentCommitInput.innerHTML += `<option value="${escapeHTML(previewDeployment.commit)}">Pinned ${escapeHTML(previewDeployment.commit.slice(0, 12))}</option>`;
             }
             deploymentCommitInput.value = previewDeployment.commit;
+            deploymentUsePeerInput.checked = previewDeployment.usePeerServer === true;
             loadedProject.editorDeployment = previewDeployment;
             deploymentSummary.innerHTML = deploymentFromPreviewLabel(previewDeployment);
             saveStatus.className = 'wk-editor-status wk-editor-success';
@@ -1596,7 +1605,8 @@
                   externalUrl: deploymentExternalUrlInput.value.trim(),
                   branch: deploymentBranchInput.value,
                   commit: deploymentCommitInput.value || 'latest',
-                  path: deploymentPathInput.value || '/'
+                  path: deploymentPathInput.value || '/',
+                  usePeerServer: deploymentUsePeerInput.checked
                 },
                 optimalViewSize:{
                   enabled:optimalUseInput.checked,
