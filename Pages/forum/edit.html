@@ -37,6 +37,13 @@
         <span class="checkbox"></span>
       </label><br>
       <input type="submit" value="update"/><br/>
+      <div id="adminControls" style="display:none; margin-top:20px; padding:16px; border:1px solid var(--palette-background-item); border-radius:8px;">
+        <h3 style="margin-top:0;">Forum Post Admin</h3>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button type="button" id="featurePostBtn"></button>
+        </div>
+        <div id="adminStatus" style="margin-top:10px;"></div>
+      </div>
     </form>
     <!-- <button id="deletebtn" style="background-color: red;">delete</button> -->
     <button id="discardbtn"> Discard Changes </button>
@@ -48,6 +55,33 @@
       const mature = document.querySelector('#mature');
       const hidden = document.querySelector('#hidden');
       const display = document.querySelector(".error");
+      const adminControls = document.querySelector("#adminControls");
+      const featurePostBtn = document.querySelector("#featurePostBtn");
+      const adminStatus = document.querySelector("#adminStatus");
+      let postFeatured = false;
+
+      function updateAdminButtons() {
+        featurePostBtn.textContent = postFeatured ? "Unfeature Post" : "Feature Post";
+      }
+
+      async function updatePostFeatured(enabled) {
+        featurePostBtn.disabled = true;
+        adminStatus.textContent = "Updating…";
+        const endpoint = enabled ? "/api/forum/feature/" : "/api/forum/unfeature/";
+        try {
+          const response = await fetch(endpoint + pid);
+          if (!response.ok) throw new Error("Unable to update post featured status.");
+          postFeatured = enabled;
+          updateAdminButtons();
+          adminStatus.textContent = "Updated.";
+        } catch (err) {
+          adminStatus.textContent = err.message;
+        } finally {
+          featurePostBtn.disabled = false;
+        }
+      }
+
+      featurePostBtn.onclick = () => updatePostFeatured(!postFeatured);
 
       location.path = location.pathname.split("/");
       const pid = location.path[3];
@@ -77,6 +111,14 @@
         tags.value = data.tags.join(", ");
         mature.checked = data.mature;
         hidden.checked = data.hidden;
+        postFeatured = !!data.featured;
+        updateAdminButtons();
+
+        const auth = await getAuth();
+        if (auth.auth && auth.user && ["Admin", "Uni Lover"].includes(auth.user.role)) {
+          adminControls.style.display = "";
+        }
+
         markdownTextbox('#content');
         renderContentPreview();
         content.addEventListener('input', renderContentPreview);
