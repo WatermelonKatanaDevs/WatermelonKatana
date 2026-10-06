@@ -436,7 +436,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   } else if (window.location.pathname.match(/^\/(register|login)/i) === null) {
     nhtml += `
-    <a class="nav-btn" href="/login">Login</a>
+    <a class="nav-btn" href="/login?redir='+encodeURIComponent(location.pathname + location.search + location.hash)+'">Login</a>
     <a class="nav-btn" href="/register">Create Account</a>
     `;
   }
