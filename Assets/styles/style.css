@@ -252,8 +252,8 @@ textarea:focus,
 
 .mk-description-preview {
 	box-sizing: border-box;
-	min-height: 160px;
-	max-height: 420px;
+	min-height: 0;
+	max-height: none;
 	overflow: auto;
 	padding: 12px;
 	border: 2px solid var(--palette-midtone);

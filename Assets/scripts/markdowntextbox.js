@@ -47,6 +47,7 @@ function markdownTextbox(sel,nobr) {
       <path stroke-linejoin="round" stroke-linecap="round" stroke-width="3" stroke="#707277" d="M8.00897 9L8 9M16 9L15.991 9"></path>
       </svg>
     </button>`);
+  syncMarkdownPreview(markbox);
   var picker = new EmojiPicker({
     trigger: [
         {
@@ -57,6 +58,30 @@ function markdownTextbox(sel,nobr) {
     closeOnSelect: true,
     closeButton: true,
   });
+}
+
+function syncMarkdownPreview(markbox) {
+  const form = markbox.closest('form') || markbox.parentElement;
+  const preview = form?.querySelector('.mk-description-preview');
+  if (!preview) return;
+
+  const sync = () => {
+    const rect = markbox.getBoundingClientRect();
+    preview.style.width = rect.width + 'px';
+    preview.style.height = rect.height + 'px';
+  };
+
+  sync();
+  if (typeof ResizeObserver === 'function') {
+    const observer = new ResizeObserver(sync);
+    observer.observe(markbox);
+    markbox.__mkPreviewResizeObserver?.disconnect?.();
+    markbox.__mkPreviewResizeObserver = observer;
+  } else {
+    const listener = () => sync();
+    window.addEventListener('resize', listener, {passive:true});
+    markbox.__mkPreviewResizeListener = listener;
+  }
 }
 
 function getInputSelection(el) {
