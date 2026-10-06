@@ -1,162 +1,305 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Home | WatermelonKatana</title>
-  <link rel="icon" type="image/png" href="/favicon/favicon-96x96.png" sizes="96x96" />
-  <!-- <link rel="icon" type="image/svg+xml" href="/favicon/favicon.svg" /> -->
-  <link rel="shortcut icon" href="/favicon.ico" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
-  <meta name="apple-mobile-web-app-title" content="WatermelonKatana" />
-  <link rel="manifest" href="/site.webmanifest">
-  <meta property="og:title" content="WatermelonKatana" />
-  <meta property="og:type" content="profile" />
-  <meta property="og:image" content="/favicon/android-chrome-192x192.png" />
-  <meta property="og:description"
-    content="Post your projects, Interact with other peoples' projects, Chat with your friends & More! We have a large gallery of games and a growing user base, help us out by either posting your browser game here or playing other peoples' games!" />
-  <link rel="stylesheet" type="text/css" href="/styles/style.css">
-  <link rel="stylesheet" type="text/css" href="/styles/home.css">
-  <link rel="stylesheet" type="text/css" href="/styles/v3.css">
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2363534162574113"
-    crossorigin="anonymous"></script>
-  <script src="/scripts/HtmlSanitizer.js"></script>
-  <script src="/scripts/script.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile WK</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            overscroll-behavior: none;
+            touch-action: none;
+            position: fixed;
+            background-color: #222222;
+            color: #ffffff;
+            font-family: sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .topnavbar {
+            width: 100%;
+            height: calc(50px + env(safe-area-inset-top));
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            padding: 0 15px env(safe-area-inset-top);
+            z-index: 9999;
+            background-image: url("https://grabezany.github.io/UItest/background.png");
+            background-size: cover;
+            background-position: top center;
+            background-repeat: no-repeat;
+        }
+        .topnavbar img {
+            max-height: 30px;
+            width: auto;
+            object-fit: contain;
+        }
+        .topnavbar h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+        .navbar {
+            background-color: #333;
+            width: 90%;
+            max-width: 400px;
+            height: 50px;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 25px;
+            z-index: 9999;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        .navbar img {
+            max-width: 30%;
+            max-height: 50px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: opacity 0.3s ease;
+        }
+        .navbar img.active {
+            opacity: 1;
+        }
+        .viewport {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+        }
+        .slider-track {
+            display: flex;
+            width: 400%;
+            height: 100%;
+            transform: translateX(0%);
+            will-change: transform;
+        }
+        .slider-track.animate {
+            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .page {
+            width: 25%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            text-align: center;
+            padding: calc(60px + env(safe-area-inset-top)) 20px calc(80px + env(safe-area-inset-bottom));
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .page h2 {
+            font-size: 1.5rem;
+            color: #00e676;
+            font-weight: bold;
+            margin-top: 15px;
+            margin-bottom: 10px;
+        }
+        .page::-webkit-scrollbar {
+            display: none;
+        }
+        .chat-tab-bar {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .chat-tab-btn {
+            background-color: #333;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            opacity: 0.6;
+            transition: opacity 0.3s ease, background-color 0.3s ease;
+        }
+        .chat-tab-btn.active {
+            opacity: 1;
+            background-color: #00e676;
+            color: #222;
+            font-weight: bold;
+        }
+        .chat-tab-content {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+        }
+        .chat-tab-content.active {
+            display: flex;
+        }
+    </style>
 </head>
-
 <body>
-  <div class="container">
-    <header class="main-header">
-      <h1>Welcome to <strong class="logo-text">WatermelonKatana</strong></h1>
-      <h2 id="username" style="color: #777777"></h2>
-      <nav id="header" class="main-nav">
-        <a href="/register">Register</a>
-        <a href="/login">Login</a>
-        <a href="/chat">Chat</a>
-        <a href="/dashboard">Dashboard</a>
-        <a href="/search">Project Gallery</a>
-        <a href="/api/project/list?randomEntryAction=redirect"> Random Project </a>
-        <a href="/forum">Forum</a>
-        <a href="/faq">FAQ</a>
-        <a href="/preferences">Preferences</a>
-        <a href="/editor/">Editor</a>
-      </nav>
-    </header>
-    <section class="intro">
-      <p>Post your projects, interact with other people's projects, chat with your friends, and more! We have a large
-        gallery of games and a growing user base. Help us out by either posting your browser game here or playing other
-        people's games!</p>
-      <br>
-    </section>
-    <section class="featured-projects">
-      <h2>Featured Projects</h2>
-      <div id="featuredList" class="project-list">
-        <noscript><embed style="width:86vw; height:50vh"
-            src="/api/project/list?sort=score&featured=1&noclient=1"></embed></noscript>
-      </div>
-    </section>
-    <section class="featured-projects">
-      <h2>Latest Projects</h2>
-      <div id="latestList" class="project-list">
-        <noscript><embed style="width:86vw; height:50vh"
-            src="/api/project/list?showRecent=5&noclient=1"></embed></noscript>
-      </div>
-    </section>
-    <section class="featured-projects">
-      <h2>Hot Forum Topics</h2>
-      <div id="postList" class="post-list">
-        <noscript><embed style="width:86vw; height:50vh"
-            src="/api/forum/list?showRecent=5&noclient=1"></embed></noscript>
-      </div>
-    </section>
-    <section class="intro">
-      <p>On WatermelonKatana you can publish old code.org projects including gamelab and applab.
-        You can also publish Khan Academy projects, Scratch projects, and urls to any self-hosted projects.
-        This site was created as a third-party replacement for code.org's public project section. View our
-        extensive curated gallery of code.org games and projects! We also have a custom Turbowarp engine for
-        code.org, allowing your projects to run orders of magnitude faster. Our forum is a place for those
-        new at programming to recieve help from those experienced at it.</p>
-      <br>
-      <p>WatermelonKatana was created by a group of passionate programmers from the code.org community. We are
-        dedicated to providing a safe and well-moderated website to allow fledgling developers to share, remix,
-        and get feedback on their projects. (PS: If you are code.org staff reading this, we would love to collaborate
-        with you to provide a safe way to share code.org projects to the web.)</p>
-      <br>
-    </section>
-  </div>
+    <div class="topnavbar">
+        <a href="/publish"><img src="https://grabezany.github.io/UItest/new_project.png" alt="Upload"></a>
+        <h3 id="app-title">WatermelonKatana</h3>
+        <a href="/chat"><img src="https://grabezany.github.io/UItest/mail_icon.png" alt="Mail"></a>
+    </div>
+    <div class="viewport" id="viewport">
+        <div class="slider-track animate" id="track">
+            <main class="page" id="page-home">
+                <h2>Featured Projects</h2>
+                <div id="featuredList">Loading featured projects...</div>
 
-  <script src="/scripts/footer.js"></script>
-  <script>
-    const featuredList = document.querySelector('#featuredList');
-    const latestList = document.querySelector('#latestList');
-    const postList = document.querySelector('#postList');
-    const header = document.querySelector('#header');
-    const user = document.getElementById('username');
-    getAuth().then(async tok => {
-      let res, data, sparams = new URLSearchParams();
-      sparams.set("sort", "score");
-      sparams.set("featured", 1);
-      fetch('/api/project/list?' + sparams)
-        .then(res => res.status < 206 ? res.json() : { projects: [] })
-        .then(data => { data.projects.map(projHTML(featuredList, tok)) })
+                <h2>Latest Projects</h2>
+                <div id="latestList">Loading latest projects...</div>
 
-      sparams = new URLSearchParams();
-      sparams.set("showRecent", 5);
-      fetch('/api/project/list?' + sparams)
-        .then(res => res.status < 206 ? res.json() : { projects: [] })
-        .then(data => { data.projects.map(projHTML(latestList, tok)) })
-
-      sparams = new URLSearchParams();
-      sparams.set("showRecent", 5);
-      fetch('/api/forum/list?' + sparams)
-        .then(res => res.status < 206 ? res.json() : { posts: [] })
-        .then(data => { data.posts.map(forumHTML(postList, tok)) })
-
-      if (!tok.auth) return;
-      const notificationCount = tok.user.notifications.length;
-      user.innerHTML = `
-        <p style="margin-bottom: 0px"> Signed in as
-          <a class="profile" href="/user/${tok.user.username}">
-            <span class="comment-avatar" style="width:2em;height:2em;vertical-align:middle">${focalimg(tok.user.avatar, tok.user.avatarpos)}</span>
-            <strong class="logo-text">${tok.user.username}</strong>
-          </a>
-        </p>
-        <div id="notificationContainer" style="border-style: groove; margin: 5px; width: 50%; max-height: 30vh; transform: translateX(50%); overflow-y: scroll; scrollbar-width: none;">
-              Loading...
+                <p style="margin-top: 20px; font-size: 0.9rem; color: #ccc;">
+                    Upload your projects, interact with other projects, chat with friends and more!
+                </p>
+            </main>
+            <main class="page" id="page-profile">
+                <h2>Profile</h2>
+                <p>You aren't logged in. Either log in or create an account to proceed.</p>
+            </main>
+            <main class="page" id="page-search">
+                <h2>Search</h2>
+                <p>Search for projects, users, or tags...</p>
+            </main>
+            <main class="page" id="page-chat">
+                <div class="chat-tab-bar">
+                    <button class="chat-tab-btn active" onclick="openChatTab(event, 'chat-messages')">Chat</button>
+                    <button class="chat-tab-btn" onclick="openChatTab(event, 'chat-forum')">Forum</button>
+                </div>
+                <div class="chat-tab-content active" id="chat-messages">
+                    <h2>Chat</h2>
+                    <p>Quickchat here</p>
+                </div>
+                <div class="chat-tab-content" id="chat-forum">
+                    <h2>Forum</h2>
+                    <p>Forum Posts here</p>
+                </div>
+            </main>
         </div>
-        `;
-      Promise.all(tok.user.notifications.sort((a, b) => b.createdAt - a.createdAt).map(htmlNotifications)).then(notifs => {
-        document.querySelector("#notificationContainer").innerHTML = notifs.join('') || `No Notifications`
-      });
-      async function htmlNotifications(notif, index) {
-        let user = await getUser(notif.posterId);
-        return `<a class="user-panel" href="/notification/${notificationCount - index - 1}" style="width: 98%; text-align: right">
-            <div class="comment-top" style="display: flex">
-              <span class="comment-avatar" style="width: 2em; height: 2em">${focalimg(user.avatar || "/images/blank_project.png", user.avatarpos)}</span>
-              <div class="comment-username" style="font-size: 1em">${notif.title} ${notif.content}</div>
-              <button class="notifDismiss" onclick="event.preventDefault(); container = user.querySelector('div'), link = event.srcElement.closest('.user-panel'); fetch(link.href); link.remove(); notifs = container.children; if(notifs.length<1){container.textContent='No Notifications'}else{for(i=0;i<notifs.length;i++){notifs[i].href='/notification/'+(notifs.length-i-1)}}">
-                <i class="fa fa-bell-slash" aria-hidden="true"></i>
-              </button>
-            </div>
-            <p style="font-size:0.6em; margin-top: 0px;">${new Date(notif.createdAt).toUTCString().replace(/\d\d:[^]+$/, "")}</p>
-          </a>`
-      }
-      header.innerHTML = `
-          <a href="/publish">Publish</a>
-          <a href="/chat">Chat</a>
-          <a href="/dashboard">Dashboard</a>
-          <a href="/search">Project Gallery</a>
-          <a href="/api/project/list?randomEntryAction=redirect"> Random Project </a>
-          <a href="/forum">Forum</a>
-          <a href="/faq">FAQ</a>
-          <a href="/preferences">Preferences</a>
-          <a href="/editor/">Editor</a>
-          <a href="/userlist">User List</a>
-          ${(isadmin(tok.user.role) ? `<a href="/admin">Admin List</a>` : "")}
-        `;
-    });
-  </script>
+    </div>
+    <div class="navbar" id="bottom-navbar">
+        <img src="https://grabezany.github.io/UItest/home_icon.png" alt="Home" class="active" onclick="goToPage(0)">
+        <img src="https://grabezany.github.io/UItest/default_pfp.png" alt="Profile" onclick="goToPage(1)">
+        <img src="https://grabezany.github.io/UItest/search_icon.png" alt="Search" onclick="goToPage(2)">
+        <img src="https://grabezany.github.io/UItest/chat_icon.png" alt="Chat" onclick="goToPage(3)">
+    </div>
+    <script>
+      //Me and gemini got the home page to work :sob:
+        const track = document.getElementById('track');
+        const viewport = document.getElementById('viewport');
+        const navIcons = document.querySelectorAll('#bottom-navbar img');
+        const totalPages = 4;
+        let currentIndex = 0;
+        let startX = 0;
+        let currentTranslate = 0;
+        let prevTranslate = 0;
+        let isDragging = false;
+        viewport.addEventListener('touchstart', touchStart);
+        viewport.addEventListener('touchmove', touchMove);
+        viewport.addEventListener('touchend', touchEnd);
+        viewport.addEventListener('mousedown', touchStart);
+        viewport.addEventListener('mousemove', touchMove);
+        viewport.addEventListener('mouseup', touchEnd);
+        viewport.addEventListener('mouseleave', () => { if (isDragging) touchEnd(); });
+        function getPositionX(event) {
+            return event.type.includes('mouse') ? event.clientX : event.touches[0].clientX;
+        }
+        function touchStart(event) {
+            isDragging = true;
+            startX = getPositionX(event);
+            track.classList.remove('animate');
+        }
+        function touchMove(event) {
+            if (!isDragging) return;
+            const currentX = getPositionX(event);
+            const deltaX = currentX - startX;
+            const viewportWidth = viewport.clientWidth;
+            const currentPos = -currentIndex * viewportWidth + deltaX;
+            track.style.transform = `translateX(${currentPos}px)`;
+        }
+        function touchEnd() {
+            if (!isDragging) return;
+            isDragging = false; 
+            track.classList.add('animate');
+            const viewportWidth = viewport.clientWidth;
+            const transformMatrix = window.getComputedStyle(track).getPropertyValue('transform');
+            let movedBy = 0;
+            if (transformMatrix !== 'none') {
+                const values = transformMatrix.split('(')[1].split(')')[0].split(',');
+                movedBy = parseFloat(values[4]) - (-currentIndex * viewportWidth);
+            }
+            const threshold = viewportWidth * 0.2;
+            if (movedBy < -threshold && currentIndex < totalPages - 1) {
+                currentIndex++;
+            } else if (movedBy > threshold && currentIndex > 0) {
+                currentIndex--;
+            }
+            updateSlidePosition();
+        }
+        function goToPage(index) {
+            currentIndex = index;
+            track.classList.add('animate');
+            updateSlidePosition();
+        }
+        function updateSlidePosition() {
+            const viewportWidth = viewport.clientWidth;
+            currentTranslate = -currentIndex * viewportWidth;
+            track.style.transform = `translateX(${currentTranslate}px)`;
+            navIcons.forEach((icon, idx) => {
+                if (idx === currentIndex) {
+                    icon.classList.add('active');
+                } else {
+                    icon.classList.remove('active');
+                }
+            });
+        }
+        window.addEventListener('resize', updateSlidePosition);
+        function openChatTab(evt, tabId) {
+            const tabContents = document.querySelectorAll('.chat-tab-content');
+            const tabBtns = document.querySelectorAll('.chat-tab-btn');
+            tabContents.forEach(content => content.classList.remove('active'));
+            tabBtns.forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            const featuredList = document.querySelector('#featuredList');
+            const latestList = document.querySelector('#latestList');
+            const fetchAPI = (url) => fetch(url).then(res => res.status < 206 ? res.json() : null);
+            getAuth().then((tok) => {
+                //Featured projects
+                const featuredParams = new URLSearchParams({ sort: "score", featured: 1 });
+                const latestParams = new URLSearchParams({ showRecent: 5 });
+                fetchAPI('/api/project/list?' + featuredParams).then(data => {
+                    if (data && data.projects && featuredList) {
+                        featuredList.innerHTML = '';
+                        data.projects.forEach(projHTML(featuredList, tok));
+                    }
+                });
+                //Latest projects
+                fetchAPI('/api/project/list?' + latestParams).then(data => {
+                    if (data && data.projects && latestList) {
+                        latestList.innerHTML = '';
+                        data.projects.forEach(projHTML(latestList, tok));
+                    }
+                });
+            });
+        });
+    </script>
 </body>
-
-</html> 
+</html>
