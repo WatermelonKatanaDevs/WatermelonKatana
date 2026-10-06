@@ -1909,20 +1909,47 @@
         css.id = 'wk-piskel-theme';
         css.textContent = `
           :root { --wk-piskel-pink: rgb(221,109,127); --wk-piskel-pink-soft: rgba(221,109,127,.22); --wk-piskel-green: rgb(60,223,169); --wk-piskel-green-soft: rgba(60,223,169,.18); }
-          .user-message { border-color: var(--wk-piskel-pink) !important; background-color: var(--wk-piskel-pink-soft) !important; color: #222 !important; }
-          .sp-container { border-color: var(--wk-piskel-pink) !important; }
-          .sp-input:focus { border-color: var(--wk-piskel-pink) !important; box-shadow: 0 0 0 1px var(--wk-piskel-pink) !important; }
-          .sp-palette .sp-thumb-el:hover, .sp-palette .sp-thumb-el.sp-thumb-active { border-color: var(--wk-piskel-pink) !important; }
-          .sp-replacer:hover, .sp-replacer.sp-active { border-color: var(--wk-piskel-pink) !important; }
-          /* Piskel blue accents become the WK green accent. */
-          [class*="blue"], [class*="primary"], [class*="info"] { --wk-piskel-blue-replacement: var(--wk-piskel-green); }
-          a, a:hover, button:hover, .button:hover { color: var(--wk-piskel-green) !important; }
-          [style*="blue"], [style*="Blue"], [style*="#529de1"], [style*="#245e8f"], [style*="#00f"], [style*="#0000ff"] { color: var(--wk-piskel-green) !important; border-color: var(--wk-piskel-green) !important; background-color: var(--wk-piskel-green-soft) !important; }
-          input:focus, select:focus, textarea:focus { border-color: var(--wk-piskel-green) !important; outline-color: var(--wk-piskel-green) !important; }
-          .selected, .active, .current, [aria-selected="true"] { border-color: var(--wk-piskel-green) !important; }
+         
+          #dialog-container, 
+          .preview-tile.selected, 
+          .tool-icon.selected:before,
+          .add-frame-action:hover,
+          .resize-origin-option.selected,
+          .background-picker.selected:after { border-color: var(--wk-piskel-pink) !important; }
 
-          [style*="orange"], [style*="Orange"], [style*="#F0C36D"], [style*="#F9EDBE"], [style*="#f0c49B"], [style*="#F0C49B"], [style*="#91765d"] { color: var(--wk-piskel-pink) !important; border-color: var(--wk-piskel-pink) !important; }
-          input:focus, select:focus, textarea:focus { border-color: var(--wk-piskel-pink) !important; outline-color: var(--wk-piskel-pink) !important; }
+          .cheatsheet-key {
+            border-color: var(--wk-piskel-pink) !important; 
+            color: var(--wk-piskel-pink) !important; 
+          }
+          
+          .settings-title,
+          .current-layer-item, .current-layer-item:hover,
+          .layers-toggle-preview-enabled, .layers-toggle-preview-enabled:hover,
+          .cheatsheet-link,
+          a, a:visited
+          { color: var(--wk-piskel-pink) !important; }
+
+          .cheatsheet-link, .button-primary {
+            /*filter: hue-rotate(90deg);*/
+            filter: hue-rotate(-65deg) brightness(80%) saturate(130%);
+          }
+
+          input[type=range], input[type=checkbox] {
+            filter: hue-rotate(-75deg) saturate(70%) brightness(180%);
+          }
+
+          .sp-palette .sp-thumb-el.sp-thumb-active { border-color: var(--wk-piskel-pink) !important; box-shadow: 0 0 0px 1px var(--wk-piskel-pink) !important; }
+          
+          .dialog-head,
+          .resize-origin-option.selected:before { background: var(--wk-piskel-pink) !important; }
+
+          .resize-origin-option[data-neighbor="right"]:before, .right-sticky-section .tool-icon.has-expanded-drawer, .preview-tile.selected:after { border-left-color: var(--wk-piskel-pink) !important; }
+          .resize-origin-option[data-neighbor="top"]:before { border-bottom-color: var(--wk-piskel-pink) !important; }
+          .resize-origin-option[data-neighbor="left"]:before { border-right-color: var(--wk-piskel-pink) !important; }
+          .resize-origin-option[data-neighbor="bottom"]:before { border-top-color: var(--wk-piskel-pink) !important; }
+
+          [style*="color: gold"], [style*="color:gold"] { color: var(--wk-piskel-pink) !important; }
+          [style*="background:gold"], [style*="background: gold"] { background: var(--wk-piskel-pink) !important; }
         `;
         doc.head.appendChild(css);
       }
