@@ -1915,9 +1915,15 @@
           .tool-icon.selected:before,
           .add-frame-action:hover,
           .resize-origin-option.selected,
-          .background-picker.selected:after { border-color: var(--wk-piskel-pink) !important; }
+          .background-picker.selected:after,
+          .create-palette-color.selected,
+          .create-palette-color:hover
+          { border-color: var(--wk-piskel-pink) !important; }
 
-          .cheatsheet-key {
+          .sp-palette .sp-thumb-el:hover, .sp-palette .sp-thumb-el.sp-thumb-active { border-color: #ed425e !important; }
+
+          .cheatsheet-key,
+          .create-palette-new-color {
             border-color: var(--wk-piskel-pink) !important; 
             color: var(--wk-piskel-pink) !important; 
           }
@@ -1926,8 +1932,20 @@
           .current-layer-item, .current-layer-item:hover,
           .layers-toggle-preview-enabled, .layers-toggle-preview-enabled:hover,
           .cheatsheet-link,
-          a, a:visited
+          .local-piskel-list-head,
+          .import-image-file-name,
+          .palettes-list-color:nth-child(-n+10):after,
+          a, a:visited,
+          tools-tooltip-shortcut,
+          .layers-button:not([disabled]):hover,
+          .tools-tooltip-shortcut,
+          .preview-toggle-onion-skin-enabled, .preview-toggle-onion-skin-enabled:hover
           { color: var(--wk-piskel-pink) !important; }
+
+          .palettes-list-primary-color:before, .palettes-list-secondary-color:before {
+            border-color: var(--wk-piskel-pink) !important;
+            border-top-color: transparent !important;
+          }
 
           .cheatsheet-link, .button-primary {
             /*filter: hue-rotate(90deg);*/
@@ -1937,6 +1955,20 @@
           input[type=range], input[type=checkbox] {
             filter: hue-rotate(-75deg) saturate(70%) brightness(180%);
           }
+          
+          .color-picker-slider * {
+            filter: none !important;
+          }
+
+          .color-picker-slider input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; /* Required for WebKit custom styling */
+            filter: hue-rotate(-75deg) saturate(70%) brightness(180%) !important;
+          }
+          
+          .color-picker-slider input[type="range"]::-moz-range-thumb {
+            filter: hue-rotate(-75deg) saturate(70%) brightness(180%) !important;
+          }
+          
 
           .sp-palette .sp-thumb-el.sp-thumb-active { border-color: var(--wk-piskel-pink) !important; box-shadow: 0 0 0px 1px var(--wk-piskel-pink) !important; }
           
