@@ -58,6 +58,10 @@
 
       <label for="bio">Biography</label><br>
       <textarea id="bio"></textarea><br>
+      <div class="mk-description-preview-wrap">
+        <div class="mk-description-preview-title">Preview</div>
+        <div id="bioPreview" class="mk-description-preview" aria-live="polite"></div>
+      </div>
 
       <div class="editor-field">
         <label>Avatar</label><br>
@@ -113,7 +117,12 @@
       const form = document.querySelector("form");
       const name = document.querySelector("#name");
       const bio = document.querySelector("#bio");
+      const bioPreview = document.querySelector("#bioPreview");
       const mature = document.querySelector("#mature");
+
+      function renderBioPreview() {
+        bioPreview.innerHTML = convertMarkdown(bio.value || "");
+      }
       const rolegradienttoggle = document.querySelector("#rolegradient");
       const showemailtoggle = document.querySelector("#show-email");
       const display = document.querySelector(".error");
@@ -328,6 +337,8 @@
         }
 
         markdownTextbox('#bio');
+        renderBioPreview();
+        bio.addEventListener('input', renderBioPreview);
       })();
 
       async function uploadavatar() {
