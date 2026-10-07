@@ -293,7 +293,11 @@
         name.value = data.title;
         link.value = data.link;
         editorProject = !!data.editorProject;
-        editorRepository = data.editorRepository || "";
+        // Older Editor projects stored their GitHub repository only in
+        // the regular link field. Use it as the deployment-editor fallback
+        // so the deployment controls (including Use peer server) are still
+        // shown for those projects.
+        editorRepository = data.editorRepository || (editorProject ? data.link : "") || "";
         editorDeployment = data.editorDeployment || null;
 
         // Populate ordinary project fields before GitHub-specific loading so a
