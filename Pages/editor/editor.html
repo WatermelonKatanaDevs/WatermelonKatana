@@ -77,13 +77,17 @@
         }
       } else {
         const toolbarLeft = framedoc.getElementsByClassName("toolbar-left")[0];
+        const menuButton = framedoc.createElement("button");
+        menuButton.textContent = "Select Project";
+        menuButton.addEventListener("click", () => editor.EditorApp.openBuiltin("watermelonkatana"));
+        toolbarLeft.prepend(menuButton);
         const exitLink = framedoc.createElement("a");
         exitLink.href = "/";
         exitLink.target = "_top";
         const exitButton = framedoc.createElement("button");
         exitButton.textContent = "Exit";
         exitLink.appendChild(exitButton);
-        toolbarLeft.prepend(exitLink);
+        toolbarLeft.appendChild(exitLink);
       }
 
       // --- WatermelonKatana Extension ---------------------------------------
@@ -1210,7 +1214,7 @@
             publishStatus.textContent = 'Choose a GitHub branch.';
             return;
           }
-          if (!publishCommit.value || (publishCommit.value === 'latest' && publishOptions.commits.length === 0)) {
+          if (!publishCommit.value) {
             publishStatus.className = 'wk-editor-status wk-editor-error';
             publishStatus.textContent = 'Choose a commit on the selected branch before publishing.';
             return;
