@@ -46,32 +46,40 @@
     }
 
     frame.addEventListener('load', async () => {
-      while (!frame?.contentWindow?.__deploymentNetworkReady?._requestObject) await wait(1);
+      const doc = frame.contentDocument;
+      if (!doc) return;
+
+      const deploymentWindow = frame.contentWindow;
+      let deploymentNetwork;
+      try {
+        deploymentNetwork = await deploymentWindow.__deploymentNetworkReady;
+      } catch (error) {
+        console.error("Deployment network failed to initialize:", error);
+        return;
+      }
+      if (!deploymentNetwork?._requestObject || frame.contentDocument !== doc) return;
 
       syncEmulatedMetadata();
 
-      const doc = frame.contentDocument;
-      if (doc) {
-        const observer = new MutationObserver(syncEmulatedMetadata);
-        observer.observe(doc.head || doc.documentElement, {
+      const observer = new MutationObserver(syncEmulatedMetadata);
+      observer.observe(doc.head || doc.documentElement, {
+        subtree: true,
+        childList: true,
+        attributes: true,
+        attributeFilter: ["href", "rel"]
+      });
+
+      const title = doc.querySelector("title");
+      if (title) {
+        observer.observe(title, {
           subtree: true,
           childList: true,
-          attributes: true,
-          attributeFilter: ["href", "rel"]
+          characterData: true
         });
-
-        const title = doc.querySelector("title");
-        if (title) {
-          observer.observe(title, {
-            subtree: true,
-            childList: true,
-            characterData: true
-          });
-        }
       }
 
-      var old = frame.contentWindow.__deploymentNetworkReady._requestObject;
-      frame.contentWindow.__deploymentNetworkReady._requestObject = function(request, ...args) {
+      var old = deploymentNetwork._requestObject;
+      deploymentNetwork._requestObject = function(request, ...args) {
         if (!request.url.startsWith(window.origin)) return old.call(this, request, ...args);
         const newHeaders = new request.headers.constructor(request.headers);
         newHeaders.append('X-From-Emulator', '1');
