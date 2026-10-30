@@ -13,7 +13,6 @@
   <iframe id="deploymentFrame" src="DEPLOYMENT_SRC" allow="fullscreen; clipboard-read; clipboard-write"></iframe>
   <script>
     const frame = document.getElementById("deploymentFrame");
-    var wait = t => new Promise(r => setTimeout(r, t));
     function syncEmulatedMetadata() {
       const doc = frame?.contentDocument;
       if (!doc) return;
