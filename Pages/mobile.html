@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>Swipe Navigation</title>
+<title>Mobile | WatermelonKatana</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -837,63 +837,26 @@ function renderCompose() {
   }
 }
 
-function compressImage(file) {
+function readBase64(file) {
   return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload = () => {
-      URL.revokeObjectURL(url);
-      const longest = Math.max(img.naturalWidth, img.naturalHeight);
-      for (const max of [640, 480, 360, 240]) {
-        const scale = Math.min(1, max / longest);
-        const w = Math.max(1, Math.round(img.naturalWidth * scale));
-        const h = Math.max(1, Math.round(img.naturalHeight * scale));
-        const canvas = document.createElement("canvas");
-        canvas.width = w;
-        canvas.height = h;
-        const ctx = canvas.getContext("2d");
-        ctx.fillStyle = "#fff";
-        ctx.fillRect(0, 0, w, h);
-        ctx.drawImage(img, 0, 0, w, h);
-        for (const quality of [0.8, 0.65, 0.5]) {
-          const dataUrl = canvas.toDataURL("image/jpeg", quality);
-          if (dataUrl.length < 90000) return resolve(dataUrl);
-        }
-      }
-      reject(new Error("That image is too large to upload. Try a smaller one."));
-    };
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error("Couldn't read that image. Try a JPEG or PNG."));
-    };
-    img.src = url;
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(",")[1] || "");
+    reader.onerror = () => reject(new Error("Couldn't read that image."));
+    reader.readAsDataURL(file);
   });
 }
 
 async function uploadThumbnail(file) {
-  const dataUrl = await compressImage(file);
-  const raw = dataUrl.slice(dataUrl.indexOf(",") + 1);
-  const name = (file.name.replace(/\.[^.]+$/, "") || "thumbnail") + ".jpg";
-  let lastError = "HTTP error";
-  for (const image of [raw, dataUrl]) {
-    const res = await fetch("/api/media/upload", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ image, name, type: "image/jpeg" })
-    });
-    let data = {};
-    try { data = await res.json(); } catch (err) {}
-    if (res.status < 400) {
-      const direct = data.url || data.link || data.path;
-      if (direct) return direct;
-      const id = data.id || data.mediaId || data._id || (data.media && data.media.id);
-      if (!id) throw new Error("The image uploaded but the server didn't return a file id.");
-      return "/api/media/get/" + encodeURIComponent(id) + "/" + encodeURIComponent(name);
-    }
-    lastError = (data.message || "HTTP " + res.status) + (data.error ? ". " + data.error : "");
-    if (res.status !== 400 && res.status !== 422) break;
+  const params = new URLSearchParams();
+  params.set("image", await readBase64(file));
+  params.set("name", file.name.replace(/\.[^.]+$/, ""));
+  const res = await fetch("/api/media/upload", { method: "POST", body: params });
+  let data = {};
+  try { data = await res.json(); } catch (err) {}
+  if (res.status > 206 || !data.media || !data.media.url) {
+    throw new Error("Image upload failed: " + (data.message || "HTTP " + res.status) + (data.error ? ". " + data.error : ""));
   }
-  throw new Error("Image upload failed: " + lastError);
+  return data.media.url;
 }
 
 async function submitCompose(e) {
