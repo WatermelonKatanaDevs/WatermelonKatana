@@ -103,14 +103,15 @@ app.get("/register", makeFormToken, (req, res) => res.sendFile(cldir + "/users/a
 app.get("/login", (req, res) => res.sendFile(cldir + "/users/auth/login.html")); // Login page
 app.get("/mobile", (req, res) => res.sendFile(cldir + "/mobile.html")); // Mobile Page
 /*
+const device = require('express-device');
+app.use(device.capture());
+
 app.get("/", (req, res) => {
-  const e = req.headers["user-agent"] || "";
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(e);
-  if (isMobile) {
-    res.sendFile(cldir + "/mobile.html");
-  } else {
-    res.sendFile(cldir + "/home.html");
-  }
+    if (req.device.type === 'phone' || req.device.type === 'tablet') {
+        res.sendFile(cldir + "/mobile.html");
+    } else {
+        res.sendFile(cldir + "/home.html");
+    }
 });
 */
 
