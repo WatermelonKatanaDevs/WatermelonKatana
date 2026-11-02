@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>Mobile | WatermelonKatana</title>
+<title>Swipe Navigation</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -191,12 +191,16 @@ html, body {
 .pf-joined { font-size: .75rem; opacity: .55; margin-bottom: 14px; }
 .pf-actions { display: flex; flex-direction: column; gap: 8px; }
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
-button, a, input, textarea { touch-action: manipulation; }
+* { touch-action: pan-y; }
 input, textarea, select { font-size: 16px; }
 textarea.auth-input { min-height: 140px; resize: vertical; font-family: inherit; line-height: 1.4; }
 .field-label { font-size: .8rem; opacity: .7; margin: 4px 0 -4px 4px; }
 .check-row { display: flex; align-items: center; gap: 10px; font-size: .9rem; padding: 4px; }
 .check-row input { width: 20px; height: 20px; accent-color: #00e676; flex: 0 0 auto; }
+.file-pick { display: flex; align-items: center; gap: 12px; }
+.file-pick .auth-btn { width: auto; margin: 0; padding: 10px 16px; font-size: .9rem; }
+.file-thumb { width: 72px; height: 54px; border-radius: 10px; object-fit: cover; background: #1a1a1a; display: block; }
+.file-thumb[hidden] { display: none; }
 </style>
 </head>
 <body>
@@ -800,8 +804,12 @@ function renderCompose() {
       ${project ? `
       <div class="field-label">Project link</div>
       <input class="auth-input" name="link" type="url" required placeholder="https://" autocapitalize="none" autocorrect="off">
-      <div class="field-label">Thumbnail link (optional)</div>
-      <input class="auth-input" name="thumbnail" type="url" placeholder="https://" autocapitalize="none" autocorrect="off">
+      <div class="field-label">Thumbnail (optional)</div>
+      <div class="file-pick">
+        <label class="auth-btn alt" for="cv-thumb">Choose image</label>
+        <input id="cv-thumb" name="thumbnail" type="file" accept="image/*" hidden>
+        <img class="file-thumb" id="cv-preview" alt="" hidden>
+      </div>
       <div class="field-label">Platform</div>
       <input class="auth-input" name="platform" type="text" placeholder="e.g. Scratch, TurboWarp" autocomplete="off">` : ""}
       <div class="field-label">${project ? "Description" : "Post"}</div>
@@ -813,6 +821,62 @@ function renderCompose() {
       <button class="auth-btn" id="cv-submit" type="submit">Publish</button>
     </form>`;
   document.getElementById("cv-form").addEventListener("submit", submitCompose);
+  const thumbInput = document.getElementById("cv-thumb");
+  if (thumbInput) {
+    thumbInput.addEventListener("change", () => {
+      const preview = document.getElementById("cv-preview");
+      const file = thumbInput.files[0];
+      if (preview.src.startsWith("blob:")) URL.revokeObjectURL(preview.src);
+      if (file) {
+        preview.src = URL.createObjectURL(file);
+        preview.hidden = false;
+      } else {
+        preview.removeAttribute("src");
+        preview.hidden = true;
+      }
+    });
+  }
+}
+
+function shrinkImage(file, max) {
+  return new Promise(resolve => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+      const w = Math.max(1, Math.round(img.naturalWidth * scale));
+      const h = Math.max(1, Math.round(img.naturalHeight * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, w, h);
+      ctx.drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      const name = (file.name.replace(/\.[^.]+$/, "") || "thumbnail") + ".jpg";
+      canvas.toBlob(blob => resolve(blob ? new File([blob], name, { type: "image/jpeg" }) : file), "image/jpeg", 0.85);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+}
+
+async function uploadThumbnail(file) {
+  const small = await shrinkImage(file, 800);
+  const fd = new FormData();
+  fd.append("file", small, small.name);
+  const res = await fetch("/api/media/upload", { method: "POST", body: fd });
+  let data = {};
+  try { data = await res.json(); } catch (err) {}
+  if (res.status >= 400) {
+    throw new Error("Image upload failed: " + (data.message || "HTTP " + res.status) + (data.error ? ". " + data.error : ""));
+  }
+  const direct = data.url || data.link || data.path;
+  if (direct) return direct;
+  const id = data.id || data.mediaId || data._id || (data.media && data.media.id);
+  if (!id) throw new Error("The image uploaded but the server didn\u2019t return a file id.");
+  return "/api/media/get/" + encodeURIComponent(id) + "/" + encodeURIComponent(small.name);
 }
 
 async function submitCompose(e) {
@@ -831,7 +895,7 @@ async function submitCompose(e) {
   };
   if (project) {
     body.link = val("link");
-    body.thumbnail = val("thumbnail");
+    body.thumbnail = "";
     body.platform = val("platform");
   }
   errBox.hidden = true;
@@ -839,6 +903,12 @@ async function submitCompose(e) {
   btn.textContent = "Publishing…";
   try {
     await fetch(project ? "/publish" : "/forum/post");
+    const picked = project ? form.elements.thumbnail.files[0] : null;
+    if (picked) {
+      btn.textContent = "Uploading image…";
+      body.thumbnail = await uploadThumbnail(picked);
+      btn.textContent = "Publishing…";
+    }
     const res = await fetch(project ? "/api/project/publish" : "/api/forum/publish", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -864,6 +934,23 @@ document.getElementById("add-btn").addEventListener("click", () => openCompose(c
 document.getElementById("cv-back").addEventListener("click", () => {
   if (history.state?.compose) history.back(); else closeCompose();
 });
+
+let tapStart = null;
+let lastTap = 0;
+document.addEventListener("touchstart", e => {
+  const t = e.touches[0];
+  tapStart = e.touches.length === 1 ? { x: t.clientX, y: t.clientY, time: Date.now() } : null;
+}, { passive: true });
+document.addEventListener("touchend", e => {
+  if (!tapStart) return;
+  const t = e.changedTouches[0];
+  const isTap = Date.now() - tapStart.time < 300 && Math.hypot(t.clientX - tapStart.x, t.clientY - tapStart.y) < 10;
+  tapStart = null;
+  if (!isTap) return;
+  const now = Date.now();
+  if (now - lastTap < 400 && !(e.target.closest && e.target.closest("input, textarea, select"))) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
 
 const track = document.getElementById("track");
 const viewport = document.getElementById("viewport");
