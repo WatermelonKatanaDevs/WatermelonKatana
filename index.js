@@ -102,6 +102,19 @@ app.get("/preferences", (req, res) => res.sendFile(cldir + "/preferences.html"))
 app.get("/register", makeFormToken, (req, res) => res.sendFile(cldir + "/users/auth/register.html")); // Registration page
 app.get("/login", (req, res) => res.sendFile(cldir + "/users/auth/login.html")); // Login page
 
+/*
+app.get("/", (req, res) => {
+  const e = req.headers["user-agent"] || "";
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(e);
+  if (isMobile) {
+    res.sendFile(cldir + "/mobile.html");
+  } else {
+    res.sendFile(cldir + "/home.html");
+  }
+});
+*/
+
+
 /**
  * WatermelonKatana open-source libraries
  */
