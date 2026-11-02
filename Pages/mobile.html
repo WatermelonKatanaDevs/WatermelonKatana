@@ -810,8 +810,7 @@ function renderCompose() {
         <input id="cv-thumb" name="thumbnail" type="file" accept="image/*" hidden>
         <img class="file-thumb" id="cv-preview" alt="" hidden>
       </div>
-      <div class="field-label">Platform</div>
-      <input class="auth-input" name="platform" type="text" placeholder="e.g. Scratch, TurboWarp" autocomplete="off">` : ""}
+` : ""}
       <div class="field-label">${project ? "Description" : "Post"}</div>
       <textarea class="auth-input" name="content" ${project ? "" : "required"}></textarea>
       <div class="field-label">Tags (separated by commas)</div>
@@ -838,45 +837,63 @@ function renderCompose() {
   }
 }
 
-function shrinkImage(file, max) {
-  return new Promise(resolve => {
+function compressImage(file) {
+  return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);
     const img = new Image();
     img.onload = () => {
-      const scale = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
-      const w = Math.max(1, Math.round(img.naturalWidth * scale));
-      const h = Math.max(1, Math.round(img.naturalHeight * scale));
-      const canvas = document.createElement("canvas");
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext("2d");
-      ctx.fillStyle = "#fff";
-      ctx.fillRect(0, 0, w, h);
-      ctx.drawImage(img, 0, 0, w, h);
       URL.revokeObjectURL(url);
-      const name = (file.name.replace(/\.[^.]+$/, "") || "thumbnail") + ".jpg";
-      canvas.toBlob(blob => resolve(blob ? new File([blob], name, { type: "image/jpeg" }) : file), "image/jpeg", 0.85);
+      const longest = Math.max(img.naturalWidth, img.naturalHeight);
+      for (const max of [640, 480, 360, 240]) {
+        const scale = Math.min(1, max / longest);
+        const w = Math.max(1, Math.round(img.naturalWidth * scale));
+        const h = Math.max(1, Math.round(img.naturalHeight * scale));
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        for (const quality of [0.8, 0.65, 0.5]) {
+          const dataUrl = canvas.toDataURL("image/jpeg", quality);
+          if (dataUrl.length < 90000) return resolve(dataUrl);
+        }
+      }
+      reject(new Error("That image is too large to upload. Try a smaller one."));
     };
-    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Couldn't read that image. Try a JPEG or PNG."));
+    };
     img.src = url;
   });
 }
 
 async function uploadThumbnail(file) {
-  const small = await shrinkImage(file, 800);
-  const fd = new FormData();
-  fd.append("file", small, small.name);
-  const res = await fetch("/api/media/upload", { method: "POST", body: fd });
-  let data = {};
-  try { data = await res.json(); } catch (err) {}
-  if (res.status >= 400) {
-    throw new Error("Image upload failed: " + (data.message || "HTTP " + res.status) + (data.error ? ". " + data.error : ""));
+  const dataUrl = await compressImage(file);
+  const raw = dataUrl.slice(dataUrl.indexOf(",") + 1);
+  const name = (file.name.replace(/\.[^.]+$/, "") || "thumbnail") + ".jpg";
+  let lastError = "HTTP error";
+  for (const image of [raw, dataUrl]) {
+    const res = await fetch("/api/media/upload", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image, name, type: "image/jpeg" })
+    });
+    let data = {};
+    try { data = await res.json(); } catch (err) {}
+    if (res.status < 400) {
+      const direct = data.url || data.link || data.path;
+      if (direct) return direct;
+      const id = data.id || data.mediaId || data._id || (data.media && data.media.id);
+      if (!id) throw new Error("The image uploaded but the server didn't return a file id.");
+      return "/api/media/get/" + encodeURIComponent(id) + "/" + encodeURIComponent(name);
+    }
+    lastError = (data.message || "HTTP " + res.status) + (data.error ? ". " + data.error : "");
+    if (res.status !== 400 && res.status !== 422) break;
   }
-  const direct = data.url || data.link || data.path;
-  if (direct) return direct;
-  const id = data.id || data.mediaId || data._id || (data.media && data.media.id);
-  if (!id) throw new Error("The image uploaded but the server didn\u2019t return a file id.");
-  return "/api/media/get/" + encodeURIComponent(id) + "/" + encodeURIComponent(small.name);
+  throw new Error("Image upload failed: " + lastError);
 }
 
 async function submitCompose(e) {
@@ -896,7 +913,6 @@ async function submitCompose(e) {
   if (project) {
     body.link = val("link");
     body.thumbnail = "";
-    body.platform = val("platform");
   }
   errBox.hidden = true;
   btn.disabled = true;
