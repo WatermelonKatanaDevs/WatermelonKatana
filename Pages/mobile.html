@@ -277,6 +277,7 @@ textarea.auth-input { min-height: 140px; resize: vertical; font-family: inherit;
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="/Assets/scripts/mediaupload.js"></script>
 <script>
 // Claudes Plan ngl
 if (window.lucide) lucide.createIcons();
@@ -805,11 +806,7 @@ function renderCompose() {
       <div class="field-label">Project link</div>
       <input class="auth-input" name="link" type="url" required placeholder="https://" autocapitalize="none" autocorrect="off">
       <div class="field-label">Thumbnail (optional)</div>
-      <div class="file-pick">
-        <label class="auth-btn alt" for="cv-thumb">Choose image</label>
-        <input id="cv-thumb" name="thumbnail" type="file" accept="image/*" hidden>
-        <img class="file-thumb" id="cv-preview" alt="" hidden>
-      </div>
+      <div id="upload-container"></div>
 ` : ""}
       <div class="field-label">${project ? "Description" : "Post"}</div>
       <textarea class="auth-input" name="content" ${project ? "" : "required"}></textarea>
@@ -837,6 +834,7 @@ function renderCompose() {
   }
 }
 
+  /*
 function readBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -845,7 +843,7 @@ function readBase64(file) {
     reader.readAsDataURL(file);
   });
 }
-
+*/
 async function uploadThumbnail(file) {
   const params = new URLSearchParams();
   params.set("image", await readBase64(file));
