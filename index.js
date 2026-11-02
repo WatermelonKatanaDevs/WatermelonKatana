@@ -4,6 +4,7 @@
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const RateLimit = require("express-rate-limit");
+//const device = require('express-device');
 
 /*
   Local Modules
@@ -103,7 +104,6 @@ app.get("/register", makeFormToken, (req, res) => res.sendFile(cldir + "/users/a
 app.get("/login", (req, res) => res.sendFile(cldir + "/users/auth/login.html")); // Login page
 app.get("/mobile", (req, res) => res.sendFile(cldir + "/mobile.html")); // Mobile Page
 /*
-const device = require('express-device');
 app.use(device.capture());
 
 app.get("/", (req, res) => {
