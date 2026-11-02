@@ -4,7 +4,7 @@
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const RateLimit = require("express-rate-limit");
-//const device = require('express-device');
+const device = require('express-device');
 
 /*
   Local Modules
@@ -97,15 +97,15 @@ const cldir = __dirname + "/Pages";
 /**
  * Define route handlers for serving HTML files
  */
-app.get("/", (req, res) => res.sendFile(cldir + "/home.html")); // Home page
+//app.get("/", (req, res) => res.sendFile(cldir + "/home.html")); // Home page
 app.get("/dashboard", (req, res) => res.sendFile(cldir + "/dashboard.html")); // Dashboard page
 app.get("/preferences", (req, res) => res.sendFile(cldir + "/preferences.html")); // Preferences page
 app.get("/register", makeFormToken, (req, res) => res.sendFile(cldir + "/users/auth/register.html")); // Registration page
 app.get("/login", (req, res) => res.sendFile(cldir + "/users/auth/login.html")); // Login page
-app.get("/mobile", (req, res) => res.sendFile(cldir + "/mobile.html")); // Mobile Page
-/*
-app.use(device.capture());
+//app.get("/mobile", (req, res) => res.sendFile(cldir + "/mobile.html")); // Mobile Page
 
+//Detect Mobile Devices
+app.use(device.capture());
 app.get("/", (req, res) => {
     if (req.device.type === 'phone' || req.device.type === 'tablet') {
         res.sendFile(cldir + "/mobile.html");
@@ -113,7 +113,6 @@ app.get("/", (req, res) => {
         res.sendFile(cldir + "/home.html");
     }
 });
-*/
 
 
 /**
