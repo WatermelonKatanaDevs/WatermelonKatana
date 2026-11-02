@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>UI</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Mobile | WatermelonKatana</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -190,12 +190,19 @@ html, body {
 .pf-stats span { font-size: .7rem; opacity: .6; }
 .pf-joined { font-size: .75rem; opacity: .55; margin-bottom: 14px; }
 .pf-actions { display: flex; flex-direction: column; gap: 8px; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+button, a, input, textarea { touch-action: manipulation; }
+input, textarea, select { font-size: 16px; }
+textarea.auth-input { min-height: 140px; resize: vertical; font-family: inherit; line-height: 1.4; }
+.field-label { font-size: .8rem; opacity: .7; margin: 4px 0 -4px 4px; }
+.check-row { display: flex; align-items: center; gap: 10px; font-size: .9rem; padding: 4px; }
+.check-row input { width: 20px; height: 20px; accent-color: #00e676; flex: 0 0 auto; }
 </style>
 </head>
 <body>
 
 <div class="topnavbar">
-  <button class="icon-btn" aria-label="Upload"><i data-lucide="square-plus"></i></button>
+  <button class="icon-btn" id="add-btn" aria-label="Create"><i data-lucide="square-plus"></i></button>
   <h3 id="app-title">WatermelonKatana</h3>
   <button class="icon-btn" id="mail-btn" aria-label="Notifications"><i data-lucide="mail"></i><span class="badge" id="notif-badge" hidden></span></button>
 </div>
@@ -260,9 +267,14 @@ html, body {
   <div class="pv-scroll" id="notif-scroll"></div>
 </div>
 
+<div class="post-view" id="compose-view">
+  <div class="pv-top"><button class="pv-back" id="cv-back">Cancel</button><span id="cv-title">Create</span></div>
+  <div class="pv-scroll" id="compose-scroll"></div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 <script>
-  // Claudes Plan ngl (API Shit)
+// Claudes Plan ngl
 if (window.lucide) lucide.createIcons();
 function abs(url) {
   if (!url) return "";
@@ -336,8 +348,12 @@ async function loadProjects(path, gridId, statusId, emptyText) {
   }
 }
 
-loadProjects("/api/project/list?featured=true&sort=latest", "featured-grid", "featured-status", "No featured projects yet.");
-loadProjects("/api/project/list?sort=latest", "latest-grid", "latest-status", "No projects yet.");
+
+function refreshProjects() {
+  loadProjects("/api/project/list?featured=true&sort=latest", "featured-grid", "featured-status", "No featured projects yet.");
+  loadProjects("/api/project/list?sort=latest", "latest-grid", "latest-status", "No projects yet.");
+}
+refreshProjects();
 
 const searchInput = document.getElementById("search-input");
 let searchTimer = null;
@@ -512,7 +528,7 @@ function closePost() {
 document.getElementById("pv-back").addEventListener("click", () => {
   if (history.state?.post) history.back(); else closePost();
 });
-window.addEventListener("popstate", () => { closePost(); closeNotifs(); });
+window.addEventListener("popstate", () => { closePost(); closeNotifs(); closeCompose(); });
 
 let authData = null;
 let notifs = [];
@@ -740,6 +756,114 @@ function renderAccount(u) {
 }
 
 loadAuth().then(renderProfile);
+
+["gesturestart", "gesturechange", "gestureend"].forEach(type => document.addEventListener(type, e => e.preventDefault()));
+
+const composeView = document.getElementById("compose-view");
+const composeScroll = document.getElementById("compose-scroll");
+let composeMode = "project";
+
+function parseTags(str) {
+  return String(str || "").split(",").map(t => t.trim().replace(/^#/, "")).filter(Boolean);
+}
+
+async function openCompose(mode) {
+  composeMode = mode;
+  document.getElementById("cv-title").textContent = mode === "forum" ? "New forum post" : "New project";
+  composeView.classList.add("open");
+  composeScroll.scrollTop = 0;
+  composeScroll.innerHTML = '<div class="status">Loading…</div>';
+  if (!history.state?.compose) history.pushState({ compose: true }, "");
+  await loadAuth();
+  renderCompose();
+}
+
+function closeCompose() {
+  composeView.classList.remove("open");
+}
+
+function renderCompose() {
+  if (!authData || !authData.auth) {
+    composeScroll.innerHTML = '<div class="status">You need to be logged in to publish.<br><button id="cv-login">Go to login</button></div>';
+    document.getElementById("cv-login").addEventListener("click", () => {
+      if (history.state?.compose) history.back();
+      goToPage(1);
+    });
+    return;
+  }
+  const project = composeMode === "project";
+  composeScroll.innerHTML = `
+    <div class="auth-error" id="cv-error" hidden></div>
+    <form class="auth-form" id="cv-form">
+      <div class="field-label">Title</div>
+      <input class="auth-input" name="title" type="text" required maxlength="100" autocomplete="off">
+      ${project ? `
+      <div class="field-label">Project link</div>
+      <input class="auth-input" name="link" type="url" required placeholder="https://" autocapitalize="none" autocorrect="off">
+      <div class="field-label">Thumbnail link (optional)</div>
+      <input class="auth-input" name="thumbnail" type="url" placeholder="https://" autocapitalize="none" autocorrect="off">
+      <div class="field-label">Platform</div>
+      <input class="auth-input" name="platform" type="text" placeholder="e.g. Scratch, TurboWarp" autocomplete="off">` : ""}
+      <div class="field-label">${project ? "Description" : "Post"}</div>
+      <textarea class="auth-input" name="content" ${project ? "" : "required"}></textarea>
+      <div class="field-label">Tags (separated by commas)</div>
+      <input class="auth-input" name="tags" type="text" placeholder="game, platformer" autocapitalize="none" autocomplete="off">
+      <label class="check-row"><input type="checkbox" name="mature"> Mature content</label>
+      <label class="check-row"><input type="checkbox" name="hidden"> Hidden (unlisted)</label>
+      <button class="auth-btn" id="cv-submit" type="submit">Publish</button>
+    </form>`;
+  document.getElementById("cv-form").addEventListener("submit", submitCompose);
+}
+
+async function submitCompose(e) {
+  e.preventDefault();
+  const form = e.target;
+  const errBox = document.getElementById("cv-error");
+  const btn = document.getElementById("cv-submit");
+  const project = composeMode === "project";
+  const val = name => form.elements[name] ? form.elements[name].value.trim() : "";
+  const body = {
+    title: val("title"),
+    content: form.elements.content.value.trim(),
+    tags: parseTags(val("tags")),
+    mature: form.elements.mature.checked,
+    hidden: form.elements.hidden.checked
+  };
+  if (project) {
+    body.link = val("link");
+    body.thumbnail = val("thumbnail");
+    body.platform = val("platform");
+  }
+  errBox.hidden = true;
+  btn.disabled = true;
+  btn.textContent = "Publishing…";
+  try {
+    await fetch(project ? "/publish" : "/forum/post");
+    const res = await fetch(project ? "/api/project/publish" : "/api/forum/publish", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    let data = {};
+    try { data = await res.json(); } catch (err) {}
+    if (res.status >= 400) {
+      throw new Error((data.message || "Something went wrong") + (data.error ? ". " + data.error : ""));
+    }
+    if (history.state?.compose) history.back(); else closeCompose();
+    if (project) refreshProjects(); else loadForum();
+  } catch (err) {
+    errBox.textContent = err.message;
+    errBox.hidden = false;
+    btn.disabled = false;
+    btn.textContent = "Publish";
+    composeScroll.scrollTop = 0;
+  }
+}
+
+document.getElementById("add-btn").addEventListener("click", () => openCompose(currentIndex === 3 ? "forum" : "project"));
+document.getElementById("cv-back").addEventListener("click", () => {
+  if (history.state?.compose) history.back(); else closeCompose();
+});
 
 const track = document.getElementById("track");
 const viewport = document.getElementById("viewport");
