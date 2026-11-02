@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>UI</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%; height: 100%; overflow: hidden; overscroll-behavior: none;
+  position: fixed; background-color: #222; color: #fff;
+  font-family: sans-serif; user-select: none; -webkit-user-select: none;
+}
+
+.topnavbar {
+  width: 100%; height: calc(50px + env(safe-area-inset-top));
+  position: fixed; top: 0; left: 0; display: flex; align-items: flex-end;
+  justify-content: space-between; padding: 0 15px env(safe-area-inset-top);
+  z-index: 9999;
+  background-image: url("https://grabezany.github.io/UItest/background.png");
+  background-size: cover; background-position: top center; background-repeat: no-repeat;
+}
+.icon-btn, .nav-btn {
+  background: none; border: 0; color: #fff; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.icon-btn { width: 40px; height: 40px; position: relative; }
+.badge {
+  position: absolute; top: 2px; right: 0; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px;
+  background: #ff4d4f; color: #fff; font-size: .62rem; font-weight: bold; line-height: 16px; text-align: center;
+}
+.badge[hidden] { display: none; }
+.notif-item {
+  display: flex; align-items: center; gap: 10px; background: #2a2a2a; border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px; padding: 10px 12px; margin-bottom: 8px; cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.notif-item:active { background: #333; }
+.notif-avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; flex: 0 0 auto; background: #1a1a1a; }
+.notif-text { flex: 1 1 auto; min-width: 0; }
+.notif-msg { font-size: .88rem; line-height: 1.3; overflow-wrap: anywhere; }
+.notif-time { font-size: .7rem; opacity: .55; margin-top: 3px; }
+.notif-dismiss { flex: 0 0 auto; background: none; border: 0; color: #fff; opacity: .6; padding: 6px; display: flex; }
+.notif-dismiss svg { width: 20px; height: 20px; }
+.icon-btn svg { width: 26px; height: 26px; }
+.topnavbar h3 { margin: 0; font-size: 1.1rem; text-align: center; }
+
+.navbar {
+  background-color: rgba(40, 40, 40, 0.55); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, 0.1); width: 90%; max-width: 400px; height: 50px;
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  border-radius: 25px; z-index: 9999; display: flex;
+  justify-content: space-around; align-items: center;
+}
+.nav-btn { flex: 1; height: 100%; opacity: .5; transition: opacity .3s ease, color .3s ease; }
+.nav-btn.active { opacity: 1; color: #00e676; }
+.nav-btn svg { width: 26px; height: 26px; }
+
+.viewport { width: 100%; height: 100%; position: absolute; top: 0; left: 0; overflow: hidden; touch-action: pan-y; }
+.slider-track { display: flex; width: 400%; height: 100%; transform: translateX(0); will-change: transform; }
+.slider-track.animate { transition: transform .3s cubic-bezier(.25, 1, .5, 1); }
+
+.page {
+  width: 25%; height: 100%; display: flex; flex-direction: column; justify-content: flex-start;
+  text-align: center; padding: calc(60px + env(safe-area-inset-top)) 12px calc(90px + env(safe-area-inset-bottom));
+  overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y;
+}
+.page > * { flex-shrink: 0; } .page::-webkit-scrollbar { display: none; }
+.page h2 { font-size: 1.5rem; color: #00e676; font-weight: bold; margin: 8px 0 10px; }
+.page p { margin-bottom: 10px; }
+
+.chat-tab-bar { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; }
+.chat-tab-btn {
+  background-color: #333; color: #fff; border: none; padding: 8px 16px; border-radius: 15px;
+  cursor: pointer; font-size: .9rem; opacity: .6; transition: opacity .3s ease, background-color .3s ease;
+}
+.chat-tab-btn.active { opacity: 1; background-color: #00e676; color: #222; font-weight: bold; }
+.chat-tab-content { display: none; flex-direction: column; width: 100%; }
+.chat-tab-content.active { display: flex; }
+
+.project-grid {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;
+  margin-bottom: 18px; text-align: left;
+}
+@media (min-width: 600px) { .project-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+.project-card {
+  display: block; background: #2a2a2a; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 14px;
+  overflow: hidden; color: inherit; text-decoration: none; -webkit-tap-highlight-color: transparent;
+  transition: transform .15s ease, background .15s ease;
+}
+.project-card:active { background: #333; transform: scale(0.98); }
+.project-thumb { position: relative; width: 100%; aspect-ratio: 4 / 3; background: #1a1a1a; }
+.project-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; -webkit-user-drag: none; }
+.project-card.featured .project-thumb::after {
+  content: "Featured"; position: absolute; top: 6px; left: 6px; padding: 2px 8px; border-radius: 10px;
+  background: rgba(0, 230, 118, 0.9); color: #111; font-size: .65rem; font-weight: bold;
+}
+.project-info { padding: 9px 11px 11px; }
+.project-title {
+  font-size: .9rem; font-weight: 600; line-height: 1.25;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.project-author { font-size: .75rem; color: #00e676; opacity: .85; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.project-stats { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: .68rem; opacity: .55; margin-top: 7px; }
+
+.status { opacity: .7; font-size: .9rem; margin: 6px 0 14px; }
+.status button {
+  margin-top: 8px; background: #00e676; color: #222; border: 0; border-radius: 15px;
+  padding: 6px 16px; font-weight: bold; font-size: .85rem;
+}
+
+.search-input {
+  width: 100%; padding: 10px 14px; border-radius: 20px; border: 0; outline: 0;
+  background: #333; color: #fff; font-size: 16px;   margin-bottom: 14px; user-select: text; -webkit-user-select: text;
+}
+
+.forum-card {
+  background: #2a2a2a; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 14px; padding: 10px 12px; margin-bottom: 10px;
+  text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.forum-card:active { background: #3d3d3d; }
+.forum-card h4 { font-size: 1rem; line-height: 1.25; margin-bottom: 4px; overflow-wrap: anywhere; }
+.forum-card .fc-preview { font-size: .85rem; opacity: .8; overflow-wrap: anywhere;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.forum-card .fc-meta { font-size: .72rem; opacity: .6; margin-top: 6px; }
+.forum-card .fc-tags { font-size: .72rem; color: #00e676; margin-top: 3px; }
+
+.post-view {
+  position: fixed; inset: 0; z-index: 10000; background: #222; display: none;
+  flex-direction: column; text-align: left;
+}
+.post-view.open { display: flex; }
+.pv-top {
+  flex: 0 0 auto; display: flex; align-items: center; gap: 10px;
+  padding: calc(10px + env(safe-area-inset-top)) 12px 10px; background: #333;
+}
+.pv-back { background: #00e676; color: #222; border: 0; border-radius: 15px; padding: 6px 14px; font-weight: bold; font-size: .9rem; }
+.pv-top span { opacity: .7; font-size: .9rem; }
+.pv-scroll {
+  flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y;
+  padding: 14px 14px calc(14px + env(safe-area-inset-bottom)); user-select: text; -webkit-user-select: text;
+}
+.pv-scroll > * { flex-shrink: 0; }
+.pv-title { font-size: 1.3rem; font-weight: bold; line-height: 1.25; overflow-wrap: anywhere; }
+.pv-meta { font-size: .8rem; opacity: .65; margin: 6px 0 4px; }
+.pv-tags { font-size: .8rem; color: #00e676; margin-bottom: 10px; }
+.pv-body { font-size: .95rem; line-height: 1.5; overflow-wrap: anywhere; margin: 10px 0 18px; }
+.pv-body a, .pc-body a { color: #4facfe; }
+.pv-scroll h3 { color: #00e676; font-size: 1.1rem; margin: 6px 0 10px; }
+.pv-comment { background: #333; border-radius: 10px; padding: 8px 10px; margin-bottom: 8px; }
+.pc-head { font-size: .75rem; opacity: .65; margin-bottom: 3px; }
+.pc-body { font-size: .9rem; line-height: 1.4; overflow-wrap: anywhere; }
+.pv-form { margin-top: 14px; }
+.pv-form textarea {
+  width: 100%; min-height: 70px; padding: 10px 12px; border-radius: 12px; border: 0; outline: 0;
+  background: #333; color: #fff; font-size: 16px; font-family: inherit; resize: vertical;
+}
+.pv-form button { margin-top: 8px; background: #00e676; color: #222; border: 0; border-radius: 15px; padding: 8px 18px; font-weight: bold; }
+.pv-form button:disabled { opacity: .5; }
+.pv-msg { font-size: .85rem; margin-top: 6px; opacity: .8; }
+
+.auth-tabs { display: flex; justify-content: center; gap: 10px; margin: 6px 0 16px; }
+.auth-form { display: flex; flex-direction: column; gap: 10px; text-align: left; }
+.auth-input {
+  width: 100%; padding: 12px 14px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.08); outline: 0;
+  background: #2a2a2a; color: #fff; font-size: 16px; user-select: text; -webkit-user-select: text;
+}
+.auth-input:focus { border-color: #00e676; }
+.auth-btn {
+  display: block; width: 100%; padding: 12px; border-radius: 14px; border: 0; background: #00e676; color: #111;
+  font-size: 1rem; font-weight: bold; text-align: center; text-decoration: none; margin-top: 4px;
+}
+.auth-btn.alt { background: #2a2a2a; color: #fff; border: 1px solid rgba(255, 255, 255, 0.08); }
+.auth-btn:disabled { opacity: .5; }
+.auth-error { background: rgba(255, 77, 79, 0.9); color: #fff; border-radius: 12px; padding: 8px 12px; margin-bottom: 12px; font-size: .85rem; text-align: left; overflow-wrap: anywhere; }
+.auth-error[hidden] { display: none; }
+.auth-links { margin-top: 16px; font-size: .85rem; opacity: .8; display: flex; flex-direction: column; gap: 6px; }
+.auth-links a, .pf-bio a { color: #4facfe; }
+.pf-card { background: #2a2a2a; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 18px; overflow: hidden; }
+.pf-banner { width: 100%; height: 110px; background: #1a1a1a; overflow: hidden; }
+.pf-banner img, .pf-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pf-body { padding: 0 16px 18px; }
+.pf-avatar { width: 84px; height: 84px; border-radius: 50%; overflow: hidden; border: 4px solid #2a2a2a; background: #1a1a1a; margin: -42px auto 0; position: relative; }
+.pf-name { font-size: 1.3rem; font-weight: bold; margin-top: 8px; overflow-wrap: anywhere; }
+.pf-role { font-size: .8rem; color: #00e676; margin-top: 2px; }
+.pf-bio { font-size: .9rem; line-height: 1.45; opacity: .85; margin: 12px 0; overflow-wrap: anywhere; user-select: text; -webkit-user-select: text; }
+.pf-stats { display: flex; justify-content: space-around; margin: 14px 0; }
+.pf-stats div { display: flex; flex-direction: column; }
+.pf-stats strong { font-size: 1.1rem; }
+.pf-stats span { font-size: .7rem; opacity: .6; }
+.pf-joined { font-size: .75rem; opacity: .55; margin-bottom: 14px; }
+.pf-actions { display: flex; flex-direction: column; gap: 8px; }
+</style>
+</head>
+<body>
+
+<div class="topnavbar">
+  <button class="icon-btn" aria-label="Upload"><i data-lucide="square-plus"></i></button>
+  <h3 id="app-title">WatermelonKatana</h3>
+  <button class="icon-btn" id="mail-btn" aria-label="Notifications"><i data-lucide="mail"></i><span class="badge" id="notif-badge" hidden></span></button>
+</div>
+
+<div class="viewport" id="viewport">
+  <div class="slider-track animate" id="track">
+    <main class="page" id="page-home">
+      <h2>Featured Projects</h2>
+      <div class="status" id="featured-status">Loading…</div>
+      <div class="project-grid" id="featured-grid"></div>
+
+      <h2>Latest Projects</h2>
+      <div class="status" id="latest-status">Loading…</div>
+      <div class="project-grid" id="latest-grid"></div>
+
+      <p>Upload your projects, interact with other projects, chat with friends and more! We have a large gallery of games and a growing user base. Help us by posting your games or playing other people's games.</p>
+    </main>
+
+    <main class="page" id="page-profile">
+      <div id="profile-root"></div>
+    </main>
+
+    <main class="page" id="page-search">
+      <h2>Search</h2>
+      <input class="search-input" id="search-input" type="search" placeholder="Search for projects…" enterkeyhint="search" autocomplete="off">
+      <div class="status" id="search-status">Type something and press search.</div>
+      <div class="project-grid" id="search-grid"></div>
+    </main>
+
+    <main class="page" id="page-chat">
+      <div class="chat-tab-bar">
+        <button class="chat-tab-btn active" onclick="openChatTab(event, 'chat-messages')">Chat</button>
+        <button class="chat-tab-btn" onclick="openChatTab(event, 'chat-forum')">Forum</button>
+      </div>
+      <div class="chat-tab-content active" id="chat-messages">
+        <h2>Chat</h2>
+        <p>Quickchat here</p>
+      </div>
+      <div class="chat-tab-content" id="chat-forum">
+        <h2>Forum</h2>
+        <div class="status" id="forum-status">Loading…</div>
+        <div id="forum-list"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="navbar" id="bottom-navbar">
+  <button class="nav-btn active" aria-label="Home" onclick="goToPage(0)"><i data-lucide="house"></i></button>
+  <button class="nav-btn" aria-label="Profile" onclick="goToPage(1)"><i data-lucide="user"></i></button>
+  <button class="nav-btn" aria-label="Search" onclick="goToPage(2)"><i data-lucide="search"></i></button>
+  <button class="nav-btn" aria-label="Chat" onclick="goToPage(3)"><i data-lucide="message-circle"></i></button>
+</div>
+
+<div class="post-view" id="post-view">
+  <div class="pv-top"><button class="pv-back" id="pv-back">Back</button><span>Forum</span></div>
+  <div class="pv-scroll" id="pv-scroll"></div>
+</div>
+
+<div class="post-view" id="notif-view">
+  <div class="pv-top"><button class="pv-back" id="nv-back">Back</button><span>Notifications</span></div>
+  <div class="pv-scroll" id="notif-scroll"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script>
+// Claudes Plan ngl
+if (window.lucide) lucide.createIcons();
+function abs(url) {
+  if (!url) return "";
+  return /^https?:\/\//.test(url) ? url : (url.startsWith("/") ? url : "/" + url);
+}
+
+async function apiGet(path) {
+  const res = await fetch(path);
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  const data = await res.json();
+  if (Array.isArray(data)) return data;
+  return data.projects || data.posts || data.results || data.list || data.data || [];
+}
+
+function makeCard(p) {
+  const a = document.createElement("a");
+  a.className = "project-card" + (p.featured ? " featured" : "");
+  a.href = "/project/" + encodeURIComponent(p.id);
+  
+  const thumb = document.createElement("div");
+  thumb.className = "project-thumb";
+  const img = document.createElement("img");
+  img.alt = "";
+  img.loading = "lazy";
+  img.draggable = false;
+  img.src = abs(p.thumbnail) || abs("/images/blank_project.png");
+  img.onerror = () => { img.onerror = null; img.style.visibility = "hidden"; };
+  thumb.appendChild(img);
+
+  const info = document.createElement("div");
+  info.className = "project-info";
+  const title = document.createElement("div");
+  title.className = "project-title";
+  title.textContent = p.title || "Untitled";
+  const author = document.createElement("div");
+  author.className = "project-author";
+  author.textContent = "By " + (p.poster || "unknown");
+  const stats = document.createElement("div");
+  stats.className = "project-stats";
+  [["Score", p.score], ["Views", p.views], ["Plays", p.plays]].forEach(([label, value]) => {
+    const item = document.createElement("span");
+    item.textContent = label + " " + (value ?? 0);
+    stats.appendChild(item);
+  });
+  info.append(title, author, stats);
+
+  a.append(thumb, info);
+  return a;
+}
+
+async function loadProjects(path, gridId, statusId, emptyText) {
+  const grid = document.getElementById(gridId);
+  const status = document.getElementById(statusId);
+  grid.innerHTML = "";
+  status.textContent = "Loading…";
+  try {
+    const list = await apiGet(path);
+    if (!list.length) { status.textContent = emptyText; return; }
+    status.style.display = "none";
+    const frag = document.createDocumentFragment();
+    list.forEach(p => frag.appendChild(makeCard(p)));
+    grid.appendChild(frag);
+  } catch (err) {
+    console.error(err);
+    status.style.display = "";
+    status.textContent = "Couldn't load projects (" + err.message + "). ";
+    const btn = document.createElement("button");
+    btn.textContent = "Try again";
+    btn.onclick = () => loadProjects(path, gridId, statusId, emptyText);
+    status.appendChild(btn);
+  }
+}
+
+loadProjects("/api/project/list?featured=true&sort=latest", "featured-grid", "featured-status", "No featured projects yet.");
+loadProjects("/api/project/list?sort=latest", "latest-grid", "latest-status", "No projects yet.");
+
+const searchInput = document.getElementById("search-input");
+let searchTimer = null;
+function runSearch() {
+  const q = searchInput.value.trim();
+  const status = document.getElementById("search-status");
+  if (!q) {
+    document.getElementById("search-grid").innerHTML = "";
+    status.style.display = "";
+    status.textContent = "Type something and press search.";
+    return;
+  }
+  status.style.display = "";
+  loadProjects("/api/project/search?query=" + encodeURIComponent(q), "search-grid", "search-status", "No results for \u201c" + q + "\u201d.");
+}
+searchInput.addEventListener("input", () => { clearTimeout(searchTimer); searchTimer = setTimeout(runSearch, 400); });
+searchInput.addEventListener("keydown", e => { if (e.key === "Enter") { clearTimeout(searchTimer); searchInput.blur(); runSearch(); } });
+
+function esc(str) {
+  return String(str ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+function renderText(str) {
+  return esc(str)
+    .replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>')
+    .replace(/\n/g, "<br>");
+}
+function timeAgo(t) {
+  t = Number(t) || 0;
+  if (!t) return "";
+  const s = (Date.now() - t) / 1000;
+  const units = [["year", 31557600], ["month", 2629800], ["week", 604800], ["day", 86400], ["hour", 3600], ["minute", 60]];
+  for (const [name, secs] of units) {
+    const n = Math.floor(s / secs);
+    if (n >= 1) return n + " " + name + (n > 1 ? "s" : "") + " ago";
+  }
+  return "just now";
+}
+function tagLine(tags) {
+  return (Array.isArray(tags) ? tags : []).map(t => "#" + t).join(", ");
+}
+
+function makeForumCard(post) {
+  const d = document.createElement("div");
+  d.className = "forum-card";
+  d.addEventListener("click", () => { if (!justSwiped) openPost(post.id); });
+  const h = document.createElement("h4");
+  h.textContent = post.title || "Untitled";
+  const pre = document.createElement("div");
+  pre.className = "fc-preview";
+  pre.textContent = String(post.content ?? "").slice(0, 160);
+  const meta = document.createElement("div");
+  meta.className = "fc-meta";
+  meta.textContent = "By " + (post.poster || "unknown") + " | Views " + (post.views ?? 0) + (post.activeAt ? " | Active " + timeAgo(post.activeAt) : "");
+  d.append(h, pre, meta);
+  const tags = tagLine(post.tags);
+  if (tags) {
+    const t = document.createElement("div");
+    t.className = "fc-tags";
+    t.textContent = tags;
+    d.appendChild(t);
+  }
+  return d;
+}
+
+async function loadForum() {
+  const list = document.getElementById("forum-list");
+  const status = document.getElementById("forum-status");
+  list.innerHTML = "";
+  status.style.display = "";
+  status.textContent = "Loading…";
+  try {
+    const posts = await apiGet("/api/forum/list?sort=active");
+    if (!posts.length) { status.textContent = "No forum posts yet."; return; }
+    status.style.display = "none";
+    const frag = document.createDocumentFragment();
+    posts.forEach(p => frag.appendChild(makeForumCard(p)));
+    list.appendChild(frag);
+  } catch (err) {
+    console.error(err);
+    status.textContent = "Couldn't load the forum (" + err.message + "). ";
+    const btn = document.createElement("button");
+    btn.textContent = "Try again";
+    btn.onclick = loadForum;
+    status.appendChild(btn);
+  }
+}
+loadForum();
+
+const postView = document.getElementById("post-view");
+const pvScroll = document.getElementById("pv-scroll");
+let openPostId = null;
+
+async function openPost(id) {
+  openPostId = id;
+  postView.classList.add("open");
+  pvScroll.scrollTop = 0;
+  pvScroll.innerHTML = '<div class="status">Loading…</div>';
+  if (history.state?.post !== id) history.pushState({ post: id }, "");
+  try {
+    const res = await fetch("/api/forum/data/" + encodeURIComponent(id));
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    if (openPostId !== id) return;
+    renderPost(data.post || data, data.comments);
+  } catch (err) {
+    console.error(err);
+    pvScroll.innerHTML = '<div class="status">Couldn\u2019t load this post. </div>';
+    const btn = document.createElement("button");
+    btn.textContent = "Try again";
+    btn.style.cssText = "background:#00e676;color:#222;border:0;border-radius:15px;padding:6px 16px;font-weight:bold";
+    btn.onclick = () => openPost(id);
+    pvScroll.firstChild.appendChild(btn);
+  }
+}
+
+function renderPost(post, extraComments) {
+  const comments = Array.isArray(post.comments) ? post.comments : (Array.isArray(extraComments) ? extraComments : []);
+  const tags = tagLine(post.tags);
+  pvScroll.innerHTML = `
+    <div class="pv-title">${esc(post.title || "Untitled")}</div>
+    <div class="pv-meta">By ${esc(post.poster || "unknown")} | Views ${esc(post.views ?? 0)}${post.postedAt ? " | " + esc(timeAgo(post.postedAt)) : ""}</div>
+    ${tags ? `<div class="pv-tags">${esc(tags)}</div>` : ""}
+    <div class="pv-body">${renderText(post.content)}</div>
+    <h3>Comments (${comments.length})</h3>
+    <div id="pv-comments"></div>
+    <div class="pv-form">
+      <textarea id="pv-input" placeholder="Write a comment…"></textarea>
+      <button id="pv-send">Post comment</button>
+      <div class="pv-msg" id="pv-msg"></div>
+    </div>`;
+  const box = document.getElementById("pv-comments");
+  if (!comments.length) box.innerHTML = '<div class="status">No comments yet.</div>';
+  comments.forEach(c => box.appendChild(makeComment(c)));
+  document.getElementById("pv-send").addEventListener("click", sendComment);
+}
+
+function makeComment(c) {
+  const d = document.createElement("div");
+  d.className = "pv-comment";
+  const when = timeAgo(c.postedAt || c.createdAt || c.time || c.date);
+  d.innerHTML = `<div class="pc-head">${esc(c.poster || c.username || c.author || "unknown")}${when ? " | " + esc(when) : ""}</div>
+    <div class="pc-body">${renderText(c.content)}</div>`;
+  return d;
+}
+
+async function sendComment() {
+  const input = document.getElementById("pv-input");
+  const btn = document.getElementById("pv-send");
+  const msg = document.getElementById("pv-msg");
+  const content = input.value.trim();
+  if (!content) return;
+  btn.disabled = true;
+  msg.textContent = "Posting…";
+  try {
+    const res = await fetch("/api/forum/comment/" + encodeURIComponent(openPostId), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content })
+    });
+    if (!res.ok) throw new Error(res.status === 401 || res.status === 403 ? "login" : "HTTP " + res.status);
+    openPost(openPostId);
+  } catch (err) {
+    msg.textContent = err.message === "login" ? "You need to be logged in to comment." : "Couldn\u2019t post your comment. Try again.";
+    btn.disabled = false;
+  }
+}
+
+function closePost() {
+  openPostId = null;
+  postView.classList.remove("open");
+}
+document.getElementById("pv-back").addEventListener("click", () => {
+  if (history.state?.post) history.back(); else closePost();
+});
+window.addEventListener("popstate", () => { closePost(); closeNotifs(); });
+
+let authData = null;
+let notifs = [];
+const notifUsers = {};
+const notifView = document.getElementById("notif-view");
+const notifScroll = document.getElementById("notif-scroll");
+const notifBadge = document.getElementById("notif-badge");
+
+function updateBadge() {
+  notifBadge.hidden = notifs.length === 0;
+  notifBadge.textContent = notifs.length > 9 ? "9+" : String(notifs.length);
+}
+
+async function loadAuth() {
+  try {
+    const res = await fetch("/api/auth/check");
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    authData = await res.json();
+  } catch (err) {
+    console.error(err);
+    authData = { auth: false };
+  }
+  const list = authData.auth && authData.user && Array.isArray(authData.user.notifications) ? authData.user.notifications : [];
+  notifs = list.slice().sort((a, b) => b.createdAt - a.createdAt);
+  updateBadge();
+}
+
+async function getNotifUser(id) {
+  if (notifUsers[id]) return notifUsers[id];
+  try {
+    const res = await fetch("/api/auth/userdata?id=" + encodeURIComponent(id));
+    const u = await res.json();
+    notifUsers[id] = u && !u.error ? u : {};
+  } catch (err) {
+    notifUsers[id] = {};
+  }
+  return notifUsers[id];
+}
+
+function notifIndex(n) {
+  return notifs.length - notifs.indexOf(n) - 1;
+}
+
+async function dismissNotif(n) {
+  try {
+    await fetch("/notification/" + notifIndex(n));
+  } catch (err) {
+    console.error(err);
+    return;
+  }
+  notifs.splice(notifs.indexOf(n), 1);
+  updateBadge();
+  renderNotifs();
+}
+
+function makeNotif(n, u) {
+  const d = document.createElement("div");
+  d.className = "notif-item";
+  d.addEventListener("click", () => { location.href = "/notification/" + notifIndex(n); });
+  const av = document.createElement("img");
+  av.className = "notif-avatar";
+  av.alt = "";
+  av.src = /^(https?:\/\/|\/)/.test(u.avatar || "") ? u.avatar : "/images/default_pfp.png";
+  const text = document.createElement("div");
+  text.className = "notif-text";
+  const msg = document.createElement("div");
+  msg.className = "notif-msg";
+  msg.textContent = [n.title, n.content].filter(Boolean).join(" ");
+  const time = document.createElement("div");
+  time.className = "notif-time";
+  time.textContent = timeAgo(n.createdAt);
+  text.append(msg, time);
+  const btn = document.createElement("button");
+  btn.className = "notif-dismiss";
+  btn.setAttribute("aria-label", "Dismiss");
+  btn.innerHTML = '<i data-lucide="bell-off"></i>';
+  btn.addEventListener("click", e => { e.stopPropagation(); dismissNotif(n); });
+  d.append(av, text, btn);
+  return d;
+}
+
+async function renderNotifs() {
+  if (!authData || !authData.auth) {
+    notifScroll.innerHTML = '<div class="status">Log in on the website to see your notifications.</div>';
+    return;
+  }
+  if (!notifs.length) {
+    notifScroll.innerHTML = '<div class="status">No notifications.</div>';
+    return;
+  }
+  const users = await Promise.all(notifs.map(n => getNotifUser(n.posterId)));
+  notifScroll.innerHTML = "";
+  const frag = document.createDocumentFragment();
+  notifs.forEach((n, i) => frag.appendChild(makeNotif(n, users[i] || {})));
+  notifScroll.appendChild(frag);
+  if (window.lucide) lucide.createIcons();
+}
+
+async function openNotifs() {
+  notifView.classList.add("open");
+  notifScroll.scrollTop = 0;
+  notifScroll.innerHTML = '<div class="status">Loading…</div>';
+  if (!history.state?.notif) history.pushState({ notif: true }, "");
+  await loadAuth();
+  renderNotifs();
+}
+
+function closeNotifs() {
+  notifView.classList.remove("open");
+}
+
+document.getElementById("mail-btn").addEventListener("click", openNotifs);
+document.getElementById("nv-back").addEventListener("click", () => {
+  if (history.state?.notif) history.back(); else closeNotifs();
+});
+const profileRoot = document.getElementById("profile-root");
+let authMode = "login";
+
+function safeSrc(url, fallback) {
+  return /^(https?:\/\/|\/)/.test(url || "") && !/["'<>]/.test(url) ? url : fallback;
+}
+
+function focalImg(url, pos, fallback) {
+  pos = pos || {};
+  const clamp = (v, lo, hi, d) => { v = Number(v); return isFinite(v) ? Math.max(lo, Math.min(hi, v)) : d; };
+  const x = clamp(pos.x, 0, 100, 50), y = clamp(pos.y, 0, 100, 50), zoom = clamp(pos.zoom, 100, 400, 100);
+  return `<img alt="" src="${esc(safeSrc(url, fallback))}" style="object-position:${x}% ${y}%;transform:scale(${zoom / 100});transform-origin:${x}% ${y}%">`;
+}
+
+function renderProfile() {
+  if (authData && authData.auth && authData.user) {
+    renderAccount(authData.user);
+  } else {
+    renderAuthForm();
+  }
+}
+
+function renderAuthForm() {
+  const register = authMode === "register";
+  profileRoot.innerHTML = `
+    <h2>${register ? "Sign up" : "Login"}</h2>
+    <div class="auth-tabs">
+      <button class="chat-tab-btn ${register ? "" : "active"}" data-mode="login">Login</button>
+      <button class="chat-tab-btn ${register ? "active" : ""}" data-mode="register">Sign up</button>
+    </div>
+    <div class="auth-error" id="auth-error" hidden></div>
+    <form class="auth-form" id="auth-form">
+      <input class="auth-input" id="auth-username" type="text" placeholder="Username" required autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false">
+      <input class="auth-input" id="auth-password" type="password" placeholder="Password" required autocomplete="${register ? "new-password" : "current-password"}">
+      ${register ? '<input class="auth-input" id="auth-confirm" type="password" placeholder="Confirm password" required autocomplete="new-password">' : ""}
+      <button class="auth-btn" id="auth-submit" type="submit">${register ? "Create account" : "Login"}</button>
+    </form>
+    <div class="auth-links">
+      <a href="/resetpass/email">Forgot password? Reset it</a>
+    </div>`;
+  profileRoot.querySelectorAll(".auth-tabs button").forEach(b => b.addEventListener("click", () => {
+    authMode = b.dataset.mode;
+    renderAuthForm();
+  }));
+  document.getElementById("auth-form").addEventListener("submit", submitAuth);
+}
+
+async function authRequest(path, username, password) {
+  const res = await fetch(path, {
+    method: "POST",
+    body: JSON.stringify({ username, password }),
+    headers: { "Content-Type": "application/json" }
+  });
+  let data = {};
+  try { data = await res.json(); } catch (err) {}
+  if (res.status >= 400) {
+    throw new Error((data.message || "Something went wrong") + (data.error ? ". " + data.error : ""));
+  }
+  return data;
+}
+
+async function submitAuth(e) {
+  e.preventDefault();
+  const errBox = document.getElementById("auth-error");
+  const btn = document.getElementById("auth-submit");
+  const username = document.getElementById("auth-username").value.trim();
+  const password = document.getElementById("auth-password").value;
+  errBox.hidden = true;
+  if (authMode === "register" && password !== document.getElementById("auth-confirm").value) {
+    errBox.textContent = "Passwords don\u2019t match.";
+    errBox.hidden = false;
+    return;
+  }
+  btn.disabled = true;
+  try {
+    if (authMode === "register") await authRequest("/api/auth/register", username, password);
+    await authRequest("/api/auth/login", username, password);
+    await loadAuth();
+    renderProfile();
+  } catch (err) {
+    errBox.textContent = err.message;
+    errBox.hidden = false;
+    btn.disabled = false;
+  }
+}
+
+function renderAccount(u) {
+  const joined = u.joinedAt ? new Date(Number(u.joinedAt)).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "";
+  const count = a => Array.isArray(a) ? a.length : 0;
+  profileRoot.innerHTML = `
+    <div class="pf-card">
+      <div class="pf-banner">${focalImg(u.banner, u.bannerpos, "/images/default_banner.png")}</div>
+      <div class="pf-body">
+        <div class="pf-avatar">${focalImg(u.avatar, u.avatarpos, "/images/default_pfp.png")}</div>
+        <div class="pf-name">${esc(u.username)}</div>
+        <div class="pf-role">${esc(u.role || "")}</div>
+        <div class="pf-bio">${renderText(u.biography || "No biography yet.")}</div>
+        <div class="pf-stats">
+          <div><strong>${count(u.followers)}</strong><span>Followers</span></div>
+          <div><strong>${count(u.following)}</strong><span>Following</span></div>
+          <div><strong>${count(u.favorites)}</strong><span>Favorites</span></div>
+        </div>
+        ${joined ? `<div class="pf-joined">Joined ${esc(joined)}</div>` : ""}
+        <div class="pf-actions">
+          <a class="auth-btn" href="/user/${encodeURIComponent(u.username)}">View full profile</a>
+          <a class="auth-btn alt" href="/preferences">Preferences</a>
+        </div>
+      </div>
+    </div>`;
+}
+
+loadAuth().then(renderProfile);
+
+const track = document.getElementById("track");
+const viewport = document.getElementById("viewport");
+const navIcons = document.querySelectorAll("#bottom-navbar .nav-btn");
+const totalPages = 4;
+
+let currentIndex = 0;
+let startX = 0, startY = 0, deltaX = 0;
+let isDragging = false;
+let axis = null;
+let justSwiped = false;
+
+viewport.addEventListener("touchstart", dragStart, { passive: true });
+viewport.addEventListener("touchmove", dragMove, { passive: true });
+viewport.addEventListener("touchend", dragEnd);
+viewport.addEventListener("touchcancel", dragEnd);
+viewport.addEventListener("mousedown", dragStart);
+window.addEventListener("mousemove", dragMove);
+window.addEventListener("mouseup", dragEnd);
+viewport.addEventListener("click", e => { if (justSwiped) { e.preventDefault(); e.stopPropagation(); } }, true);
+
+function point(e) { return e.touches ? (e.touches[0] || e.changedTouches[0]) : e; }
+
+function dragStart(e) {
+  if (e.target.closest && e.target.closest("input, textarea, button")) return;
+  const p = point(e);
+  isDragging = true; axis = null; deltaX = 0;
+  startX = p.clientX; startY = p.clientY;
+}
+
+function dragMove(e) {
+  if (!isDragging) return;
+  const p = point(e);
+  const dx = p.clientX - startX, dy = p.clientY - startY;
+  if (axis === null) {
+    if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+    axis = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+    if (axis === "x") track.classList.remove("animate");
+  }
+  if (axis !== "x") return;
+  deltaX = dx;
+  if ((currentIndex === 0 && dx > 0) || (currentIndex === totalPages - 1 && dx < 0)) deltaX = dx / 3;
+  track.style.transform = `translateX(${-currentIndex * viewport.clientWidth + deltaX}px)`;
+}
+
+function dragEnd() {
+  if (!isDragging) return;
+  isDragging = false;
+  if (axis === "x") {
+    track.classList.add("animate");
+    const threshold = viewport.clientWidth * 0.2;
+    if (deltaX < -threshold && currentIndex < totalPages - 1) currentIndex++;
+    else if (deltaX > threshold && currentIndex > 0) currentIndex--;
+    justSwiped = true;
+    setTimeout(() => { justSwiped = false; }, 50);
+    updateSlidePosition();
+  }
+  axis = null; deltaX = 0;
+}
+
+function goToPage(index) {
+  currentIndex = index;
+  track.classList.add("animate");
+  updateSlidePosition();
+}
+
+function updateSlidePosition() {
+  track.style.transform = `translateX(${-currentIndex * viewport.clientWidth}px)`;
+  navIcons.forEach((icon, idx) => icon.classList.toggle("active", idx === currentIndex));
+}
+window.addEventListener("resize", updateSlidePosition);
+
+function openChatTab(evt, tabId) {
+  document.querySelectorAll(".chat-tab-content").forEach(c => c.classList.remove("active"));
+  document.querySelectorAll(".chat-tab-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById(tabId).classList.add("active");
+  evt.currentTarget.classList.add("active");
+}
+</script>
+</body>
+</html>
