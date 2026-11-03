@@ -277,7 +277,7 @@ textarea.auth-input { min-height: 140px; resize: vertical; font-family: inherit;
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
-<script src="/Assets/scripts/mediaupload.js"></script>
+<script src="/scripts/mediaupload.js"></script>
 <script>
 // Claudes Plan ngl
 if (window.lucide) lucide.createIcons();
@@ -806,7 +806,11 @@ function renderCompose() {
       <div class="field-label">Project link</div>
       <input class="auth-input" name="link" type="url" required placeholder="https://" autocapitalize="none" autocorrect="off">
       <div class="field-label">Thumbnail (optional)</div>
-      <div id="upload-container"></div>
+      <div class="file-pick">
+        <label class="auth-btn alt" for="cv-thumb">Choose image</label>
+        <input id="cv-thumb" name="thumbnail" type="file" accept="image/*" hidden>
+        <img class="file-thumb" id="cv-preview" alt="" hidden>
+      </div>
 ` : ""}
       <div class="field-label">${project ? "Description" : "Post"}</div>
       <textarea class="auth-input" name="content" ${project ? "" : "required"}></textarea>
@@ -834,19 +838,10 @@ function renderCompose() {
   }
 }
 
-  /*
-function readBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result).split(",")[1] || "");
-    reader.onerror = () => reject(new Error("Couldn't read that image."));
-    reader.readAsDataURL(file);
-  });
-}
-*/
 async function uploadThumbnail(file) {
+  if (typeof _arrayBufferToBase64 !== "function") throw new Error("mediaupload.js didn't load, check its path.");
   const params = new URLSearchParams();
-  params.set("image", await readBase64(file));
+  params.set("image", _arrayBufferToBase64(await file.arrayBuffer()));
   params.set("name", file.name.replace(/\.[^.]+$/, ""));
   const res = await fetch("/api/media/upload", { method: "POST", body: params });
   let data = {};
