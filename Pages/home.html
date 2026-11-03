@@ -131,7 +131,7 @@
       });
       async function htmlNotifications(notif, index) {
         let user = await getUser(notif.posterId);
-        return `<a class="user-panel" href="/notification/${notificationCount - index - 1}" style="width: 98%; text-align: right">
+        return `<a class="user-panel" href="/notification/${notificationCount - index - 1}" style="width: 98%; text-align: right" onclick="this.remove()">
             <div class="comment-top" style="display: flex">
               <span class="comment-avatar" style="width: 2em; height: 2em">${focalimg(user.avatar || "/images/blank_project.png", user.avatarpos)}</span>
               <div class="comment-username" style="font-size: 1em">${notif.title} ${notif.content}</div>

@@ -421,7 +421,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     })
     async function notificationHTML(notif, index) {
       var user = await getUser(notif.posterId);
-      return `<a class="user-panel" href="/notification/${notificationCount-index-1}">
+      return `<a class="user-panel" href="/notification/${notificationCount-index-1}" onclick="this.remove()">
         <div class="comment-top">
         <span class="comment-avatar">${focalimg(user.avatar || "/images/blank_project.png", user.avatarpos)}</span>
         <div class="comment-username">${notif.title}</div>
