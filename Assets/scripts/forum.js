@@ -3,8 +3,8 @@ async function createPost(post,data,txt,name,reload) {
   var dispname = data.poster || "Unknown User";
   var dispavatar = data.authoravatar || "/images/default_pfp.png";
   var disppos = data.authorpos || {};
-  var displink = "/user/" + encodeURIComponent(data.realposter || data.poster || "Unknown User");
-  var disptitle = data.realposter ? ` title="Posted anonymously by ${makeLiteralChars(data.realposter)}"` : "";
+  var displink = "/user/" + encodeURIComponent(data.poster || "Unknown User");
+  var disptitle = data.anon ? ` title="Posted Anonymously"` : "";
   post.innerHTML = `
   <div id="display">
     <h2 class="post-name">${verifiedmark(data.verified)}${makeLiteralChars(data.title)}</h2>
@@ -88,8 +88,8 @@ async function listComments(list,comments,self,events) {
     var cname = c.poster || "Unknown User";
     var cavatar = c.authoravatar || "/images/default_pfp.png";
     var cpos = c.authorpos || {};
-    var clink = "/user/" + encodeURIComponent(c.realposter || c.poster || "Unknown User");
-    var ctitle = c.realposter ? ` title="Posted anonymously by ${c.realposter}"` : "";
+    var clink = "/user/" + encodeURIComponent(c.poster || "Unknown User");
+    var ctitle = c.anon ? ` title="Posted Anonymously"` : "";
     if (self) {
       var options = `<input type="button" value="reply" onclick="window.onreplybtnclick(${i});">`;
       if (self.id == c.posterId) {
