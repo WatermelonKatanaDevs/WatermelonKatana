@@ -20,7 +20,10 @@ const CommentSchema = new Mongoose.Schema({
     type: String,
     required: true,
   },
-  anon: Boolean
+  anon: {
+    type: Boolean,
+    default: false
+  }
 });
 
 module.exports = CommentSchema;

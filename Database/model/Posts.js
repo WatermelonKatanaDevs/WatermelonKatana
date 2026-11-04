@@ -63,7 +63,10 @@ const PostSchema = new Mongoose.Schema({
     type: String,
     required: true,
   },
-  anon: Boolean,
+  anon: {
+    type: Boolean,
+    default: false
+  },
   /*poster: {
     type: Mongoose.ObjectId,
     ref: "user",
