@@ -383,30 +383,31 @@ app.get('/sitemap.xml', async (req, res) => {
   const projects = await Projects.find({ hidden: false });
   const posts = await Posts.find({ hidden: false });
   const users = await Users.find({});
+  const baseurl = 'https://watermelonkatana.onrender.com';
 
   var dynamics = `
   ${projects.map((e) => `
    <url>
-    <loc>https://watermelonkatana.com/project/${e.id}/</loc>
+    <loc>${baseurl}/project/${e.id}/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
    </url>
   `).join('\n')}
   ${posts.map((e) => `
    <url>
-    <loc>https://watermelonkatana.com/forum/discussion/${e.id}/</loc>
+    <loc>${baseurl}/forum/discussion/${e.id}/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
    </url>
   `).join('\n')}
   ${users.map((e) => `
    <url>
-    <loc>https://watermelonkatana.com/user/${e.username}/</loc>
+    <loc>${baseurl}/user/${e.username}/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.4</priority>
    </url>`).join('\n')}`;
   res.set('Content-Type', 'application/xml');
-  sendFileReplace(res, './Pages/sitemap.xml', (s) => s.replace('<!--dynamics-->', dynamics), true);
+  sendFileReplace(res, './Pages/sitemap.xml', (s) => s.replaceAll('BASE_URL',baseurl).replace('<!--dynamics-->', dynamics), true);
 })
 
 // TurboWarp page
