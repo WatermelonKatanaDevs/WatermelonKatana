@@ -211,7 +211,6 @@ module.exports = class {
         obj.authorpos = { x: 50, y: 50, zoom: 100 };
         obj.posterId = viewerid !== obj.posterId ? "anon-" + obj.posterId.slice(-8) : viewerid;
       } else {
-        if(obj.anon) { obj.content = "**[ THIS USER IS POSTING ANONYMOUSLY ]**\n" + obj.content}
         obj.authoravatar = (u && u.avatar) || "/images/default_pfp.png";
         obj.authorpos = (u && u.avatarpos) || { x: 50, y: 50, zoom: 100 };
       }
