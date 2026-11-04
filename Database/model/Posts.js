@@ -63,6 +63,7 @@ const PostSchema = new Mongoose.Schema({
     type: String,
     required: true,
   },
+  anon: Boolean,
   /*poster: {
     type: Mongoose.ObjectId,
     ref: "user",

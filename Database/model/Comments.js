@@ -19,7 +19,8 @@ const CommentSchema = new Mongoose.Schema({
   poster: {
     type: String,
     required: true,
-  }
+  },
+  anon: Boolean
 });
 
 module.exports = CommentSchema;
