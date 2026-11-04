@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Mobile | WatermelonKatana</title>
-<link rel="apple-touch-icon" href="/Assets/images/icon.png">
+<link rel="apple-touch-icon" href="/images/icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -57,11 +58,11 @@ html, body {
 .nav-btn svg { width: 26px; height: 26px; }
 
 .viewport { width: 100%; height: 100%; position: absolute; top: 0; left: 0; overflow: hidden; touch-action: pan-y; }
-.slider-track { display: flex; width: 400%; height: 100%; transform: translateX(0); will-change: transform; }
+.slider-track { display: flex; width: 500%; height: 100%; transform: translateX(0); will-change: transform; }
 .slider-track.animate { transition: transform .3s cubic-bezier(.25, 1, .5, 1); }
 
 .page {
-  width: 25%; height: 100%; display: flex; flex-direction: column; justify-content: flex-start;
+  width: 20%; height: 100%; display: flex; flex-direction: column; justify-content: flex-start;
   text-align: center; padding: calc(60px + env(safe-area-inset-top)) 12px calc(90px + env(safe-area-inset-bottom));
   overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y;
 }
@@ -202,6 +203,40 @@ textarea.auth-input { min-height: 140px; resize: vertical; font-family: inherit;
 .file-pick .auth-btn { width: auto; margin: 0; padding: 10px 16px; font-size: .9rem; }
 .file-thumb { width: 72px; height: 54px; border-radius: 10px; object-fit: cover; background: #1a1a1a; display: block; }
 .file-thumb[hidden] { display: none; }
+.set-card { background: #2a2a2a; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 14px; padding: 14px; margin-bottom: 14px; text-align: left; }
+.set-card .auth-tabs { margin: 0; justify-content: flex-start; }
+.set-title { font-size: 1rem; font-weight: bold; color: #00e676; margin-bottom: 10px; }
+.set-row { font-size: .9rem; opacity: .8; margin-bottom: 10px; overflow-wrap: anywhere; }
+.set-msg { font-size: .85rem; margin-top: 4px; }
+.set-msg:empty { display: none; }
+.set-msg.ok { color: #00e676; }
+.set-msg.err { color: #ff6b6b; }
+.auth-tabs[hidden] { display: none; }
+.set-toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: .95rem; }
+.set-hint { font-size: .75rem; opacity: .6; margin-top: 8px; line-height: 1.35; }
+.switch { position: relative; width: 48px; height: 28px; flex: 0 0 auto; }
+.switch input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; z-index: 1; }
+.switch span { position: absolute; inset: 0; background: #555; border-radius: 14px; transition: background .2s; pointer-events: none; }
+.switch span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; transition: transform .2s; }
+.switch input:checked + span { background: #00e676; }
+.switch input:checked + span::after { transform: translateX(20px); }
+html[data-theme="light"], html[data-theme="light"] body { background: #f2f2f2; color: #111; }
+html[data-theme="light"] .navbar { background-color: rgba(255, 255, 255, 0.65); border-color: rgba(0, 0, 0, 0.1); }
+html[data-theme="light"] .nav-btn { color: #111; }
+html[data-theme="light"] .nav-btn.active { color: #00a152; }
+html[data-theme="light"] .project-card, html[data-theme="light"] .forum-card, html[data-theme="light"] .notif-item,
+html[data-theme="light"] .pf-card, html[data-theme="light"] .set-card, html[data-theme="light"] .pv-comment,
+html[data-theme="light"] .auth-input, html[data-theme="light"] .search-input, html[data-theme="light"] .pv-form textarea,
+html[data-theme="light"] .auth-btn.alt { background: #fff; color: #111; border: 1px solid rgba(0, 0, 0, 0.08); }
+html[data-theme="light"] .pf-avatar { border-color: #fff; }
+html[data-theme="light"] .post-view { background: #f2f2f2; }
+html[data-theme="light"] .pv-top { background: #e6e6e6; }
+html[data-theme="light"] .notif-dismiss { color: #111; }
+html[data-theme="light"] .chat-tab-btn { background: #ddd; color: #111; }
+html[data-theme="light"] .chat-tab-btn.active { background: #00e676; color: #222; }
+html[data-theme="light"] .page h2, html[data-theme="light"] .pv-scroll h3, html[data-theme="light"] .pv-tags,
+html[data-theme="light"] .fc-tags, html[data-theme="light"] .pf-role, html[data-theme="light"] .project-author,
+html[data-theme="light"] .set-title { color: #00a152; }
 </style>
 </head>
 <body>
@@ -233,7 +268,12 @@ textarea.auth-input { min-height: 140px; resize: vertical; font-family: inherit;
     <main class="page" id="page-search">
       <h2>Search</h2>
       <input class="search-input" id="search-input" type="search" placeholder="Search for projects…" enterkeyhint="search" autocomplete="off">
-      <div class="status" id="search-status">Type something and press search.</div>
+      <div class="auth-tabs" id="browse-tabs">
+        <button class="chat-tab-btn active" data-sort="score" type="button">Top</button>
+        <button class="chat-tab-btn" data-sort="latest" type="button">Latest</button>
+        <button class="chat-tab-btn" data-sort="views" type="button">Most viewed</button>
+      </div>
+      <div class="status" id="search-status">Loading…</div>
       <div class="project-grid" id="search-grid"></div>
     </main>
 
@@ -252,6 +292,10 @@ textarea.auth-input { min-height: 140px; resize: vertical; font-family: inherit;
         <div id="forum-list"></div>
       </div>
     </main>
+
+    <main class="page" id="page-settings">
+      <div id="settings-root"></div>
+    </main>
   </div>
 </div>
 
@@ -260,6 +304,7 @@ textarea.auth-input { min-height: 140px; resize: vertical; font-family: inherit;
   <button class="nav-btn" aria-label="Profile" onclick="goToPage(1)"><i data-lucide="user"></i></button>
   <button class="nav-btn" aria-label="Search" onclick="goToPage(2)"><i data-lucide="search"></i></button>
   <button class="nav-btn" aria-label="Chat" onclick="goToPage(3)"><i data-lucide="message-circle"></i></button>
+  <button class="nav-btn" aria-label="Settings" onclick="goToPage(4)"><i data-lucide="settings"></i></button>
 </div>
 
 <div class="post-view" id="post-view">
@@ -281,18 +326,31 @@ textarea.auth-input { min-height: 140px; resize: vertical; font-family: inherit;
 <script src="/scripts/mediaupload.js"></script>
 <script>
 // Claudes Plan ngl
+applyTheme(themeNow());
 if (window.lucide) lucide.createIcons();
 function abs(url) {
   if (!url) return "";
   return /^https?:\/\//.test(url) ? url : (url.startsWith("/") ? url : "/" + url);
 }
 
+const apiCache = new Map();
+const loadTokens = {};
+
+function nextToken(id) {
+  loadTokens[id] = (loadTokens[id] || 0) + 1;
+  return loadTokens[id];
+}
+
 async function apiGet(path) {
+  const hit = apiCache.get(path);
+  if (hit && Date.now() - hit.time < 60000) return hit.list;
   const res = await fetch(path);
   if (!res.ok) throw new Error("HTTP " + res.status);
   const data = await res.json();
-  if (Array.isArray(data)) return data;
-  return data.projects || data.posts || data.results || data.list || data.data || [];
+  const list = Array.isArray(data) ? data : (data.projects || data.posts || data.results || data.list || data.data || []);
+  if (apiCache.size > 30) apiCache.delete(apiCache.keys().next().value);
+  apiCache.set(path, { time: Date.now(), list });
+  return list;
 }
 
 function makeCard(p) {
@@ -334,10 +392,13 @@ function makeCard(p) {
 async function loadProjects(path, gridId, statusId, emptyText) {
   const grid = document.getElementById(gridId);
   const status = document.getElementById(statusId);
+  const token = nextToken(gridId);
   grid.innerHTML = "";
+  status.style.display = "";
   status.textContent = "Loading…";
   try {
     const list = await apiGet(path);
+    if (token !== loadTokens[gridId]) return;
     if (!list.length) { status.textContent = emptyText; return; }
     status.style.display = "none";
     const frag = document.createDocumentFragment();
@@ -345,6 +406,7 @@ async function loadProjects(path, gridId, statusId, emptyText) {
     grid.appendChild(frag);
   } catch (err) {
     console.error(err);
+    if (token !== loadTokens[gridId]) return;
     status.style.display = "";
     status.textContent = "Couldn't load projects (" + err.message + "). ";
     const btn = document.createElement("button");
@@ -359,22 +421,25 @@ function refreshProjects() {
   loadProjects("/api/project/list?featured=true&sort=latest", "featured-grid", "featured-status", "No featured projects yet.");
   loadProjects("/api/project/list?sort=latest", "latest-grid", "latest-status", "No projects yet.");
 }
-refreshProjects();
 
 const searchInput = document.getElementById("search-input");
 let searchTimer = null;
+let browseSort = "score";
+
 function runSearch() {
   const q = searchInput.value.trim();
-  const status = document.getElementById("search-status");
+  document.getElementById("browse-tabs").hidden = q !== "";
   if (!q) {
-    document.getElementById("search-grid").innerHTML = "";
-    status.style.display = "";
-    status.textContent = "Type something and press search.";
+    loadProjects("/api/project/list?sort=" + browseSort, "search-grid", "search-status", "No projects yet.");
     return;
   }
-  status.style.display = "";
   loadProjects("/api/project/search?query=" + encodeURIComponent(q), "search-grid", "search-status", "No results for \u201c" + q + "\u201d.");
 }
+document.querySelectorAll("#browse-tabs button").forEach(b => b.addEventListener("click", () => {
+  browseSort = b.dataset.sort;
+  document.querySelectorAll("#browse-tabs button").forEach(x => x.classList.toggle("active", x === b));
+  runSearch();
+}));
 searchInput.addEventListener("input", () => { clearTimeout(searchTimer); searchTimer = setTimeout(runSearch, 400); });
 searchInput.addEventListener("keydown", e => { if (e.key === "Enter") { clearTimeout(searchTimer); searchInput.blur(); runSearch(); } });
 
@@ -427,11 +492,13 @@ function makeForumCard(post) {
 async function loadForum() {
   const list = document.getElementById("forum-list");
   const status = document.getElementById("forum-status");
+  const token = nextToken("forum-list");
   list.innerHTML = "";
   status.style.display = "";
   status.textContent = "Loading…";
   try {
     const posts = await apiGet("/api/forum/list?sort=active");
+    if (token !== loadTokens["forum-list"]) return;
     if (!posts.length) { status.textContent = "No forum posts yet."; return; }
     status.style.display = "none";
     const frag = document.createDocumentFragment();
@@ -439,6 +506,7 @@ async function loadForum() {
     list.appendChild(frag);
   } catch (err) {
     console.error(err);
+    if (token !== loadTokens["forum-list"]) return;
     status.textContent = "Couldn't load the forum (" + err.message + "). ";
     const btn = document.createElement("button");
     btn.textContent = "Try again";
@@ -446,8 +514,6 @@ async function loadForum() {
     status.appendChild(btn);
   }
 }
-loadForum();
-
 const postView = document.getElementById("post-view");
 const pvScroll = document.getElementById("pv-scroll");
 let openPostId = null;
@@ -729,6 +795,7 @@ async function submitAuth(e) {
     await authRequest("/api/auth/login", username, password);
     await loadAuth();
     renderProfile();
+    renderSettings();
   } catch (err) {
     errBox.textContent = err.message;
     errBox.hidden = false;
@@ -755,13 +822,222 @@ function renderAccount(u) {
         ${joined ? `<div class="pf-joined">Joined ${esc(joined)}</div>` : ""}
         <div class="pf-actions">
           <a class="auth-btn" href="/user/${encodeURIComponent(u.username)}">View full profile</a>
-          <a class="auth-btn alt" href="/preferences">Preferences</a>
+          <button class="auth-btn alt" id="pf-settings" type="button">Settings</button>
         </div>
       </div>
     </div>`;
+  document.getElementById("pf-settings").addEventListener("click", () => goToPage(4));
 }
 
-loadAuth().then(renderProfile);
+const settingsRoot = document.getElementById("settings-root");
+
+function themeNow() {
+  try { return localStorage.getItem("color-scheme") === "light" ? "light" : "dark"; } catch (err) { return "dark"; }
+}
+
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+}
+
+function setTheme(theme) {
+  try { localStorage.setItem("color-scheme", theme); } catch (err) {}
+  applyTheme(theme);
+  renderSettings();
+}
+
+async function jsonRequest(method, path, body) {
+  const res = await fetch(path, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  let data = {};
+  try { data = await res.json(); } catch (err) {}
+  if (res.status >= 400) {
+    throw new Error((data.message || "Something went wrong") + (data.error ? ". " + data.error : ""));
+  }
+  return data;
+}
+
+function setMsg(el, text, ok) {
+  el.textContent = text;
+  el.className = "set-msg" + (text ? (ok ? " ok" : " err") : "");
+}
+
+function renderSettings() {
+  const theme = themeNow();
+  const u = authData && authData.auth && authData.user ? authData.user : null;
+  const push = u ? `
+    <div class="set-card">
+      <div class="set-title">Notifications</div>
+      <div class="set-toggle"><span>Phone notifications</span><label class="switch"><input type="checkbox" id="set-push"><span></span></label></div>
+      <div class="set-hint">Get a notification on your phone when you receive a new one. On iPhone and iPad, add this site to your Home Screen first.</div>
+      <div class="set-msg" id="set-push-msg"></div>
+    </div>` : "";
+  const account = u ? `
+    <div class="set-card">
+      <div class="set-title">Account</div>
+      <div class="set-row">Signed in as <strong>${esc(u.username)}</strong></div>
+      <form class="auth-form" id="set-profile">
+        <div class="field-label">Username</div>
+        <input class="auth-input" name="username" type="text" required value="${esc(u.username)}" autocapitalize="none" autocorrect="off" spellcheck="false">
+        <div class="field-label">Biography</div>
+        <textarea class="auth-input" name="biography">${esc(u.biography || "")}</textarea>
+        <label class="check-row"><input type="checkbox" name="mature" ${u.mature ? "checked" : ""}> Show mature content</label>
+        <button class="auth-btn" type="submit">Save changes</button>
+        <div class="set-msg" id="set-profile-msg"></div>
+      </form>
+    </div>
+    <div class="set-card">
+      <div class="set-title">Change password</div>
+      <form class="auth-form" id="set-password">
+        <input class="auth-input" name="current" type="password" placeholder="Current password" required autocomplete="current-password">
+        <input class="auth-input" name="next" type="password" placeholder="New password" required autocomplete="new-password">
+        <input class="auth-input" name="confirm" type="password" placeholder="Confirm new password" required autocomplete="new-password">
+        <button class="auth-btn" type="submit">Change password</button>
+        <div class="set-msg" id="set-password-msg"></div>
+      </form>
+    </div>
+    <button class="auth-btn alt" id="set-logout" type="button">Log out</button>
+    <div class="set-msg" id="set-logout-msg"></div>` : `
+    <div class="set-card">
+      <div class="set-title">Account</div>
+      <div class="set-row">You aren\u2019t logged in.</div>
+      <button class="auth-btn" id="set-login" type="button">Go to login</button>
+    </div>`;
+  settingsRoot.innerHTML = `
+    <h2>Settings</h2>
+    <div class="set-card">
+      <div class="set-title">Appearance</div>
+      <div class="auth-tabs">
+        <button class="chat-tab-btn ${theme === "dark" ? "active" : ""}" data-set-theme="dark" type="button">Dark</button>
+        <button class="chat-tab-btn ${theme === "light" ? "active" : ""}" data-set-theme="light" type="button">Light</button>
+      </div>
+    </div>
+    ${push}
+    ${account}`;
+  settingsRoot.querySelectorAll("[data-set-theme]").forEach(b => b.addEventListener("click", () => setTheme(b.dataset.setTheme)));
+  const on = (id, type, fn) => { const el = document.getElementById(id); if (el) el.addEventListener(type, fn); };
+  on("set-login", "click", () => goToPage(1));
+  on("set-push", "change", e => setPush(e.target.checked, e.target, document.getElementById("set-push-msg")));
+  refreshPushToggle();
+  on("set-profile", "submit", saveProfile);
+  on("set-password", "submit", changePassword);
+  on("set-logout", "click", logout);
+}
+
+async function saveProfile(e) {
+  e.preventDefault();
+  const f = e.target;
+  const u = authData.user;
+  const msg = document.getElementById("set-profile-msg");
+  setMsg(msg, "Saving…", true);
+  try {
+    await jsonRequest("PUT", "/api/auth/update", {
+      username: f.elements.username.value.trim(),
+      avatar: u.avatar,
+      banner: u.banner,
+      biography: f.elements.biography.value,
+      mature: f.elements.mature.checked
+    });
+    await loadAuth();
+    renderProfile();
+    renderSettings();
+    setMsg(document.getElementById("set-profile-msg"), "Saved.", true);
+  } catch (err) {
+    setMsg(msg, err.message, false);
+  }
+}
+
+async function changePassword(e) {
+  e.preventDefault();
+  const f = e.target;
+  const msg = document.getElementById("set-password-msg");
+  if (f.elements.next.value !== f.elements.confirm.value) return setMsg(msg, "Passwords don\u2019t match.", false);
+  setMsg(msg, "Saving…", true);
+  try {
+    await jsonRequest("POST", "/api/auth/changePassword", { currentPassword: f.elements.current.value, newPassword: f.elements.next.value });
+    f.reset();
+    setMsg(msg, "Password changed.", true);
+  } catch (err) {
+    setMsg(msg, err.message, false);
+  }
+}
+
+async function logout() {
+  const btn = document.getElementById("set-logout");
+  btn.disabled = true;
+  try { await disablePush(); } catch (err) {}
+  try {
+    await fetch("/logout", { redirect: "manual" });
+  } catch (err) {
+    console.error(err);
+  }
+  await loadAuth();
+  renderProfile();
+  renderSettings();
+  if (authData.auth) {
+    setMsg(document.getElementById("set-logout-msg"), "Couldn\u2019t log out. Try again.", false);
+    document.getElementById("set-logout").disabled = false;
+  }
+}
+
+const pushSupported = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+
+function urlBase64ToUint8Array(b64) {
+  const pad = "=".repeat((4 - b64.length % 4) % 4);
+  const raw = atob((b64 + pad).replace(/-/g, "+").replace(/_/g, "/"));
+  return Uint8Array.from(raw, c => c.charCodeAt(0));
+}
+
+async function getPushSubscription() {
+  if (!pushSupported) return null;
+  try {
+    const reg = await navigator.serviceWorker.getRegistration("/");
+    return reg ? await reg.pushManager.getSubscription() : null;
+  } catch (err) {
+    return null;
+  }
+}
+
+async function enablePush() {
+  if (!pushSupported) throw new Error("This browser doesn\u2019t support push notifications. On iPhone, add this site to your Home Screen first.");
+  const permission = await Notification.requestPermission();
+  if (permission !== "granted") throw new Error("Notifications are blocked. Allow them in your phone or browser settings.");
+  const reg = await navigator.serviceWorker.register("/sw.js");
+  await navigator.serviceWorker.ready;
+  const keyRes = await fetch("/api/push/key");
+  const keyData = await keyRes.json().catch(() => ({}));
+  if (!keyRes.ok || !keyData.key) throw new Error("Push notifications aren\u2019t set up on the server yet.");
+  const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(keyData.key) });
+  await jsonRequest("POST", "/api/push/subscribe", sub.toJSON());
+}
+
+async function disablePush() {
+  const sub = await getPushSubscription();
+  if (!sub) return;
+  const endpoint = sub.endpoint;
+  await sub.unsubscribe();
+  try { await jsonRequest("POST", "/api/push/unsubscribe", { endpoint }); } catch (err) {}
+}
+
+async function setPush(on, input, msg) {
+  input.disabled = true;
+  setMsg(msg, "", true);
+  try {
+    if (on) await enablePush(); else await disablePush();
+    setMsg(msg, on ? "Phone notifications are on." : "Phone notifications are off.", true);
+  } catch (err) {
+    input.checked = !on;
+    setMsg(msg, err.message, false);
+  }
+  input.disabled = false;
+}
+
+async function refreshPushToggle() {
+  const input = document.getElementById("set-push");
+  if (!input) return;
+  const sub = await getPushSubscription();
+  input.checked = !!sub && Notification.permission === "granted";
+}
+
+loadAuth().then(() => { renderProfile(); renderSettings(); });
 
 ["gesturestart", "gesturechange", "gestureend"].forEach(type => document.addEventListener(type, e => e.preventDefault()));
 
@@ -893,7 +1169,8 @@ async function submitCompose(e) {
       throw new Error((data.message || "Something went wrong") + (data.error ? ". " + data.error : ""));
     }
     if (history.state?.compose) history.back(); else closeCompose();
-    if (project) refreshProjects(); else loadForum();
+    apiCache.clear();
+    reloadPage(currentIndex);
   } catch (err) {
     errBox.textContent = err.message;
     errBox.hidden = false;
@@ -928,7 +1205,7 @@ document.addEventListener("touchend", e => {
 const track = document.getElementById("track");
 const viewport = document.getElementById("viewport");
 const navIcons = document.querySelectorAll("#bottom-navbar .nav-btn");
-const totalPages = 4;
+const totalPages = 5;
 
 let currentIndex = 0;
 let startX = 0, startY = 0, deltaX = 0;
@@ -961,7 +1238,12 @@ function dragMove(e) {
   if (axis === null) {
     if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
     axis = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
-    if (axis === "x") track.classList.remove("animate");
+    if (axis === "x") {
+      track.classList.remove("animate");
+      clearTimeout(unloadTimer);
+      mountPage(currentIndex - 1);
+      mountPage(currentIndex + 1);
+    }
   }
   if (axis !== "x") return;
   deltaX = dx;
@@ -993,6 +1275,9 @@ function goToPage(index) {
 function updateSlidePosition() {
   track.style.transform = `translateX(${-currentIndex * viewport.clientWidth}px)`;
   navIcons.forEach((icon, idx) => icon.classList.toggle("active", idx === currentIndex));
+  mountPage(currentIndex);
+  clearTimeout(unloadTimer);
+  unloadTimer = setTimeout(unloadInactive, 450);
 }
 window.addEventListener("resize", updateSlidePosition);
 
@@ -1002,6 +1287,70 @@ function openChatTab(evt, tabId) {
   document.getElementById(tabId).classList.add("active");
   evt.currentTarget.classList.add("active");
 }
+
+function resetStatus(statusId) {
+  const status = document.getElementById(statusId);
+  status.style.display = "";
+  status.textContent = "Loading…";
+}
+
+function unloadHome() {
+  nextToken("featured-grid");
+  nextToken("latest-grid");
+  document.getElementById("featured-grid").innerHTML = "";
+  document.getElementById("latest-grid").innerHTML = "";
+  resetStatus("featured-status");
+  resetStatus("latest-status");
+}
+
+function unloadSearch() {
+  nextToken("search-grid");
+  document.getElementById("search-grid").innerHTML = "";
+  resetStatus("search-status");
+}
+
+function unloadForum() {
+  nextToken("forum-list");
+  document.getElementById("forum-list").innerHTML = "";
+  resetStatus("forum-status");
+}
+
+const pageHooks = [
+  { mount: refreshProjects, unmount: unloadHome },
+  null,
+  { mount: runSearch, unmount: unloadSearch },
+  { mount: loadForum, unmount: unloadForum },
+  null
+];
+const mountedPages = new Set();
+let unloadTimer = null;
+
+function mountPage(i) {
+  const hooks = pageHooks[i];
+  if (!hooks || mountedPages.has(i)) return;
+  mountedPages.add(i);
+  hooks.mount();
+}
+
+function unmountPage(i) {
+  const hooks = pageHooks[i];
+  if (!hooks || !mountedPages.has(i)) return;
+  mountedPages.delete(i);
+  hooks.unmount();
+}
+
+function unloadInactive() {
+  pageHooks.forEach((hooks, i) => { if (i !== currentIndex) unmountPage(i); });
+}
+
+function reloadPage(i) {
+  const hooks = pageHooks[i];
+  if (!hooks || !mountedPages.has(i)) return;
+  hooks.unmount();
+  hooks.mount();
+}
+
+mountPage(0);
 </script>
 </body>
 </html>
