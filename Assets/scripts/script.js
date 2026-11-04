@@ -186,7 +186,7 @@ function projHTML(list, tok) {
         <img class="project-thumbnail" src="${proj.thumbnail || "/images/blank_project.png"}" alt="">
       </div>
       <div class="project-link">${verifiedmark(proj.verified)}${previewContent(proj.title, 100)}</div>
-      <div>By: <object><a class="author-link" href="/user/${proj.poster}"${proj.anon ? ` title="Posted Anonymously"` : ""}><span class="comment-avatar author-pfp">${focalimg(proj.authoravatar || "/images/default_pfp.png", proj.authorpos)}</span><i>${proj.poster}</i></a></object></div>`;
+      <div>By: <object><a class="author-link" href="/user/${proj.poster}"><span class="comment-avatar author-pfp">${focalimg(proj.authoravatar || "/images/default_pfp.png", proj.authorpos)}</span><i>${proj.poster}</i>${proj.anon ? " (Anonymous)": ""}</a></object></div>`;
     list.appendChild(a);
     const thumb = a.querySelector(".project-thumbnail");
     if (!thumb.getAttribute("src")) thumb.src = "/images/blank_project.png";
@@ -203,7 +203,7 @@ function forumHTML(list, tok) {
         <h2>${previewContent(post.title, 100)}</h2>
         <p style="display: inline;">${previewContent(post.content, 100)}
         <br>
-      By: <object><a class="author-link" href="/user/${post.poster}"${post.anon ? ` title="Posted Anonymously"` : ""}><span class="comment-avatar author-pfp">${focalimg(post.authoravatar || "/images/default_pfp.png", post.authorpos)}</span><i>${post.poster}</i></a></object> | Views: ${post.views} | Active ${relativeDate(post.activeAt)}</p>
+      By: <object><a class="author-link" href="/user/${post.poster}"><span class="comment-avatar author-pfp">${focalimg(post.authoravatar || "/images/default_pfp.png", post.authorpos)}</span><i>${post.poster}</i>${post.anon ? " (Anonymous)": ""}</a></object> | Views: ${post.views} | Active ${relativeDate(post.activeAt)}</p>
       <div class="forum-tags">${tagHTML(post.tags)}</div>
       </div>`;
     list.appendChild(a);

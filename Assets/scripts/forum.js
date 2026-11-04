@@ -4,15 +4,15 @@ async function createPost(post,data,txt,name,reload) {
   var dispavatar = data.authoravatar || "/images/default_pfp.png";
   var disppos = data.authorpos || {};
   var displink = "/user/" + encodeURIComponent(data.poster || "Unknown User");
-  var disptitle = data.anon ? ` title="Posted Anonymously"` : "";
+  var disptitle = data.anon ? " (Anonymous)" : "";
   post.innerHTML = `
   <div id="display">
     <h2 class="post-name">${verifiedmark(data.verified)}${makeLiteralChars(data.title)}</h2>
     <p class="comment-data">${new Date(data.postedAt).toUTCString()}</p>
     <div class="comment-top">
-      <a href="${displink}"${disptitle}>
+      <a href="${displink}">
         <span class="comment-avatar">${focalimg(dispavatar, disppos)}</span>
-        <p class="comment-username">${dispname}</p>
+        <p class="comment-username">${dispname + disptitle}</p>
       </a>
     </div>
     ${convertMarkdown(data.content || "")} <br>
@@ -89,7 +89,7 @@ async function listComments(list,comments,self,events) {
     var cavatar = c.authoravatar || "/images/default_pfp.png";
     var cpos = c.authorpos || {};
     var clink = "/user/" + encodeURIComponent(c.poster || "Unknown User");
-    var ctitle = c.anon ? ` title="Posted Anonymously"` : "";
+    var ctitle = c.anon ? " (Anonymous)" : "";
     if (self) {
       var options = `<input type="button" value="reply" onclick="window.onreplybtnclick(${i});">`;
       if (self.id == c.posterId) {
@@ -109,9 +109,9 @@ async function listComments(list,comments,self,events) {
         </div>
       </div>`:""}
       <div class="comment-top">
-        <a href="${clink}"${ctitle}>
+        <a href="${clink}">
           <span class="comment-avatar">${focalimg(cavatar, cpos)}</span>
-          <p class="comment-username">${cname}</p>
+          <p class="comment-username">${cname + ctitle}</p>
         </a>
         <p class="comment-data">${relativeDate(c.postedAt)}</p>
       </div>
