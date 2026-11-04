@@ -863,13 +863,13 @@ function setMsg(el, text, ok) {
 function renderSettings() {
   const theme = themeNow();
   const u = authData && authData.auth && authData.user ? authData.user : null;
-  const push = u ? `
-    <div class="set-card">
-      <div class="set-title">Notifications</div>
-      <div class="set-toggle"><span>Phone notifications</span><label class="switch"><input type="checkbox" id="set-push"><span></span></label></div>
-      <div class="set-hint">Get a notification on your phone when you receive a new one. On iPhone and iPad, add this site to your Home Screen first.</div>
-      <div class="set-msg" id="set-push-msg"></div>
-    </div>` : "";
+  //const push = u ? `
+  //  <div class="set-card">
+      //<div class="set-title">Notifications</div>
+      //<div class="set-toggle"><span>Phone notifications</span><label class="switch"><input type="checkbox" id="set-push"><span></span></label></div>
+     // <div class="set-hint">Get a notification on your phone when you receive a new one. On iPhone and iPad, add this site to your Home Screen first.</div>
+//      <div class="set-msg" id="set-push-msg"></div>
+//    </div>` : ""
   const account = u ? `
     <div class="set-card">
       <div class="set-title">Account</div>
