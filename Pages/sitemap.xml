@@ -1,37 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">
    <url>
-      <loc>https://watermelonkatana.com/</loc>
+      <loc>BASE_URL/</loc>
       <changefreq>daily</changefreq>
       <priority>1.0</priority>
    </url>
    <url>
-      <loc>https://watermelonkatana.com/forum/</loc>
+      <loc>BASE_URL/forum/</loc>
       <changefreq>daily</changefreq>
       <priority>0.8</priority>
    </url>
    <url>
-      <loc>https://watermelonkatana.com/chat/</loc>
+      <loc>BASE_URL/chat/</loc>
       <changefreq>monthly</changefreq>
       <priority>0.6</priority>
    </url>
    <url>
-      <loc>https://watermelonkatana.com/dashboard</loc>
+      <loc>BASE_URL/dashboard</loc>
       <changefreq>monthly</changefreq>
       <priority>0.5</priority>
    </url>
    <url>
-      <loc>https://watermelonkatana.com/search/</loc>
+      <loc>BASE_URL/search/</loc>
       <changefreq>monthly</changefreq>
       <priority>0.2</priority>
    </url>
    <url>
-      <loc>https://watermelonkatana.com/faq/</loc>
+      <loc>BASE_URL/faq/</loc>
       <changefreq>weekly</changefreq>
       <priority>0.2</priority>
    </url>
    <url>
-      <loc>https://watermelonkatana.com/editor/</loc>
+      <loc>BASE_URL/editor/</loc>
       <changefreq>weekly</changefreq>
       <priority>0.2</priority>
    </url>
