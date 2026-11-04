@@ -383,7 +383,7 @@ app.get('/sitemap.xml', async (req, res) => {
   const projects = await Projects.find({ hidden: false });
   const posts = await Posts.find({ hidden: false });
   const users = await Users.find({});
-  const baseurl = 'https://watermelonkatana.onrender.com';
+  const baseurl = `${req.protocol}://${req.get('host')}`;
 
   var dynamics = `
   ${projects.map((e) => `
