@@ -8,6 +8,10 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --title-font: sans-serif;
+  --spill-color1: #ff8fab; --spill-color2: #ffb3c7; --spill-color3: #00e676; --spill-color4: #2e9e5b;
+}
 
 html, body {
   width: 100%; height: 100%; overflow: hidden; overscroll-behavior: none;
@@ -20,8 +24,7 @@ html, body {
   position: fixed; top: 0; left: 0; display: flex; align-items: flex-end;
   justify-content: space-between; padding: 0 15px env(safe-area-inset-top);
   z-index: 9999;
-  background-image: url("https://grabezany.github.io/UItest/background.png");
-  background-size: cover; background-position: top center; background-repeat: no-repeat;
+  background-color: #333;
 }
 .icon-btn, .nav-btn {
   background: none; border: 0; color: #fff; display: flex; align-items: center; justify-content: center;
@@ -45,7 +48,21 @@ html, body {
 .notif-dismiss { flex: 0 0 auto; background: none; border: 0; color: #fff; opacity: .6; padding: 6px; display: flex; }
 .notif-dismiss svg { width: 20px; height: 20px; }
 .icon-btn svg { width: 26px; height: 26px; }
-.topnavbar h3 { margin: 0; font-size: 1.1rem; text-align: center; }
+.topnavbar h3 { margin: 0; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1.45rem; text-align: center; }
+.logo-text {
+  font-family: var(--title-font), serif;
+  background: linear-gradient(90deg, var(--spill-color1), var(--spill-color2), var(--spill-color3), var(--spill-color4));
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  display: inline-block;
+  padding: 0 0.15em;
+  line-height: 1.2;
+  animation: liquidSpill 4s ease-in-out infinite;
+}
+@keyframes liquidSpill { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
 
 .navbar {
   background-color: rgba(40, 40, 40, 0.55); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, 0.1); width: 90%; max-width: 400px; height: 50px;
@@ -54,7 +71,7 @@ html, body {
   justify-content: space-around; align-items: center;
 }
 .nav-btn { flex: 1; height: 100%; opacity: .5; transition: opacity .3s ease, color .3s ease; }
-.nav-btn.active { opacity: 1; color: #00e676; }
+.nav-btn.active { opacity: 1; color: #ffb3c7; }
 .nav-btn svg { width: 26px; height: 26px; }
 
 .viewport { width: 100%; height: 100%; position: absolute; top: 0; left: 0; overflow: hidden; touch-action: pan-y; }
@@ -213,9 +230,10 @@ textarea.auth-input { min-height: 140px; resize: vertical; font-family: inherit;
 .set-msg.err { color: #ff6b6b; }
 .auth-tabs[hidden] { display: none; }
 html[data-theme="light"], html[data-theme="light"] body { background: #f2f2f2; color: #111; }
+html[data-theme="light"] .topnavbar { background-color: #e6e6e6; }
 html[data-theme="light"] .navbar { background-color: rgba(255, 255, 255, 0.65); border-color: rgba(0, 0, 0, 0.1); }
 html[data-theme="light"] .nav-btn { color: #111; }
-html[data-theme="light"] .nav-btn.active { color: #00a152; }
+html[data-theme="light"] .nav-btn.active { color: #e0507a; }
 html[data-theme="light"] .project-card, html[data-theme="light"] .forum-card, html[data-theme="light"] .notif-item,
 html[data-theme="light"] .pf-card, html[data-theme="light"] .set-card, html[data-theme="light"] .pv-comment,
 html[data-theme="light"] .auth-input, html[data-theme="light"] .search-input, html[data-theme="light"] .pv-form textarea,
@@ -235,7 +253,7 @@ html[data-theme="light"] .set-title { color: #00a152; }
 
 <div class="topnavbar">
   <button class="icon-btn" id="add-btn" aria-label="Create"><i data-lucide="square-plus"></i></button>
-  <h3 id="app-title">WatermelonKatana</h3>
+  <h3 id="app-title"><span class="logo-text">WatermelonKatana</span></h3>
   <button class="icon-btn" id="mail-btn" aria-label="Notifications"><i data-lucide="mail"></i><span class="badge" id="notif-badge" hidden></span></button>
 </div>
 
