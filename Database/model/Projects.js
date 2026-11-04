@@ -174,6 +174,7 @@ const ProjectSchema = new Mongoose.Schema({
       container.id = this._id;
       container.posterId = this.posterId;
       container.poster = this.poster;
+      container.anon = this.anon;
       return container;
     }
   }
