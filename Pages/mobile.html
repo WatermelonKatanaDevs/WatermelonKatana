@@ -212,14 +212,6 @@ textarea.auth-input { min-height: 140px; resize: vertical; font-family: inherit;
 .set-msg.ok { color: #00e676; }
 .set-msg.err { color: #ff6b6b; }
 .auth-tabs[hidden] { display: none; }
-.set-toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: .95rem; }
-.set-hint { font-size: .75rem; opacity: .6; margin-top: 8px; line-height: 1.35; }
-.switch { position: relative; width: 48px; height: 28px; flex: 0 0 auto; }
-.switch input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; z-index: 1; }
-.switch span { position: absolute; inset: 0; background: #555; border-radius: 14px; transition: background .2s; pointer-events: none; }
-.switch span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; transition: transform .2s; }
-.switch input:checked + span { background: #00e676; }
-.switch input:checked + span::after { transform: translateX(20px); }
 html[data-theme="light"], html[data-theme="light"] body { background: #f2f2f2; color: #111; }
 html[data-theme="light"] .navbar { background-color: rgba(255, 255, 255, 0.65); border-color: rgba(0, 0, 0, 0.1); }
 html[data-theme="light"] .nav-btn { color: #111; }
@@ -863,13 +855,6 @@ function setMsg(el, text, ok) {
 function renderSettings() {
   const theme = themeNow();
   const u = authData && authData.auth && authData.user ? authData.user : null;
-  //const push = u ? `
-  //  <div class="set-card">
-      //<div class="set-title">Notifications</div>
-      //<div class="set-toggle"><span>Phone notifications</span><label class="switch"><input type="checkbox" id="set-push"><span></span></label></div>
-     // <div class="set-hint">Get a notification on your phone when you receive a new one. On iPhone and iPad, add this site to your Home Screen first.</div>
-//      <div class="set-msg" id="set-push-msg"></div>
-//    </div>` : ""
   const account = u ? `
     <div class="set-card">
       <div class="set-title">Account</div>
@@ -910,13 +895,10 @@ function renderSettings() {
         <button class="chat-tab-btn ${theme === "light" ? "active" : ""}" data-set-theme="light" type="button">Light</button>
       </div>
     </div>
-    ${push}
     ${account}`;
   settingsRoot.querySelectorAll("[data-set-theme]").forEach(b => b.addEventListener("click", () => setTheme(b.dataset.setTheme)));
   const on = (id, type, fn) => { const el = document.getElementById(id); if (el) el.addEventListener(type, fn); };
   on("set-login", "click", () => goToPage(1));
-  on("set-push", "change", e => setPush(e.target.checked, e.target, document.getElementById("set-push-msg")));
-  refreshPushToggle();
   on("set-profile", "submit", saveProfile);
   on("set-password", "submit", changePassword);
   on("set-logout", "click", logout);
@@ -963,7 +945,6 @@ async function changePassword(e) {
 async function logout() {
   const btn = document.getElementById("set-logout");
   btn.disabled = true;
-  try { await disablePush(); } catch (err) {}
   try {
     await fetch("/logout", { redirect: "manual" });
   } catch (err) {
@@ -976,65 +957,6 @@ async function logout() {
     setMsg(document.getElementById("set-logout-msg"), "Couldn\u2019t log out. Try again.", false);
     document.getElementById("set-logout").disabled = false;
   }
-}
-
-const pushSupported = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
-
-function urlBase64ToUint8Array(b64) {
-  const pad = "=".repeat((4 - b64.length % 4) % 4);
-  const raw = atob((b64 + pad).replace(/-/g, "+").replace(/_/g, "/"));
-  return Uint8Array.from(raw, c => c.charCodeAt(0));
-}
-
-async function getPushSubscription() {
-  if (!pushSupported) return null;
-  try {
-    const reg = await navigator.serviceWorker.getRegistration("/");
-    return reg ? await reg.pushManager.getSubscription() : null;
-  } catch (err) {
-    return null;
-  }
-}
-
-async function enablePush() {
-  if (!pushSupported) throw new Error("This browser doesn\u2019t support push notifications. On iPhone, add this site to your Home Screen first.");
-  const permission = await Notification.requestPermission();
-  if (permission !== "granted") throw new Error("Notifications are blocked. Allow them in your phone or browser settings.");
-  const reg = await navigator.serviceWorker.register("/sw.js");
-  await navigator.serviceWorker.ready;
-  const keyRes = await fetch("/api/push/key");
-  const keyData = await keyRes.json().catch(() => ({}));
-  if (!keyRes.ok || !keyData.key) throw new Error("Push notifications aren\u2019t set up on the server yet.");
-  const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(keyData.key) });
-  await jsonRequest("POST", "/api/push/subscribe", sub.toJSON());
-}
-
-async function disablePush() {
-  const sub = await getPushSubscription();
-  if (!sub) return;
-  const endpoint = sub.endpoint;
-  await sub.unsubscribe();
-  try { await jsonRequest("POST", "/api/push/unsubscribe", { endpoint }); } catch (err) {}
-}
-
-async function setPush(on, input, msg) {
-  input.disabled = true;
-  setMsg(msg, "", true);
-  try {
-    if (on) await enablePush(); else await disablePush();
-    setMsg(msg, on ? "Phone notifications are on." : "Phone notifications are off.", true);
-  } catch (err) {
-    input.checked = !on;
-    setMsg(msg, err.message, false);
-  }
-  input.disabled = false;
-}
-
-async function refreshPushToggle() {
-  const input = document.getElementById("set-push");
-  if (!input) return;
-  const sub = await getPushSubscription();
-  input.checked = !!sub && Notification.permission === "granted";
 }
 
 loadAuth().then(() => { renderProfile(); renderSettings(); });
