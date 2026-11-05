@@ -49,7 +49,7 @@
     const name = location.path[2];
     var rolesdata = [];
 
-    async function renderProfile(userData, isAuthenticated, isOwnProfile) {
+    async function renderProfile(userData, isAuthenticated, isOwnProfile, currentUserId) {
       let roleBorderCSS;
       let nameCSS;
       let nameCSSClass;
@@ -113,19 +113,21 @@
       Joined on ${new Date(userData.joinedAt).toUTCString().replace(/\d\d:[^]+$/, "")} |
       <span id="followercount" class="link">${userData.followers.length}</span> Followers |
       <span id="followingcount" class="link">${userData.following.length}</span> Following
-      ${isAuthenticated && !isOwnProfile ? `| <label><input type="checkbox" id="follow-btn" onclick="followbtnclick(this.checked);" ${userData.followers.includes(name) ? "checked" : ""}><span class="checkbox"></span></label> Follow` : ""}
+      ${isAuthenticated && !isOwnProfile ? `| <label><input type="checkbox" id="follow-btn" onclick="followbtnclick(this.checked);" ${userData.followers.includes(String(currentUserId)) ? "checked" : ""}><span class="checkbox"></span></label> Follow` : ""}
       | <a href="/uploadedmedia?poster=${userData.username}">Uploaded Media</a>
     </div>`;
     }
 
     async function followbtnclick(feature) {
       var count = document.querySelector("#followercount");
-      if (feature) {
-        count.innerHTML = Number(count.innerHTML) + 1;
-        await fetch("/api/auth/follow?username=" + name);
-      } else {
-        count.innerHTML = Number(count.innerHTML) - 1;
-        await fetch("/api/auth/unfollow?username=" + name);
+      var button = document.querySelector("#follow-btn");
+      try {
+        const response = await fetch("/api/auth/" + (feature ? "follow" : "unfollow") + "?username=" + encodeURIComponent(name));
+        if (!response.ok) throw new Error("Follow request failed");
+        count.innerHTML = Number(count.innerHTML) + (feature ? 1 : -1);
+      } catch (error) {
+        button.checked = !feature;
+        console.error(error);
       }
     }
 
@@ -133,13 +135,13 @@
       try {
         let isAuthenticated = false;
         let isMature = false;
-        let username = null;
+        let currentUserId = null;
 
         try {
           const tok = await getAuth();
           isAuthenticated = tok.auth;
           isMature = tok.user.mature;
-          username = tok.user.username;
+          currentUserId = tok.user.id;
         } catch (e) {
           console.warn("User not authenticated");
         }
@@ -149,8 +151,8 @@
 
         try { rolesdata = ((await (await fetch("/data/badges.json")).json()).roles) || []; } catch (e) {}
 
-        const isOwnProfile = isAuthenticated && username === userData.username;
-        await renderProfile(userData, isAuthenticated, isOwnProfile);
+        const isOwnProfile = isAuthenticated && String(currentUserId) === String(userData.id);
+        await renderProfile(userData, isAuthenticated, isOwnProfile, currentUserId);
 
         const publishedProjects = await fetch("/api/project/list?poster=" + name +
           (isMature ? `&showMature=${isMature}` : "") +
