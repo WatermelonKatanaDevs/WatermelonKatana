@@ -247,7 +247,7 @@ app.get("/editor/project/:id", checkAuth, async (req, res) => {
 
 app.get("/editor/github-picker", userAuth, (req, res) => res.sendFile(cldir + "/editor/github-picker.html"));
 
-//Mobile helper functions
+//Mobile helper function
 const mobileTypes = ["phone", "tablet"];
 function wantsMobile(req) {
   if (req.query.view === "desktop") return false;
