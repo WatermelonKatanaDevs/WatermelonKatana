@@ -388,23 +388,29 @@ try {
   if (KEYS[saved]) customKey = saved;
 } catch (err) {}
 
-function inputDoc(doc) {
-  for (const frame of doc.querySelectorAll("iframe")) {
+function allDocs(doc, out) {
+  out.push(doc);
+  doc.querySelectorAll("iframe").forEach(frame => {
     try {
-      if (frame.contentDocument && frame.contentDocument.body) return inputDoc(frame.contentDocument);
+      if (frame.contentDocument && frame.contentDocument.body) allDocs(frame.contentDocument, out);
     } catch (err) {}
-  }
-  return doc;
+  });
+  return out;
 }
 
 function fireKey(type, def) {
+  const game = document.getElementById("game");
   try {
-    const doc = inputDoc(document.getElementById("game").contentDocument);
-    const win = doc.defaultView;
-    const ev = new win.KeyboardEvent(type, { key: def.key, code: def.code, bubbles: true, cancelable: true, composed: true });
-    Object.defineProperty(ev, "keyCode", { get: () => def.keyCode });
-    Object.defineProperty(ev, "which", { get: () => def.keyCode });
-    doc.body.dispatchEvent(ev);
+    allDocs(game.contentDocument, []).forEach(doc => {
+      const win = doc.defaultView;
+      const ev = new win.KeyboardEvent(type, { key: def.key, code: def.code, bubbles: true, cancelable: true, composed: true });
+      Object.defineProperty(ev, "keyCode", { get: () => def.keyCode });
+      Object.defineProperty(ev, "which", { get: () => def.keyCode });
+      doc.body.dispatchEvent(ev);
+    });
+  } catch (err) {}
+  try {
+    game.contentWindow.postMessage({ type: "touch-key", event: type, key: def.key, code: def.code, keyCode: def.keyCode }, "*");
   } catch (err) {}
 }
 
