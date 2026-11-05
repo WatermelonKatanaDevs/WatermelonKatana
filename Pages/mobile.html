@@ -38,9 +38,15 @@ html, body {
 .badge[hidden] { display: none; }
 .notif-item {
   display: flex; align-items: center; gap: 10px; background: #2a2a2a; border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 14px; padding: 10px 12px; margin-bottom: 8px; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  border-radius: 14px; padding: 10px 12px; cursor: pointer; -webkit-tap-highlight-color: transparent;
 }
 .notif-item:active { background: #333; }
+.notif-item { position: relative; transition: transform .2s ease; }
+.notif-item.dragging { transition: none; }
+.notif-row { position: relative; margin-bottom: 8px; border-radius: 14px; overflow: hidden; background: #ff4d4f; transition: max-height .25s ease, margin .25s ease, opacity .25s ease; }
+.notif-row.gone { max-height: 0 !important; margin-bottom: 0; opacity: 0; }
+.notif-bg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: flex-end; padding-right: 20px; color: #fff; }
+.notif-bg svg { width: 22px; height: 22px; }
 .notif-avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; flex: 0 0 auto; background: #1a1a1a; }
 .notif-text { flex: 1 1 auto; min-width: 0; }
 .notif-msg { font-size: .88rem; line-height: 1.3; overflow-wrap: anywhere; }
@@ -614,6 +620,9 @@ window.addEventListener("popstate", () => { closePost(); closeNotifs(); closeCom
 
 let authData = null;
 let notifs = [];
+let serverNotifs = [];
+let deleteChain = Promise.resolve();
+const pendingDeletes = new Set();
 const notifUsers = {};
 const notifView = document.getElementById("notif-view");
 const notifScroll = document.getElementById("notif-scroll");
@@ -634,7 +643,8 @@ async function loadAuth() {
     authData = { auth: false };
   }
   const list = authData.auth && authData.user && Array.isArray(authData.user.notifications) ? authData.user.notifications : [];
-  notifs = list.slice().sort((a, b) => b.createdAt - a.createdAt);
+  serverNotifs = list.slice().sort((a, b) => b.createdAt - a.createdAt);
+  notifs = serverNotifs.filter(n => !pendingDeletes.has(notifKey(n)));
   updateBadge();
 }
 
@@ -650,26 +660,134 @@ async function getNotifUser(id) {
   return notifUsers[id];
 }
 
-function notifIndex(n) {
-  return notifs.length - notifs.indexOf(n) - 1;
+function notifKey(n) {
+  return [n.createdAt, n.posterId, n.title, n.content].join("|");
 }
 
-async function dismissNotif(n) {
-  try {
-    await fetch("/notification/" + notifIndex(n));
-  } catch (err) {
-    console.error(err);
-    return;
+function serverIndex(n) {
+  const key = notifKey(n);
+  const pos = serverNotifs.findIndex(x => notifKey(x) === key);
+  return pos === -1 ? -1 : serverNotifs.length - pos - 1;
+}
+
+function queueDelete(n) {
+  const key = notifKey(n);
+  deleteChain = deleteChain.then(async () => {
+    const idx = serverIndex(n);
+    if (idx === -1) {
+      pendingDeletes.delete(key);
+      return;
+    }
+    try {
+      const res = await fetch("/notification/" + idx, { redirect: "manual" });
+      if (res.type !== "opaqueredirect" && res.status >= 400) throw new Error("HTTP " + res.status);
+      const at = serverNotifs.findIndex(x => notifKey(x) === key);
+      if (at !== -1) serverNotifs.splice(at, 1);
+      pendingDeletes.delete(key);
+    } catch (err) {
+      console.error(err);
+      restoreNotif(n);
+    }
+  });
+}
+
+function restoreNotif(n) {
+  const key = notifKey(n);
+  pendingDeletes.delete(key);
+  if (!notifs.some(x => notifKey(x) === key)) {
+    notifs.push(n);
+    notifs.sort((a, b) => b.createdAt - a.createdAt);
   }
-  notifs.splice(notifs.indexOf(n), 1);
   updateBadge();
-  renderNotifs();
+  if (notifView.classList.contains("open")) {
+    renderNotifs().then(() => notifScroll.insertAdjacentHTML("afterbegin", '<div class="status">Couldn\u2019t delete a notification, so it was restored.</div>'));
+  }
+}
+
+function removeNotif(n, row) {
+  const i = notifs.indexOf(n);
+  if (i === -1) return;
+  notifs.splice(i, 1);
+  pendingDeletes.add(notifKey(n));
+  updateBadge();
+  if (row) {
+    row.style.maxHeight = row.offsetHeight + "px";
+    row.getBoundingClientRect();
+    row.classList.add("gone");
+    setTimeout(() => {
+      row.remove();
+      if (!notifs.length && notifView.classList.contains("open")) renderNotifs();
+    }, 280);
+  }
+  queueDelete(n);
+}
+
+function openNotif(n) {
+  deleteChain.then(() => {
+    const idx = serverIndex(n);
+    if (idx !== -1) location.href = "/notification/" + idx;
+  });
+}
+
+function attachSwipe(item, row, n) {
+  let startX = 0, startY = 0, dx = 0, id = null, mode = null, moved = false;
+  item.addEventListener("pointerdown", e => {
+    if (e.target.closest("button")) return;
+    id = e.pointerId;
+    startX = e.clientX;
+    startY = e.clientY;
+    dx = 0;
+    mode = null;
+    moved = false;
+  });
+  item.addEventListener("pointermove", e => {
+    if (e.pointerId !== id) return;
+    const mx = e.clientX - startX, my = e.clientY - startY;
+    if (mode === null) {
+      if (Math.abs(mx) < 8 && Math.abs(my) < 8) return;
+      mode = Math.abs(mx) > Math.abs(my) ? "x" : "y";
+      if (mode === "x") {
+        item.setPointerCapture(id);
+        item.classList.add("dragging");
+      }
+    }
+    if (mode !== "x") return;
+    moved = true;
+    dx = Math.min(0, mx);
+    item.style.transform = "translateX(" + dx + "px)";
+  });
+  const finish = e => {
+    if (e.pointerId !== id) return;
+    id = null;
+    item.classList.remove("dragging");
+    if (mode === "x" && dx < -Math.min(110, row.offsetWidth * 0.35)) {
+      item.style.transform = "translateX(-100%)";
+      removeNotif(n, row);
+    } else {
+      item.style.transform = "";
+    }
+    mode = null;
+  };
+  item.addEventListener("pointerup", finish);
+  item.addEventListener("pointercancel", finish);
+  item.addEventListener("click", e => {
+    if (e.target.closest("button")) return;
+    if (moved) {
+      moved = false;
+      return;
+    }
+    openNotif(n);
+  });
 }
 
 function makeNotif(n, u) {
+  const row = document.createElement("div");
+  row.className = "notif-row";
+  const bg = document.createElement("div");
+  bg.className = "notif-bg";
+  bg.innerHTML = '<i data-lucide="trash-2"></i>';
   const d = document.createElement("div");
   d.className = "notif-item";
-  d.addEventListener("click", () => { location.href = "/notification/" + notifIndex(n); });
   const av = document.createElement("img");
   av.className = "notif-avatar";
   av.alt = "";
@@ -687,9 +805,11 @@ function makeNotif(n, u) {
   btn.className = "notif-dismiss";
   btn.setAttribute("aria-label", "Dismiss");
   btn.innerHTML = '<i data-lucide="bell-off"></i>';
-  btn.addEventListener("click", e => { e.stopPropagation(); dismissNotif(n); });
+  btn.addEventListener("click", e => { e.stopPropagation(); removeNotif(n, row); });
   d.append(av, text, btn);
-  return d;
+  row.append(bg, d);
+  attachSwipe(d, row, n);
+  return row;
 }
 
 async function renderNotifs() {
