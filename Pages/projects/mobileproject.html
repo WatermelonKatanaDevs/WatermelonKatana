@@ -45,8 +45,6 @@ input, textarea { font-size: 16px; }
 .keypick.open { display: grid; }
 .keypick button { padding: 8px 0; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.25); background: rgba(255, 255, 255, 0.1); color: #fff; font-size: .8rem; }
 .keypick button.sel { background: var(--accent); border-color: var(--accent); color: #111; }
-.pad-note { position: absolute; top: calc(10px + env(safe-area-inset-top)); left: 10px; max-width: 60%; padding: 4px 10px; border-radius: 10px; background: rgba(0, 0, 0, 0.65); color: #fff; font-size: .75rem; pointer-events: none; }
-.pad-note:empty { display: none; }
 .c-actions button.on { color: var(--accent); opacity: 1; }
 
 .actions, .info, .comments { touch-action: pan-y; }
@@ -118,7 +116,6 @@ Object.assign(KEYS, {
 });
 const PAD_HTML = `
   <div class="pad">
-    <div class="pad-note" id="pad-note"></div>
     <div class="joy" id="joy"><div class="knob" id="knob"></div></div>
     <div class="pad-right">
       <div class="custom-wrap">
@@ -401,20 +398,14 @@ function inputDoc(doc) {
 }
 
 function fireKey(type, def) {
-  const note = document.getElementById("pad-note");
-  let doc = null;
-  try { doc = document.getElementById("game").contentDocument; } catch (err) {}
-  if (!doc || !doc.body) {
-    if (note) note.textContent = "This player can\u2019t receive touch controls.";
-    return;
-  }
-  if (note) note.textContent = "";
-  doc = inputDoc(doc);
-  const win = doc.defaultView;
-  const ev = new win.KeyboardEvent(type, { key: def.key, code: def.code, bubbles: true, cancelable: true, composed: true });
-  Object.defineProperty(ev, "keyCode", { get: () => def.keyCode });
-  Object.defineProperty(ev, "which", { get: () => def.keyCode });
-  doc.body.dispatchEvent(ev);
+  try {
+    const doc = inputDoc(document.getElementById("game").contentDocument);
+    const win = doc.defaultView;
+    const ev = new win.KeyboardEvent(type, { key: def.key, code: def.code, bubbles: true, cancelable: true, composed: true });
+    Object.defineProperty(ev, "keyCode", { get: () => def.keyCode });
+    Object.defineProperty(ev, "which", { get: () => def.keyCode });
+    doc.body.dispatchEvent(ev);
+  } catch (err) {}
 }
 
 function press(name) {
