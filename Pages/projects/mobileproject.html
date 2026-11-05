@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<!--title-->
+<!--og:meta-->
+<link rel="apple-touch-icon" href="/images/icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<style>
+:root { --bg: #222; --card: #2a2a2a; --text: #fff; --accent: #00e676; --line: rgba(255, 255, 255, 0.08); --muted: rgba(255, 255, 255, 0.6); }
+html[data-theme="light"] { --bg: #f2f2f2; --card: #fff; --text: #111; --accent: #00a152; --line: rgba(0, 0, 0, 0.08); --muted: rgba(0, 0, 0, 0.55); }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body { background: var(--bg); color: var(--text); font-family: sans-serif; overflow-wrap: anywhere; padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+a { color: var(--accent); text-decoration: none; }
+button { font-family: inherit; color: var(--text); -webkit-tap-highlight-color: transparent; }
+input, textarea { font-size: 16px; }
+
+.top { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 8px; padding: calc(8px + env(safe-area-inset-top)) 12px 8px; background: var(--card); border-bottom: 1px solid var(--line); touch-action: pan-y; }
+.top h1 { font-size: 1rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.icon-btn { width: 36px; height: 36px; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; background: none; border: 0; }
+.icon-btn svg { width: 24px; height: 24px; }
+
+.stage { position: relative; width: 100%; aspect-ratio: var(--ar, 4 / 3); background: #000; }
+.stage iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.stage.full { position: fixed; inset: 0; z-index: 100; height: 100%; aspect-ratio: auto; }
+.exit-full { display: none; position: absolute; top: calc(10px + env(safe-area-inset-top)); right: 10px; z-index: 2; padding: 6px 14px; border: 0; border-radius: 15px; background: rgba(0, 0, 0, 0.65); color: #fff; font-weight: bold; }
+.stage.full .exit-full { display: block; }
+
+.actions, .info, .comments { touch-action: pan-y; }
+.actions { display: flex; gap: 8px; padding: 10px 12px; }
+.actions button { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 6px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); font-size: .85rem; font-weight: 600; }
+.actions button svg { width: 18px; height: 18px; }
+.actions button.on svg { fill: #ff4d6d; color: #ff4d6d; }
+
+.info, .comments { padding: 6px 12px 14px; }
+.title { font-size: 1.35rem; line-height: 1.25; }
+.byline { font-size: .85rem; color: var(--muted); margin: 4px 0 10px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.chip { padding: 3px 10px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); font-size: .72rem; }
+.chip.accent { color: var(--accent); }
+.desc { font-size: .95rem; line-height: 1.5; margin-bottom: 14px; }
+.desc a, .c-body a { color: #4facfe; }
+.stats { display: flex; justify-content: space-around; padding: 12px 0; margin-bottom: 12px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); }
+.stats div { display: flex; flex-direction: column; align-items: center; }
+.stats strong { font-size: 1.15rem; }
+.stats span { font-size: .7rem; color: var(--muted); }
+.btn { display: block; width: 100%; padding: 12px; border-radius: 14px; border: 0; background: var(--accent); color: #111; font-size: 1rem; font-weight: bold; text-align: center; margin-bottom: 8px; }
+.btn.alt { background: var(--card); color: var(--text); border: 1px solid var(--line); }
+.btn.danger { color: #ff6b6b; }
+
+.comments h2 { font-size: 1.1rem; color: var(--accent); margin: 8px 0 10px; }
+.comment { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; }
+.c-head { display: flex; justify-content: space-between; gap: 8px; font-size: .78rem; margin-bottom: 4px; }
+.c-head span { color: var(--muted); }
+.c-body { font-size: .92rem; line-height: 1.4; }
+.c-actions { display: flex; align-items: center; gap: 4px; margin-top: 6px; font-size: .8rem; color: var(--muted); }
+.c-actions button { background: none; border: 0; padding: 4px; display: flex; opacity: .75; }
+.c-actions svg { width: 18px; height: 18px; }
+.c-actions .del { margin-left: auto; }
+.form textarea { width: 100%; min-height: 90px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); outline: 0; background: var(--card); color: var(--text); font-family: inherit; resize: vertical; }
+.form .btn { margin: 8px 0 0; }
+.status { color: var(--muted); font-size: .9rem; padding: 14px 0; text-align: center; }
+.msg { font-size: .85rem; margin-top: 6px; color: #ff6b6b; }
+</style>
+</head>
+<body>
+<header class="top">
+  <button class="icon-btn" id="back" aria-label="Back"><i data-lucide="arrow-left"></i></button>
+  <h1 id="top-title">Project</h1>
+</header>
+<div id="seo" hidden><!--content--></div>
+<main id="app"><div class="status">Loading…</div></main>
+
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script>
+const pid = location.pathname.split("/")[2];
+const projectOwner = <!--project-owner-->;
+const platforms = { cdo: "code.org", khan: "Khan Academy", scratch: "Scratch", embed: "Unknown", wk: "Watermelon Katana", swf: "Flash", editor: "Node Editor" };
+let project = null;
+let auth = { auth: false };
+
+document.documentElement.dataset.theme = (() => {
+  try { return localStorage.getItem("color-scheme") === "light" ? "light" : "dark"; } catch (err) { return "dark"; }
+})();
+
+const app = document.getElementById("app");
+
+function esc(str) {
+  return String(str ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+function renderText(str) {
+  return esc(str).replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>').replace(/\n/g, "<br>");
+}
+function timeAgo(t) {
+  t = Number(t) || 0;
+  if (!t) return "";
+  const s = (Date.now() - t) / 1000;
+  const units = [["year", 31557600], ["month", 2629800], ["week", 604800], ["day", 86400], ["hour", 3600], ["minute", 60]];
+  for (const [name, secs] of units) {
+    const n = Math.floor(s / secs);
+    if (n >= 1) return n + " " + name + (n > 1 ? "s" : "") + " ago";
+  }
+  return "just now";
+}
+function icons() {
+  if (window.lucide) lucide.createIcons();
+}
+async function jsonRequest(method, path, body) {
+  const res = await fetch(path, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  let data = {};
+  try { data = await res.json(); } catch (err) {}
+  if (res.status >= 400) throw new Error((data.message || "Something went wrong") + (data.error ? ". " + data.error : ""));
+  return data;
+}
+function me() {
+  return auth && auth.auth ? auth.user : null;
+}
+
+async function loadAuth() {
+  try {
+    const res = await fetch("/api/auth/check");
+    auth = await res.json();
+  } catch (err) {
+    auth = { auth: false };
+  }
+}
+
+async function load() {
+  try {
+    const [res] = await Promise.all([fetch("/api/project/data/" + encodeURIComponent(pid)), loadAuth()]);
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    project = await res.json();
+    renderPage();
+    startGame();
+    renderComments();
+    setupOwner();
+  } catch (err) {
+    console.error(err);
+    app.innerHTML = '<div class="status">Couldn\u2019t load this project (' + esc(err.message) + ').</div>';
+  }
+}
+
+function renderPage() {
+  const p = project;
+  const u = me();
+  const link = p.platform === "editor" ? location.origin + "/editor/project/" + pid + "/deployment" : p.link;
+  const tags = (Array.isArray(p.tags) ? p.tags : []).map(t => `<span class="chip accent">#${esc(t)}</span>`).join("");
+  document.getElementById("top-title").textContent = p.title || "Project";
+  app.innerHTML = `
+    <div class="stage" id="stage">
+      <iframe id="game" allowfullscreen allow="autoplay; fullscreen; gamepad; accelerometer; gyroscope"></iframe>
+      <button class="exit-full" id="exit-full">Exit</button>
+    </div>
+    <div class="actions">
+      <button id="replay"><i data-lucide="rotate-ccw"></i>Replay</button>
+      <button id="fullscreen"><i data-lucide="maximize"></i>Fullscreen</button>
+      ${u ? '<button id="fav"><i data-lucide="heart"></i><span id="fav-text">Favorite</span></button>' : ""}
+    </div>
+    <section class="info">
+      <h2 class="title">${esc(p.title || "Untitled")}</h2>
+      <div class="byline">By <a href="/user/${encodeURIComponent(p.poster || "")}">${esc(p.poster || "unknown")}</a></div>
+      <div class="chips"><span class="chip">${esc(platforms[p.platform] || "Unknown")}</span>${tags}</div>
+      ${p.content ? `<div class="desc">${renderText(p.content)}</div>` : ""}
+      <div class="stats">
+        <div><strong id="score">${esc(p.score ?? 0)}</strong><span>Score</span></div>
+        <div><strong>${esc(p.views ?? 0)}</strong><span>Views</span></div>
+        <div><strong id="plays">${esc(p.plays || 0)}</strong><span>Plays</span></div>
+      </div>
+      ${/^https?:\/\//.test(link || "") ? `<a class="btn alt" href="${esc(link)}" target="_blank" rel="noopener">Open original</a>` : ""}
+      ${p.editorProject ? `<a class="btn alt" href="/editor/project/${encodeURIComponent(p.id)}">${projectOwner ? "Edit Code" : "View Code"}</a>` : ""}
+      <div id="owner"></div>
+    </section>
+    <section class="comments">
+      <h2>Comments (<span id="comment-count">0</span>)</h2>
+      <div id="comment-list"></div>
+      <div class="form" id="comment-form"></div>
+    </section>`;
+  document.getElementById("replay").addEventListener("click", replay);
+  document.getElementById("fullscreen").addEventListener("click", goFullscreen);
+  document.getElementById("exit-full").addEventListener("click", exitFullscreen);
+  const fav = document.getElementById("fav");
+  if (fav) {
+    fav.classList.toggle("on", Array.isArray(u.favorites) && u.favorites.includes(pid));
+    syncFavText();
+    fav.addEventListener("click", toggleFav);
+  }
+  icons();
+}
+
+async function startGame() {
+  const p = project;
+  const game = document.getElementById("game");
+  let ratio = [4, 3];
+  switch (p.platform) {
+    case "editor":
+      game.src = location.origin + "/editor/project/" + pid + "/deployment";
+      break;
+    case "cdo":
+      game.src = location.origin + "/turbowarp?u=" + p.link;
+      ratio = /^https:\/\/studio\.code\.org\/projects\/applab/.test(p.link) ? [71, 99] : [1, 1];
+      break;
+    case "scratch":
+      game.src = p.link + "/embed";
+      ratio = [485, 402];
+      break;
+    case "khan": {
+      const w = Math.max(window.innerWidth, 320);
+      game.src = `${p.link}/embedded?embed=yes&editor=no&buttons=no&author=no&width=${w}&height=${Math.round(w * 0.75)}`;
+      break;
+    }
+    case "wk": {
+      const configPattern = /(\w+)(?:\s*=\s*["'])([^"']+)/g;
+      const sanitizeBaseURI = /^(https?:\/\/|www)[^"]+/;
+      const sanitizeMain = /[^\\:*?"<>|]+/;
+      const sanitizeDimensions = /auto|fit-content|inherit|initial|(?:min|max)-content|revert-layer|unset|\d+.{0,2}/;
+      const config = { title: "JS Game", main: "index.js", style: "position: fixed; top: 0px; left: 0px", width: "", height: "" };
+      let setup = await fetch(p.link);
+      setup = await setup.text();
+      let configProperty;
+      while ((configProperty = configPattern.exec(setup)) !== null) {
+        config[configProperty[1]] = configProperty[2];
+      }
+      config.baseURI = Object(String(config.baseURI || "").match(sanitizeBaseURI))[0];
+      config.main = Object(String(config.main).match(sanitizeMain))[0];
+      config.width = Object(String(config.width).match(sanitizeDimensions))[0];
+      config.height = Object(String(config.height).match(sanitizeDimensions))[0];
+      game.srcdoc = `
+        <html>
+          <head>
+            <base href="${config.baseURI ? config.baseURI : location.origin}/" target="_blank">
+            <script>
+              fetch("${config.main}").then(response => {
+                if (response.status < 400) {
+                  return response.text();
+                } else {
+                  throw (response.status);
+                }
+              }).then(data => {
+                let script = document.createElement("script");
+                script.textContent = data;
+                document.head.appendChild(script);
+              }).catch(err => {
+                console.warn(err);
+              })
+            <\/script>
+          <\/head>
+          <body>
+            <canvas id="game-instance"><\/canvas>
+          <\/body>
+        <\/html>`;
+      const unit = /^\d+(\.\d+)?(px)?$/;
+      ratio = unit.test(config.width || "") && unit.test(config.height || "") ? [parseFloat(config.width), parseFloat(config.height)] : [1, 1];
+      break;
+    }
+    case "swf":
+      game.srcdoc = `
+        <html>
+          <head>
+            <script src="https://unpkg.com/@ruffle-rs/ruffle"><\/script>
+          <\/head>
+          <body>
+            <script>
+              RufflePlayer = RufflePlayer || {};
+              RufflePlayer.config = { autoplay: "on", unmuteOverlay: "hidden" };
+              const container = document.body;
+              const ruffle = RufflePlayer.newest();
+              const player = ruffle.createPlayer({});
+              container.appendChild(player);
+              player.style = "position: fixed; top: 0px; left: 0px; width: 100vw; height: 100vh";
+              player.load("${p.link}");
+            <\/script>
+          <\/body>
+        <\/html>`;
+      break;
+    default:
+      game.src = p.link;
+  }
+  const o = p.optimalViewSize;
+  if (o && o.enabled && Number(o.width) > 0 && Number(o.height) > 0) ratio = [Number(o.width), Number(o.height)];
+  document.getElementById("stage").style.setProperty("--ar", ratio[0] + " / " + ratio[1]);
+  game.addEventListener("load", recordPlay);
+}
+
+async function recordPlay() {
+  try {
+    const res = await fetch("/api/project/play/" + encodeURIComponent(pid));
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.counted) document.getElementById("plays").textContent = data.plays;
+  } catch (err) {
+    console.warn("Unable to record project play:", err);
+  }
+}
+
+function replay() {
+  const game = document.getElementById("game");
+  if (game.srcdoc) game.srcdoc = game.srcdoc;
+  else game.src = game.src;
+}
+
+function goFullscreen() {
+  const stage = document.getElementById("stage");
+  const fallback = () => stage.classList.add("full");
+  if (stage.requestFullscreen) stage.requestFullscreen().catch(fallback);
+  else fallback();
+}
+
+function exitFullscreen() {
+  document.getElementById("stage").classList.remove("full");
+}
+
+function syncFavText() {
+  const fav = document.getElementById("fav");
+  document.getElementById("fav-text").textContent = fav.classList.contains("on") ? "Favorited" : "Favorite";
+}
+
+async function toggleFav() {
+  const fav = document.getElementById("fav");
+  const on = !fav.classList.contains("on");
+  fav.disabled = true;
+  try {
+    const res = await fetch("/api/project/" + (on ? "favorite/" : "unfavorite/") + encodeURIComponent(pid));
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    fav.classList.toggle("on", on);
+    syncFavText();
+    const score = document.getElementById("score");
+    score.textContent = Number(score.textContent) + (on ? 1 : -1);
+  } catch (err) {
+    console.error(err);
+  }
+  fav.disabled = false;
+}
+
+async function setupOwner() {
+  try {
+    const res = await fetch(location.pathname + "/edit", { method: "HEAD" });
+    if (!res.ok) return;
+    const box = document.getElementById("owner");
+    box.innerHTML = '<a class="btn alt" href="' + esc(location.pathname) + '/edit">Edit project</a><button class="btn alt danger" id="delete" type="button">Delete project</button>';
+    document.getElementById("delete").addEventListener("click", deleteProject);
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+async function deleteProject() {
+  if (!confirm("Warning, this is permanent! Are you sure you want to continue?")) return;
+  try {
+    await jsonRequest("DELETE", "/api/project/delete/" + encodeURIComponent(pid), { pid });
+    location.assign("/mobile");
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
+function isAdmin(role) {
+  return role === "Admin" || role === "Uni Lover";
+}
+
+function renderComments() {
+  const list = Array.isArray(project.comments) ? project.comments : [];
+  const u = me();
+  const box = document.getElementById("comment-list");
+  document.getElementById("comment-count").textContent = list.length;
+  box.innerHTML = list.length ? list.map((c, i) => {
+    const name = c.poster || c.username || c.author || "unknown";
+    const when = timeAgo(c.createdAt || c.postedAt || c.time || c.date);
+    const score = Number.isFinite(c.score) ? c.score : (Array.isArray(c.upvotes) ? c.upvotes.length : 0) - (Array.isArray(c.downvotes) ? c.downvotes.length : 0);
+    const canDelete = u && (c.posterId === u.id || project.posterId === u.id || isAdmin(u.role));
+    return `<div class="comment">
+      <div class="c-head"><a href="/user/${encodeURIComponent(name)}">${esc(name)}</a><span>${esc(when)}</span></div>
+      <div class="c-body">${renderText(c.content)}</div>
+      ${u ? `<div class="c-actions">
+        <button data-act="up" data-i="${i}" aria-label="Upvote"><i data-lucide="chevron-up"></i></button>${esc(score)}
+        <button data-act="down" data-i="${i}" aria-label="Downvote"><i data-lucide="chevron-down"></i></button>
+        ${canDelete ? `<button class="del" data-act="del" data-i="${i}" aria-label="Delete"><i data-lucide="trash-2"></i></button>` : ""}
+      </div>` : ""}
+    </div>`;
+  }).join("") : '<div class="status">No comments yet.</div>';
+  const form = document.getElementById("comment-form");
+  form.innerHTML = u
+    ? '<textarea id="comment-input" placeholder="Write a comment…"></textarea><button class="btn" id="comment-send" type="button">Post comment</button><div class="msg" id="comment-msg"></div>'
+    : '<div class="status">Log in on the <a href="/mobile">Profile tab</a> to comment.</div>';
+  const send = document.getElementById("comment-send");
+  if (send) send.addEventListener("click", sendComment);
+  icons();
+}
+
+document.addEventListener("click", async e => {
+  const btn = e.target.closest && e.target.closest("[data-act]");
+  if (!btn) return;
+  const index = Number(btn.dataset.i);
+  btn.disabled = true;
+  try {
+    if (btn.dataset.act === "del") {
+      await jsonRequest("DELETE", "/api/project/comment/" + encodeURIComponent(pid) + "/delete", { index });
+    } else {
+      const res = await fetch("/api/project/comment/" + encodeURIComponent(pid) + "/" + (btn.dataset.act === "up" ? "upvote" : "downvote") + "?index=" + index);
+      if (!res.ok) throw new Error("HTTP " + res.status);
+    }
+    await refreshComments();
+  } catch (err) {
+    console.error(err);
+    btn.disabled = false;
+  }
+});
+
+async function refreshComments() {
+  const res = await fetch("/api/project/data/" + encodeURIComponent(pid));
+  if (!res.ok) return;
+  project.comments = (await res.json()).comments;
+  renderComments();
+}
+
+async function sendComment() {
+  const input = document.getElementById("comment-input");
+  const btn = document.getElementById("comment-send");
+  const msg = document.getElementById("comment-msg");
+  const content = input.value.trim();
+  if (!content) return;
+  btn.disabled = true;
+  msg.textContent = "";
+  try {
+    await jsonRequest("POST", "/api/project/comment/" + encodeURIComponent(pid), { content });
+    await refreshComments();
+  } catch (err) {
+    msg.textContent = err.message;
+    btn.disabled = false;
+  }
+}
+
+document.getElementById("back").addEventListener("click", () => {
+  if (history.length > 1) history.back(); else location.href = "/mobile";
+});
+
+["gesturestart", "gesturechange", "gestureend"].forEach(type => document.addEventListener(type, e => e.preventDefault()));
+let tapStart = null;
+let lastTap = 0;
+document.addEventListener("touchstart", e => {
+  const t = e.touches[0];
+  tapStart = e.touches.length === 1 ? { x: t.clientX, y: t.clientY, time: Date.now() } : null;
+}, { passive: true });
+document.addEventListener("touchend", e => {
+  if (!tapStart) return;
+  const t = e.changedTouches[0];
+  const isTap = Date.now() - tapStart.time < 300 && Math.hypot(t.clientX - tapStart.x, t.clientY - tapStart.y) < 10;
+  tapStart = null;
+  if (!isTap) return;
+  const now = Date.now();
+  if (now - lastTap < 400 && !(e.target.closest && e.target.closest("#stage, input, textarea"))) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+(function () {
+  try {
+    const viewed = JSON.parse(localStorage.getItem("recently-viewed-projects")) || [];
+    const index = viewed.indexOf(pid);
+    if (index !== -1) viewed.splice(index, 1);
+    viewed.unshift(pid);
+    localStorage.setItem("recently-viewed-projects", JSON.stringify(viewed));
+  } catch (err) {}
+})();
+
+setInterval(() => fetch(location.href), 84e4);
+
+icons();
+load();
+</script>
+</body>
+</html>
