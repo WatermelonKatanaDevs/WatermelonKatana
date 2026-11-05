@@ -429,7 +429,7 @@ async function loadProjects(path, gridId, statusId, emptyText) {
 
 function refreshProjects() {
   loadProjects("/api/project/list?featured=true&sort=latest", "featured-grid", "featured-status", "No featured projects yet.");
-  loadProjects("/api/project/list?sort=latest", "latest-grid", "latest-status", "No projects yet.");
+  loadProjects("/api/project/list?sort=latest&page=1", "latest-grid", "latest-status", "No projects yet.");
 }
 
 const searchInput = document.getElementById("search-input");
