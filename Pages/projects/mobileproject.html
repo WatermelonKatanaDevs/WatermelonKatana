@@ -26,7 +26,28 @@ input, textarea { font-size: 16px; }
 .stage iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 .stage.full { position: fixed; inset: 0; z-index: 100; height: 100%; aspect-ratio: auto; }
 .exit-full { display: none; position: absolute; top: calc(10px + env(safe-area-inset-top)); right: 10px; z-index: 2; padding: 6px 14px; border: 0; border-radius: 15px; background: rgba(0, 0, 0, 0.65); color: #fff; font-weight: bold; }
-.stage.full .exit-full { display: block; }
+.stage.is-fs .exit-full { display: block; }
+.pad { display: none; position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.stage.touch-ui .pad { display: block; }
+.pad, .pad * { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+.joy, .pad-right, .keypick { pointer-events: auto; }
+.joy { position: absolute; left: calc(24px + env(safe-area-inset-left)); bottom: calc(24px + env(safe-area-inset-bottom)); width: 140px; height: 140px; border-radius: 50%; background: rgba(255, 255, 255, 0.12); border: 2px solid rgba(255, 255, 255, 0.3); }
+.knob { position: absolute; left: 50%; top: 50%; width: 60px; height: 60px; margin: -30px 0 0 -30px; border-radius: 50%; background: rgba(255, 255, 255, 0.45); }
+.pad-right { position: absolute; right: calc(20px + env(safe-area-inset-right)); bottom: calc(20px + env(safe-area-inset-bottom)); display: flex; align-items: flex-end; gap: 14px; }
+.custom-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.pad-btn { width: 88px; height: 88px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.4); background: rgba(255, 255, 255, 0.15); color: #fff; font-size: .85rem; font-weight: bold; }
+.pad-btn.small { width: 64px; height: 64px; }
+.pad-btn.down { background: var(--accent); border-color: var(--accent); color: #111; }
+.gear { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.45); border: 1px solid rgba(255, 255, 255, 0.3); color: #fff; }
+.gear svg { width: 16px; height: 16px; }
+.keypick { display: none; position: absolute; right: 12px; bottom: calc(150px + env(safe-area-inset-bottom)); width: min(300px, 75%); max-height: 55%; overflow-y: auto; grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 10px; border-radius: 14px; background: rgba(0, 0, 0, 0.88); }
+.keypick, .keypick * { touch-action: pan-y; }
+.keypick.open { display: grid; }
+.keypick button { padding: 8px 0; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.25); background: rgba(255, 255, 255, 0.1); color: #fff; font-size: .8rem; }
+.keypick button.sel { background: var(--accent); border-color: var(--accent); color: #111; }
+.pad-note { position: absolute; top: calc(10px + env(safe-area-inset-top)); left: 10px; max-width: 60%; padding: 4px 10px; border-radius: 10px; background: rgba(0, 0, 0, 0.65); color: #fff; font-size: .75rem; pointer-events: none; }
+.pad-note:empty { display: none; }
+.c-actions button.on { color: var(--accent); opacity: 1; }
 
 .actions, .info, .comments { touch-action: pan-y; }
 .actions { display: flex; gap: 8px; padding: 10px 12px; }
@@ -79,6 +100,35 @@ const pid = location.pathname.split("/")[2];
 const projectOwner = <!--project-owner-->;
 const platforms = { cdo: "code.org", khan: "Khan Academy", scratch: "Scratch", embed: "Unknown", wk: "Watermelon Katana", swf: "Flash", editor: "Node Editor" };
 let project = null;
+const KEYS = {};
+"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(c => { KEYS["Key" + c] = { label: c, key: c.toLowerCase(), code: "Key" + c, keyCode: c.charCodeAt(0) }; });
+"0123456789".split("").forEach(c => { KEYS["Digit" + c] = { label: c, key: c, code: "Digit" + c, keyCode: c.charCodeAt(0) }; });
+Object.assign(KEYS, {
+  Space: { label: "Space", key: " ", code: "Space", keyCode: 32 },
+  ArrowUp: { label: "Up", key: "ArrowUp", code: "ArrowUp", keyCode: 38 },
+  ArrowDown: { label: "Down", key: "ArrowDown", code: "ArrowDown", keyCode: 40 },
+  ArrowLeft: { label: "Left", key: "ArrowLeft", code: "ArrowLeft", keyCode: 37 },
+  ArrowRight: { label: "Right", key: "ArrowRight", code: "ArrowRight", keyCode: 39 },
+  Enter: { label: "Enter", key: "Enter", code: "Enter", keyCode: 13 },
+  ShiftLeft: { label: "Shift", key: "Shift", code: "ShiftLeft", keyCode: 16 },
+  ControlLeft: { label: "Ctrl", key: "Control", code: "ControlLeft", keyCode: 17 },
+  Tab: { label: "Tab", key: "Tab", code: "Tab", keyCode: 9 },
+  Escape: { label: "Esc", key: "Escape", code: "Escape", keyCode: 27 },
+  Backspace: { label: "Back", key: "Backspace", code: "Backspace", keyCode: 8 }
+});
+const PAD_HTML = `
+  <div class="pad">
+    <div class="pad-note" id="pad-note"></div>
+    <div class="joy" id="joy"><div class="knob" id="knob"></div></div>
+    <div class="pad-right">
+      <div class="custom-wrap">
+        <button class="gear" id="pad-gear" type="button" aria-label="Change key"><i data-lucide="settings"></i></button>
+        <button class="pad-btn small" id="pad-custom" type="button"></button>
+      </div>
+      <button class="pad-btn" id="pad-space" type="button">SPACE</button>
+    </div>
+    <div class="keypick" id="keypick"></div>
+  </div>`;
 let auth = { auth: false };
 
 document.documentElement.dataset.theme = (() => {
@@ -135,6 +185,7 @@ async function load() {
     renderPage();
     startGame();
     renderComments();
+    renderCommentForm();
     setupOwner();
   } catch (err) {
     console.error(err);
@@ -152,6 +203,7 @@ function renderPage() {
     <div class="stage" id="stage">
       <iframe id="game" allowfullscreen allow="autoplay; fullscreen; gamepad; accelerometer; gyroscope"></iframe>
       <button class="exit-full" id="exit-full">Exit</button>
+      ${p.platform === "cdo" ? PAD_HTML : ""}
     </div>
     <div class="actions">
       <button id="replay"><i data-lucide="rotate-ccw"></i>Replay</button>
@@ -180,6 +232,7 @@ function renderPage() {
   document.getElementById("replay").addEventListener("click", replay);
   document.getElementById("fullscreen").addEventListener("click", goFullscreen);
   document.getElementById("exit-full").addEventListener("click", exitFullscreen);
+  if (p.platform === "cdo") setupPad();
   const fav = document.getElementById("fav");
   if (fav) {
     fav.classList.toggle("on", Array.isArray(u.favorites) && u.favorites.includes(pid));
@@ -302,13 +355,186 @@ function replay() {
 
 function goFullscreen() {
   const stage = document.getElementById("stage");
-  const fallback = () => stage.classList.add("full");
+  const fallback = () => {
+    stage.classList.add("full");
+    updateTouchUI();
+  };
   if (stage.requestFullscreen) stage.requestFullscreen().catch(fallback);
   else fallback();
 }
 
 function exitFullscreen() {
-  document.getElementById("stage").classList.remove("full");
+  const stage = document.getElementById("stage");
+  if (document.fullscreenElement) document.exitFullscreen();
+  stage.classList.remove("full");
+  updateTouchUI();
+}
+
+function updateTouchUI() {
+  const stage = document.getElementById("stage");
+  if (!stage) return;
+  const full = document.fullscreenElement === stage || stage.classList.contains("full");
+  const show = full && project && project.platform === "cdo";
+  stage.classList.toggle("is-fs", full);
+  stage.classList.toggle("touch-ui", !!show);
+  if (!show) releaseAll();
+}
+
+document.addEventListener("fullscreenchange", updateTouchUI);
+document.addEventListener("visibilitychange", () => { if (document.hidden) releaseAll(); });
+
+const keyCounts = {};
+const joyHeld = new Set();
+let customKey = "KeyE";
+try {
+  const saved = localStorage.getItem("touch-custom-key");
+  if (KEYS[saved]) customKey = saved;
+} catch (err) {}
+
+function inputDoc(doc) {
+  for (const frame of doc.querySelectorAll("iframe")) {
+    try {
+      if (frame.contentDocument && frame.contentDocument.body) return inputDoc(frame.contentDocument);
+    } catch (err) {}
+  }
+  return doc;
+}
+
+function fireKey(type, def) {
+  const note = document.getElementById("pad-note");
+  let doc = null;
+  try { doc = document.getElementById("game").contentDocument; } catch (err) {}
+  if (!doc || !doc.body) {
+    if (note) note.textContent = "This player can\u2019t receive touch controls.";
+    return;
+  }
+  if (note) note.textContent = "";
+  doc = inputDoc(doc);
+  const win = doc.defaultView;
+  const ev = new win.KeyboardEvent(type, { key: def.key, code: def.code, bubbles: true, cancelable: true, composed: true });
+  Object.defineProperty(ev, "keyCode", { get: () => def.keyCode });
+  Object.defineProperty(ev, "which", { get: () => def.keyCode });
+  doc.body.dispatchEvent(ev);
+}
+
+function press(name) {
+  keyCounts[name] = (keyCounts[name] || 0) + 1;
+  if (keyCounts[name] === 1) fireKey("keydown", KEYS[name]);
+}
+
+function release(name) {
+  if (!keyCounts[name]) return;
+  keyCounts[name]--;
+  if (!keyCounts[name]) fireKey("keyup", KEYS[name]);
+}
+
+function releaseAll() {
+  Object.keys(keyCounts).forEach(name => {
+    if (keyCounts[name]) {
+      keyCounts[name] = 0;
+      fireKey("keyup", KEYS[name]);
+    }
+  });
+  joyHeld.clear();
+  document.querySelectorAll(".pad-btn.down").forEach(b => b.classList.remove("down"));
+  const knob = document.getElementById("knob");
+  if (knob) knob.style.transform = "";
+}
+
+function syncJoy(want) {
+  [...joyHeld].forEach(name => {
+    if (!want.has(name)) {
+      joyHeld.delete(name);
+      release(name);
+    }
+  });
+  want.forEach(name => {
+    if (!joyHeld.has(name)) {
+      joyHeld.add(name);
+      press(name);
+    }
+  });
+}
+
+function bindButton(el, getName) {
+  let active = null;
+  el.addEventListener("pointerdown", e => {
+    e.preventDefault();
+    el.setPointerCapture(e.pointerId);
+    active = getName();
+    press(active);
+    el.classList.add("down");
+  });
+  const up = () => {
+    if (!active) return;
+    release(active);
+    active = null;
+    el.classList.remove("down");
+  };
+  el.addEventListener("pointerup", up);
+  el.addEventListener("pointercancel", up);
+  el.addEventListener("lostpointercapture", up);
+}
+
+function setupPad() {
+  const joy = document.getElementById("joy");
+  const knob = document.getElementById("knob");
+  const custom = document.getElementById("pad-custom");
+  const picker = document.getElementById("keypick");
+  let joyId = null;
+
+  const moveJoy = e => {
+    const rect = joy.getBoundingClientRect();
+    const radius = rect.width / 2;
+    let dx = e.clientX - (rect.left + radius);
+    let dy = e.clientY - (rect.top + radius);
+    const dist = Math.hypot(dx, dy);
+    if (dist > radius) {
+      dx = dx / dist * radius;
+      dy = dy / dist * radius;
+    }
+    knob.style.transform = "translate(" + dx + "px, " + dy + "px)";
+    const want = new Set();
+    if (dy / radius < -0.35) want.add("KeyW");
+    if (dy / radius > 0.35) want.add("KeyS");
+    if (dx / radius < -0.35) want.add("KeyA");
+    if (dx / radius > 0.35) want.add("KeyD");
+    syncJoy(want);
+  };
+  const endJoy = e => {
+    if (e.pointerId !== joyId) return;
+    joyId = null;
+    knob.style.transform = "";
+    syncJoy(new Set());
+  };
+  joy.addEventListener("pointerdown", e => {
+    e.preventDefault();
+    joyId = e.pointerId;
+    joy.setPointerCapture(e.pointerId);
+    moveJoy(e);
+  });
+  joy.addEventListener("pointermove", e => { if (e.pointerId === joyId) moveJoy(e); });
+  joy.addEventListener("pointerup", endJoy);
+  joy.addEventListener("pointercancel", endJoy);
+
+  bindButton(document.getElementById("pad-space"), () => "Space");
+  bindButton(custom, () => customKey);
+
+  const markSelected = () => {
+    custom.textContent = KEYS[customKey].label;
+    picker.querySelectorAll("button").forEach(b => b.classList.toggle("sel", b.dataset.k === customKey));
+  };
+  picker.innerHTML = Object.keys(KEYS).map(k => '<button type="button" data-k="' + k + '">' + KEYS[k].label + '</button>').join("");
+  picker.addEventListener("click", e => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    customKey = b.dataset.k;
+    try { localStorage.setItem("touch-custom-key", customKey); } catch (err) {}
+    markSelected();
+    picker.classList.remove("open");
+  });
+  document.getElementById("pad-gear").addEventListener("click", () => picker.classList.toggle("open"));
+  markSelected();
 }
 
 function syncFavText() {
@@ -359,6 +585,21 @@ function isAdmin(role) {
   return role === "Admin" || role === "Uni Lover";
 }
 
+function commentScore(c) {
+  if (typeof c._score === "number") return c._score;
+  if (Number.isFinite(c.score)) return c.score;
+  return (Array.isArray(c.upvotes) ? c.upvotes.length : 0) - (Array.isArray(c.downvotes) ? c.downvotes.length : 0);
+}
+
+function myVote(c) {
+  if (typeof c._vote === "number") return c._vote;
+  const u = me();
+  if (!u) return 0;
+  if (Array.isArray(c.upvotes) && c.upvotes.includes(u.id)) return 1;
+  if (Array.isArray(c.downvotes) && c.downvotes.includes(u.id)) return -1;
+  return 0;
+}
+
 function renderComments() {
   const list = Array.isArray(project.comments) ? project.comments : [];
   const u = me();
@@ -367,45 +608,70 @@ function renderComments() {
   box.innerHTML = list.length ? list.map((c, i) => {
     const name = c.poster || c.username || c.author || "unknown";
     const when = timeAgo(c.createdAt || c.postedAt || c.time || c.date);
-    const score = Number.isFinite(c.score) ? c.score : (Array.isArray(c.upvotes) ? c.upvotes.length : 0) - (Array.isArray(c.downvotes) ? c.downvotes.length : 0);
+    const vote = myVote(c);
     const canDelete = u && (c.posterId === u.id || project.posterId === u.id || isAdmin(u.role));
     return `<div class="comment">
       <div class="c-head"><a href="/user/${encodeURIComponent(name)}">${esc(name)}</a><span>${esc(when)}</span></div>
       <div class="c-body">${renderText(c.content)}</div>
       ${u ? `<div class="c-actions">
-        <button data-act="up" data-i="${i}" aria-label="Upvote"><i data-lucide="chevron-up"></i></button>${esc(score)}
-        <button data-act="down" data-i="${i}" aria-label="Downvote"><i data-lucide="chevron-down"></i></button>
+        <button class="${vote === 1 ? "on" : ""}" data-act="up" data-i="${i}" aria-label="Upvote"><i data-lucide="chevron-up"></i></button>${esc(commentScore(c))}
+        <button class="${vote === -1 ? "on" : ""}" data-act="down" data-i="${i}" aria-label="Downvote"><i data-lucide="chevron-down"></i></button>
         ${canDelete ? `<button class="del" data-act="del" data-i="${i}" aria-label="Delete"><i data-lucide="trash-2"></i></button>` : ""}
       </div>` : ""}
     </div>`;
   }).join("") : '<div class="status">No comments yet.</div>';
+  icons();
+}
+
+function renderCommentForm() {
   const form = document.getElementById("comment-form");
-  form.innerHTML = u
+  form.innerHTML = me()
     ? '<textarea id="comment-input" placeholder="Write a comment…"></textarea><button class="btn" id="comment-send" type="button">Post comment</button><div class="msg" id="comment-msg"></div>'
     : '<div class="status">Log in on the <a href="/mobile">Profile tab</a> to comment.</div>';
   const send = document.getElementById("comment-send");
   if (send) send.addEventListener("click", sendComment);
-  icons();
 }
+
+let pendingVotes = 0;
 
 document.addEventListener("click", async e => {
   const btn = e.target.closest && e.target.closest("[data-act]");
   if (!btn) return;
   const index = Number(btn.dataset.i);
-  btn.disabled = true;
-  try {
-    if (btn.dataset.act === "del") {
+  const act = btn.dataset.act;
+  if (act === "del") {
+    btn.disabled = true;
+    try {
       await jsonRequest("DELETE", "/api/project/comment/" + encodeURIComponent(pid) + "/delete", { index });
-    } else {
-      const res = await fetch("/api/project/comment/" + encodeURIComponent(pid) + "/" + (btn.dataset.act === "up" ? "upvote" : "downvote") + "?index=" + index);
-      if (!res.ok) throw new Error("HTTP " + res.status);
+      await refreshComments();
+    } catch (err) {
+      console.error(err);
+      btn.disabled = false;
     }
-    await refreshComments();
+    return;
+  }
+  const c = project.comments[index];
+  if (!c) return;
+  const dir = act === "up" ? 1 : -1;
+  const prev = myVote(c);
+  const next = prev === dir ? 0 : dir;
+  c._score = commentScore(c) + (next - prev);
+  c._vote = next;
+  renderComments();
+  sendVote(act, index);
+});
+
+async function sendVote(act, index) {
+  pendingVotes++;
+  try {
+    const res = await fetch("/api/project/comment/" + encodeURIComponent(pid) + "/" + (act === "up" ? "upvote" : "downvote") + "?index=" + index);
+    if (!res.ok) throw new Error("HTTP " + res.status);
   } catch (err) {
     console.error(err);
-    btn.disabled = false;
   }
-});
+  pendingVotes--;
+  if (pendingVotes === 0) refreshComments();
+}
 
 async function refreshComments() {
   const res = await fetch("/api/project/data/" + encodeURIComponent(pid));
@@ -424,6 +690,8 @@ async function sendComment() {
   msg.textContent = "";
   try {
     await jsonRequest("POST", "/api/project/comment/" + encodeURIComponent(pid), { content });
+    input.value = "";
+    btn.disabled = false;
     await refreshComments();
   } catch (err) {
     msg.textContent = err.message;
