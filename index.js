@@ -261,7 +261,7 @@ app.get("/project/:id", checkAuth, makeFormToken, async (req, res) => {
   if (!proj) return res.status(404).sendFile(cldir + "/404.html");
   var tok = res.locals.userToken;
   var user = tok ? await Users.findOne({ _id: tok.id }) : null;
-  var isAdmin = tok?.role ? isadmin(tok.role): false;
+  var isAdmin = tok?.role && isadmin(tok.role);
   var projectOwner = !!tok && proj.posterId === tok.id;
   if (proj.mature && (!tok || !user || !user.mature)) return res.status(403).sendFile(__dirname + "/Middleware/403.html");
   if (tok && !proj.viewers.includes(tok.id)) { proj.viewers.push(tok.id) }
