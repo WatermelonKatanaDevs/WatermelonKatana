@@ -575,7 +575,7 @@ async function deleteProject() {
   if (!confirm("Warning, this is permanent! Are you sure you want to continue?")) return;
   try {
     await jsonRequest("DELETE", "/api/project/delete/" + encodeURIComponent(pid), { pid });
-    location.assign("/mobile");
+    location.assign("/");
   } catch (err) {
     alert(err.message);
   }
@@ -685,7 +685,7 @@ function renderCommentForm() {
   const form = document.getElementById("comment-form");
   form.innerHTML = me()
     ? '<textarea id="comment-input" placeholder="Write a comment…"></textarea><button class="btn" id="comment-send" type="button">Post comment</button><div class="msg" id="comment-msg"></div>'
-    : '<div class="status">Log in on the <a href="/mobile">Profile tab</a> to comment.</div>';
+    : '<div class="status">Log in on the <a href="/">Profile tab</a> to comment.</div>';
   const send = document.getElementById("comment-send");
   if (send) send.addEventListener("click", sendComment);
 }
@@ -758,7 +758,7 @@ async function sendComment() {
 }
 
 document.getElementById("back").addEventListener("click", () => {
-  if (history.length > 1) history.back(); else location.href = "/mobile";
+  if (history.length > 1) history.back(); else location.href = "/";
 });
 
 ["gesturestart", "gesturechange", "gestureend"].forEach(type => document.addEventListener(type, e => e.preventDefault()));
