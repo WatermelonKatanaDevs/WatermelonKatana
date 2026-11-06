@@ -8,8 +8,8 @@
 <link rel="apple-touch-icon" href="/images/icon.png">
 <link rel="manifest" href="/manifest.webmanifest">
 <style>
-:root { --bg: #222; --card: #2a2a2a; --text: #fff; --accent: #00e676; --line: rgba(255, 255, 255, 0.08); --muted: rgba(255, 255, 255, 0.6); }
-html[data-theme="light"] { --bg: #f2f2f2; --card: #fff; --text: #111; --accent: #00a152; --line: rgba(0, 0, 0, 0.08); --muted: rgba(0, 0, 0, 0.55); }
+:root { --bg: #222; --card: #2a2a2a; --text: #fff; --accent: #00e676; --line: rgba(255, 255, 255, 0.08); --muted: rgba(255, 255, 255, 0.6); --mention: #ffb6d9;}
+html[data-theme="light"] { --bg: #f2f2f2; --card: #fff; --text: #111; --accent: #00a152; --line: rgba(0, 0, 0, 0.08); --muted: rgba(0, 0, 0, 0.55); --mention: #e5679f;}
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 body { background: var(--bg); color: var(--text); font-family: sans-serif; overflow-wrap: anywhere; padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
@@ -138,7 +138,10 @@ function esc(str) {
   return String(str ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 function renderText(str) {
-  return esc(str).replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>').replace(/\n/g, "<br>");
+  return esc(str)
+    .replace(/(^|\s)@([\w-]+(?:\.[\w-]+)*)/g, '$1<span class="mention">@$2</span>')
+    .replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>')
+    .replace(/\n/g, "<br>");
 }
 function timeAgo(t) {
   t = Number(t) || 0;
@@ -607,18 +610,70 @@ function renderComments() {
     const when = timeAgo(c.createdAt || c.postedAt || c.time || c.date);
     const vote = myVote(c);
     const canDelete = u && (c.posterId === u.id || project.posterId === u.id || isAdmin(u.role));
-    return `<div class="comment">
-      <div class="c-head"><a href="/user/${encodeURIComponent(name)}">${esc(name)}</a><span>${esc(when)}</span></div>
+    return `<div class="c-wrap">
+    ${u ? '<div class="reply-hint"><i data-lucide="reply"></i></div>' : ""}
+    <div class="comment" data-i="${i}">
+      <div class="c-head"> ... unchanged ... </div>
       <div class="c-body">${renderText(c.content)}</div>
-      ${u ? `<div class="c-actions">
-        <button class="${vote === 1 ? "on" : ""}" data-act="up" data-i="${i}" aria-label="Upvote"><i data-lucide="chevron-up"></i></button>${esc(commentScore(c))}
-        <button class="${vote === -1 ? "on" : ""}" data-act="down" data-i="${i}" aria-label="Downvote"><i data-lucide="chevron-down"></i></button>
-        ${canDelete ? `<button class="del" data-act="del" data-i="${i}" aria-label="Delete"><i data-lucide="trash-2"></i></button>` : ""}
-      </div>` : ""}
-    </div>`;
+      ${u ? `...unchanged actions...` : ""}
+    </div>
+  </div>`;
   }).join("") : '<div class="status">No comments yet.</div>';
   icons();
 }
+//Reply to Comments
+function replyTo(i) {
+  const c = project.comments[i];
+  const input = document.getElementById("comment-input");
+  if (!c || !input) return;
+  const tag = "@" + (c.poster || c.username || c.author || "unknown") + " ";
+  if (!input.value.startsWith(tag)) input.value = tag + input.value;
+  input.scrollIntoView({ block: "center", behavior: "smooth" });
+  input.focus();
+  input.setSelectionRange(input.value.length, input.value.length);
+}
+
+const SWIPE_TRIGGER = 64, SWIPE_MAX = 90;
+let sw = null;
+
+document.addEventListener("touchstart", e => {
+  const el = e.target.closest && e.target.closest(".comment");
+  if (!el || !me() || e.touches.length !== 1 || e.target.closest("a, button")) { sw = null; return; }
+  const t = e.touches[0];
+  sw = { el, x: t.clientX, y: t.clientY, dx: 0, lock: null };
+  el.style.transition = "none";
+}, { passive: true });
+
+document.addEventListener("touchmove", e => {
+  if (!sw) return;
+  const t = e.touches[0];
+  const dx = t.clientX - sw.x, dy = t.clientY - sw.y;
+  if (!sw.lock && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
+    sw.lock = dx < 0 && Math.abs(dx) > Math.abs(dy) * 1.5 ? "x" : "y";
+  }
+  if (sw.lock !== "x") return;
+  sw.dx = Math.max(dx, -SWIPE_MAX);
+  sw.el.style.transform = "translateX(" + sw.dx + "px)";
+  const hint = sw.el.parentNode.querySelector(".reply-hint");
+  if (hint) hint.style.opacity = Math.min(1, -sw.dx / SWIPE_TRIGGER);
+}, { passive: true });
+
+function endSwipe(cancelled) {
+  if (!sw) return;
+  const { el, dx, lock } = sw;
+  sw = null;
+  el.style.transition = "";
+  el.style.transform = "";
+  const hint = el.parentNode.querySelector(".reply-hint");
+  if (hint) hint.style.opacity = 0;
+  if (!cancelled && lock === "x" && dx <= -SWIPE_TRIGGER) {
+    if (navigator.vibrate) navigator.vibrate(10);
+    replyTo(Number(el.dataset.i));
+  }
+}
+document.addEventListener("touchend", () => endSwipe(false));
+document.addEventListener("touchcancel", () => endSwipe(true));
+
 
 function renderCommentForm() {
   const form = document.getElementById("comment-form");
