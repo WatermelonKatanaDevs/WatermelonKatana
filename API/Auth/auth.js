@@ -61,6 +61,7 @@ exports.register = async (req, res, next) => {
   const { username, password } = req.body;
   try {
     if (!username.match(/^[\w\d_-]+$/)) throw ({ message: "Username can only contain letters, numbers, and underscores" });
+    if(username.match(/anon-[\w\d]{4,12}/)) {throw ({message: "Username cannot closely follow Anonymous aliases \"anon-xxxxxx\""})}
     if (password.length < 8) throw ({ message: "Password must be at least 8 characters" });
     if (Profanity.isProfane(username)) { throw ({ message: "Oh no! This violates our TOS, please try another name" }) }
     var hash = await bcrypt.hash(password, 10);
