@@ -246,18 +246,32 @@ app.get("/editor/project/:id", checkAuth, async (req, res) => {
 });
 
 app.get("/editor/github-picker", userAuth, (req, res) => res.sendFile(cldir + "/editor/github-picker.html"));
+
+//Mobile helper function
+const mobileTypes = ["phone", "tablet"];
+function wantsMobile(req) {
+  if (req.query.view === "desktop") return false;
+  if (req.query.view === "mobile") return true;
+  return !!req.device && mobileTypes.includes(req.device.type);
+}
+
 app.get("/project/:id", checkAuth, makeFormToken, async (req, res) => {
-  // Project page with dynamic project ID
+  //Project page with dynamic project ID
   var proj = await Projects.findOne({ _id: req.params.id });
   if (!proj) return res.status(404).sendFile(cldir + "/404.html");
   var tok = res.locals.userToken;
   var user = tok ? await Users.findOne({ _id: tok.id }) : null;
-  var isAdmin = !!tok && isadmin(tok.role);
+  var isAdmin = !!tok && isadmin(tok?.role);
   var projectOwner = !!tok && proj.posterId === tok.id;
   if (proj.mature && (!tok || !user || !user.mature)) return res.status(403).sendFile(__dirname + "/Middleware/403.html");
   if (tok && !proj.viewers.includes(tok.id)) { proj.viewers.push(tok.id) }
   proj.views = proj.viewers.length;
-  sendFileReplace(res, "./Pages/projects/project.html", (s) => s.replace("<!--og:meta-->", () => `
+  //Serve mobile html
+  const page = wantsMobile(req)
+    ? "./Pages/projects/mobileproject.html"
+    : "./Pages/projects/project.html";
+
+  sendFileReplace(res, page, (s) => s.replace("<!--og:meta-->", () => `
     <meta property="og:title" content="${makeLiteralChars(proj.title)}"/>
     <meta property="og:type" content="website"/>
     <meta property="og:image" content="${makeLiteralChars(proj.thumbnail)}"/>
@@ -274,6 +288,9 @@ app.get("/project/:id", checkAuth, makeFormToken, async (req, res) => {
   `).replace("<!--project-owner-->", () => String(projectOwner)));
   await proj.save();
 });
+
+
+
 app.get("/project/:id/edit", userAuth, async (req, res) => {
   const project = await Projects.findOne({ _id: req.params.id });
   const tok = res.locals.userToken;
@@ -298,7 +315,7 @@ app.get("/forum/discussion/:id", checkAuth, makeFormToken, async (req, res) => {
   if (!post) return res.status(404).sendFile(cldir + "/404.html");
   var tok = res.locals.userToken;
   var user = await Users.findOne({ _id: tok.id });
-  var isAdmin = !!tok && isadmin(tok.role); 
+  var isAdmin = !!tok && isadmin(tok?.role);
   if (post.mature && (!tok || !user || !user.mature)) return res.status(403).sendFile(__dirname + "/Middleware/403.html");
   if (tok && !post.viewers.includes(tok.id)) { post.viewers.push(tok.id) }
   post.views = post.viewers.length;
