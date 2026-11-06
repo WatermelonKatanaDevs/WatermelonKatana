@@ -1386,6 +1386,8 @@ function updateSlidePosition() {
   clearTimeout(unloadTimer);
   unloadTimer = setTimeout(unloadInactive, 450);
 }
+window.addEventListener("resize", updateSlidePosition);
+
 window.addEventListener("popstate", () => {
   closePost();
   closeNotifs();
