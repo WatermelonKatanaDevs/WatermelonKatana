@@ -646,15 +646,7 @@ function closePost() {
 document.getElementById("pv-back").addEventListener("click", () => {
   if (history.state?.post) history.back(); else closePost();
 });
-window.addEventListener("popstate", event => {
-  closePost();
-  closeNotifs();
-  closeCompose();
-  const tab = Number.isInteger(event.state?.tab)
-    ? event.state.tab
-    : tabNames.indexOf(new URLSearchParams(location.search).get("tab"));
-  if (tab >= 0 && tab < totalPages && tab !== currentIndex) goToPage(tab, true);
-});
+window.addEventListener("popstate", () => { closePost(); closeNotifs(); closeCompose(); });
 
 let authData = null;
 let notifs = [];
@@ -1349,8 +1341,6 @@ function dragMove(e) {
   track.style.transform = `translateX(${-currentIndex * viewport.clientWidth + deltaX}px)`;
 }
 
-const tabNames = ["home", "profile", "search", "chat", "settings"];
-
 function dragEnd() {
   if (!isDragging) return;
   isDragging = false;
@@ -1361,30 +1351,24 @@ function dragEnd() {
     else if (deltaX > threshold && currentIndex > 0) currentIndex--;
     justSwiped = true;
     setTimeout(() => { justSwiped = false; }, 50);
-    updateSlidePosition(true);
+    updateSlidePosition();
   }
   axis = null; deltaX = 0;
 }
 
-function goToPage(index, fromHistory = false) {
-  if (!Number.isInteger(index) || index < 0 || index >= totalPages) return;
+function goToPage(index) {
   currentIndex = index;
   track.classList.add("animate");
-  updateSlidePosition(!fromHistory);
+  updateSlidePosition();
 }
 
-function updateSlidePosition(pushHistory = false) {
-  track.style.transform = "translateX(" + (-currentIndex * viewport.clientWidth) + "px)";
+function updateSlidePosition() {
+  track.style.transform = `translateX(${-currentIndex * viewport.clientWidth}px)`;
   navIcons.forEach((icon, idx) => icon.classList.toggle("active", idx === currentIndex));
   mountPage(currentIndex);
   clearTimeout(unloadTimer);
   unloadTimer = setTimeout(unloadInactive, 450);
   try { localStorage.setItem("wk-tab", String(currentIndex)); } catch (err) {}
-  if (pushHistory && new URLSearchParams(location.search).get("tab") !== tabNames[currentIndex]) {
-    const url = new URL(location.href);
-    url.searchParams.set("tab", tabNames[currentIndex]);
-    history.pushState({ tab: currentIndex }, "", url);
-  }
 }
 window.addEventListener("resize", updateSlidePosition);
 
@@ -1458,19 +1442,12 @@ function reloadPage(i) {
 }
 
 (function restoreTab() {
-  const requested = new URLSearchParams(location.search).get("tab");
-  let saved = tabNames.indexOf(requested);
-  if (saved < 0) {
-    saved = 0;
-    try { saved = parseInt(localStorage.getItem("wk-tab"), 10); } catch (err) {}
-  }
+  let saved = 0;
+  try { saved = parseInt(localStorage.getItem("wk-tab"), 10); } catch (err) {}
   if (!(saved >= 0 && saved < totalPages)) saved = 0;
   currentIndex = saved;
   track.classList.remove("animate");   // jump instantly, no slide on load
   updateSlidePosition();
-  const url = new URL(location.href);
-  url.searchParams.set("tab", tabNames[currentIndex]);
-  history.replaceState({ tab: currentIndex }, "", url);
   requestAnimationFrame(() => requestAnimationFrame(() => track.classList.add("animate")));
 })();
 
