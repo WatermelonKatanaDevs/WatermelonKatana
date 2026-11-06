@@ -569,7 +569,8 @@ async function openPost(id) {
   postView.classList.add("open");
   pvScroll.scrollTop = 0;
   pvScroll.innerHTML = '<div class="status">Loading…</div>';
-  if (history.state?.post !== id) history.pushState({ post: id }, "");
+  const postPath = "/forum/discussion/" + encodeURIComponent(id);
+  if (location.pathname !== postPath) history.pushState({ post: id }, "", postPath);
   try {
     const res = await fetch("/api/forum/data/" + encodeURIComponent(id));
     if (!res.ok) throw new Error("HTTP " + res.status);
@@ -1341,6 +1342,20 @@ function dragMove(e) {
   track.style.transform = `translateX(${-currentIndex * viewport.clientWidth + deltaX}px)`;
 }
 
+const tabPaths = ["/", "/profile", "/search", "/chat", "/preferences"];
+
+function pageForPath(path = location.pathname) {
+  if (path === "/forum" || path.startsWith("/forum/discussion/")) return 3;
+  const page = tabPaths.indexOf(path);
+  return page === -1 ? 0 : page;
+}
+
+function syncChatTab(path = location.pathname) {
+  const forum = path === "/forum" || path.startsWith("/forum/discussion/");
+  document.querySelectorAll(".chat-tab-content").forEach(c => c.classList.toggle("active", c.id === (forum ? "chat-forum" : "chat-messages")));
+  document.querySelectorAll(".chat-tab-btn").forEach(b => b.classList.toggle("active", b.getAttribute("onclick")?.includes(forum ? "chat-forum" : "chat-messages")));
+}
+
 function dragEnd() {
   if (!isDragging) return;
   isDragging = false;
@@ -1351,15 +1366,18 @@ function dragEnd() {
     else if (deltaX > threshold && currentIndex > 0) currentIndex--;
     justSwiped = true;
     setTimeout(() => { justSwiped = false; }, 50);
-    updateSlidePosition();
+    goToPage(currentIndex);
   }
   axis = null; deltaX = 0;
 }
 
-function goToPage(index) {
+function goToPage(index, fromHistory = false) {
+  if (!Number.isInteger(index) || index < 0 || index >= totalPages) return;
   currentIndex = index;
   track.classList.add("animate");
   updateSlidePosition();
+  const path = tabPaths[index];
+  if (!fromHistory && location.pathname !== path) history.pushState({ tab: index }, "", path);
 }
 
 function updateSlidePosition() {
@@ -1368,8 +1386,19 @@ function updateSlidePosition() {
   mountPage(currentIndex);
   clearTimeout(unloadTimer);
   unloadTimer = setTimeout(unloadInactive, 450);
-  try { localStorage.setItem("wk-tab", String(currentIndex)); } catch (err) {}
 }
+window.addEventListener("resize", updateSlidePosition);
+
+window.addEventListener("popstate", () => {
+  closePost();
+  closeNotifs();
+  closeCompose();
+  currentIndex = pageForPath();
+  updateSlidePosition();
+  syncChatTab();
+  const match = location.pathname.match(/^\/forum\/discussion\/([^/]+)$/);
+  if (match) openPost(decodeURIComponent(match[1]));
+});
 window.addEventListener("resize", updateSlidePosition);
 
 function openChatTab(evt, tabId) {
@@ -1377,6 +1406,8 @@ function openChatTab(evt, tabId) {
   document.querySelectorAll(".chat-tab-btn").forEach(b => b.classList.remove("active"));
   document.getElementById(tabId).classList.add("active");
   evt.currentTarget.classList.add("active");
+  const path = tabId === "chat-forum" ? "/forum" : "/chat";
+  if (location.pathname !== path) history.pushState({ tab: 3 }, "", path);
 }
 
 function resetStatus(statusId) {
@@ -1442,12 +1473,12 @@ function reloadPage(i) {
 }
 
 (function restoreTab() {
-  let saved = 0;
-  try { saved = parseInt(localStorage.getItem("wk-tab"), 10); } catch (err) {}
-  if (!(saved >= 0 && saved < totalPages)) saved = 0;
-  currentIndex = saved;
+  currentIndex = pageForPath();
   track.classList.remove("animate");   // jump instantly, no slide on load
   updateSlidePosition();
+  syncChatTab();
+  const match = location.pathname.match(/^\/forum\/discussion\/([^/]+)$/);
+  if (match) openPost(decodeURIComponent(match[1]));
   requestAnimationFrame(() => requestAnimationFrame(() => track.classList.add("animate")));
 })();
 
