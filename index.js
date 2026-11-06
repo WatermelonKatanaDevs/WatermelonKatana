@@ -261,10 +261,10 @@ app.get("/project/:id", checkAuth, makeFormToken, async (req, res) => {
     <meta property="og:title" content="${makeLiteralChars(proj.title)}"/>
     <meta property="og:type" content="website"/>
     <meta property="og:image" content="${makeLiteralChars(proj.thumbnail)}"/>
-    <meta property="og:description" content="${makeLiteralChars(proj.content)} \n By: ${proj.anon ? (!isAdmin ? user.anonname: proj.poster) + " (Anonymous)": proj.poster} \n Score: ${proj.score} Views: ${proj.views} Plays: ${proj.plays || 0}"/>
+    <meta property="og:description" content="${makeLiteralChars(proj.content)} \n By: ${proj.anon ? (!isAdmin ? "": proj.poster) + " (Anonymous)": proj.poster} \n Score: ${proj.score} Views: ${proj.views} Plays: ${proj.plays || 0}"/>
   `).replace("<!--content-->", () => `
     ${makeLiteralChars(proj.title)}<br>
-    By: ${proj.anon ? (!isAdmin ? user.anonname: proj.poster) + " (Anonymous)": proj.poster}<br>
+    By: ${proj.anon ? (!isAdmin ? "": proj.poster) + " (Anonymous)": proj.poster}<br>
     ${makeLiteralChars(proj.content)}<br>
     <a href="${makeLiteralChars(proj.link)}">${makeLiteralChars(proj.link)}</a><br>
     ${proj.tags.map(v => "#" + makeLiteralChars(v)).join(", ")}<br>
@@ -305,10 +305,10 @@ app.get("/forum/discussion/:id", checkAuth, makeFormToken, async (req, res) => {
   sendFileReplace(res, "./Pages/forum/discussion.html", (s) => s.replace("<!--og:meta-->", () => `
     <meta property="og:title" content="${makeLiteralChars(post.title)}"/>
     <meta property="og:type" content="website"/>
-    <meta property="og:description" content="${makeLiteralChars(post.content)} \n By: ${post.anon ? (!isAdmin ? user.anonname: post.poster) + " (Anonymous)": proj.poster} \n Views: ${post.views}"/>
+    <meta property="og:description" content="${makeLiteralChars(post.content)} \n By: ${post.anon ? (!isAdmin ? "": post.poster) + " (Anonymous)": proj.poster} \n Views: ${post.views}"/>
   `).replace("<!--content-->", () => `
     ${makeLiteralChars(post.title)}<br>
-    By: ${post.anon ? (!isAdmin ? user.anonname: post.poster) + " (Anonymous)": proj.poster}<br>
+    By: ${post.anon ? (!isAdmin ? "": post.poster) + " (Anonymous)": proj.poster}<br>
     ${makeLiteralChars(post.content)}<br>
     ${post.tags.map(v => "#" + makeLiteralChars(v)).join(", ")}<br>
     Views: ${post.views} Featured: ${post.featured}
