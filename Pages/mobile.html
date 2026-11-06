@@ -1353,7 +1353,7 @@ function pageForPath(path = location.pathname) {
 function syncChatTab(path = location.pathname) {
   const forum = path === "/forum" || path.startsWith("/forum/discussion/");
   document.querySelectorAll(".chat-tab-content").forEach(c => c.classList.toggle("active", c.id === (forum ? "chat-forum" : "chat-messages")));
-  document.querySelectorAll(".chat-tab-btn").forEach(b => b.classList.toggle("active", b.getAttribute("onclick")?.includes(forum ? "chat-forum" : "chat-messages")));
+  document.querySelectorAll(".chat-tab-bar .chat-tab-btn").forEach(b => b.classList.toggle("active", b.getAttribute("onclick")?.includes(forum ? "chat-forum" : "chat-messages")));
 }
 
 function dragEnd() {
@@ -1403,7 +1403,7 @@ window.addEventListener("resize", updateSlidePosition);
 
 function openChatTab(evt, tabId) {
   document.querySelectorAll(".chat-tab-content").forEach(c => c.classList.remove("active"));
-  document.querySelectorAll(".chat-tab-btn").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll(".chat-tab-bar .chat-tab-btn").forEach(b => b.classList.remove("active"));
   document.getElementById(tabId).classList.add("active");
   evt.currentTarget.classList.add("active");
   const path = tabId === "chat-forum" ? "/forum" : "/chat";
