@@ -1376,7 +1376,7 @@ function goToPage(index) {
   track.classList.add("animate");
   updateSlidePosition();
   const path = tabPaths[index];
-  if (!fromHistory && location.pathname !== path) history.pushState({ tab: index }, "", path);
+  if (location.pathname !== path) history.pushState({ tab: index }, "", path);
 }
 
 function updateSlidePosition() {
