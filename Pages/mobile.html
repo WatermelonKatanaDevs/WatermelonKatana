@@ -253,6 +253,27 @@ html[data-theme="light"] .chat-tab-btn.active { background: #00e676; color: #222
 html[data-theme="light"] .page h2, html[data-theme="light"] .pv-scroll h3, html[data-theme="light"] .pv-tags,
 html[data-theme="light"] .fc-tags, html[data-theme="light"] .pf-role, html[data-theme="light"] .project-author,
 html[data-theme="light"] .set-title { color: #00a152; }
+.a2hs {
+  position: fixed; left: 50%; transform: translateX(-50%);
+  bottom: calc(85px + env(safe-area-inset-bottom));
+  width: 92%; max-width: 400px; z-index: 10001;
+  background: #2a2a2a; border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px; padding: 14px 16px; text-align: left;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+}
+.a2hs[hidden] { display: none; }
+.a2hs-title { font-weight: bold; color: #00e676; margin-bottom: 6px; }
+.a2hs-text { font-size: .88rem; line-height: 1.4; opacity: .85; }
+.a2hs-actions { display: flex; gap: 8px; margin-top: 12px; }
+.a2hs-actions button {
+  flex: 1; padding: 9px 10px; border-radius: 14px; border: 0;
+  font-size: .85rem; font-weight: bold; background: #00e676; color: #111;
+}
+.a2hs-actions button.alt { background: #3a3a3a; color: #fff; }
+html[data-theme="light"] .a2hs { background: #fff; color: #111; border-color: rgba(0, 0, 0, 0.1); }
+html[data-theme="light"] .a2hs-title { color: #00a152; }
+html[data-theme="light"] .a2hs-actions button.alt { background: #e6e6e6; color: #111; }
+
 </style>
 </head>
 <body>
@@ -336,6 +357,15 @@ html[data-theme="light"] .set-title { color: #00a152; }
 <div class="post-view" id="compose-view">
   <div class="pv-top"><button class="pv-back" id="cv-back">Cancel</button><span id="cv-title">Create</span></div>
   <div class="pv-scroll" id="compose-scroll"></div>
+</div>
+
+<div class="a2hs" id="a2hs" hidden>
+  <div class="a2hs-title">Get a better experience</div>
+  <div class="a2hs-text" id="a2hs-text"></div>
+  <div class="a2hs-actions">
+    <button class="alt" id="a2hs-never" type="button">Don’t show me this again</button>
+    <button id="a2hs-ok" type="button">Got it</button>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
@@ -1338,6 +1368,7 @@ function updateSlidePosition() {
   mountPage(currentIndex);
   clearTimeout(unloadTimer);
   unloadTimer = setTimeout(unloadInactive, 450);
+  try { localStorage.setItem("wk-tab", String(currentIndex)); } catch (err) {}
 }
 window.addEventListener("resize", updateSlidePosition);
 
@@ -1410,7 +1441,39 @@ function reloadPage(i) {
   hooks.mount();
 }
 
-mountPage(0);
+(function restoreTab() {
+  let saved = 0;
+  try { saved = parseInt(localStorage.getItem("wk-tab"), 10); } catch (err) {}
+  if (!(saved >= 0 && saved < totalPages)) saved = 0;
+  currentIndex = saved;
+  track.classList.remove("animate");   // jump instantly, no slide on load
+  updateSlidePosition();
+  requestAnimationFrame(() => requestAnimationFrame(() => track.classList.add("animate")));
+})();
+
+(function homeScreenPrompt() {
+  const box = document.getElementById("a2hs");
+  const text = document.getElementById("a2hs-text");
+  const standalone = window.navigator.standalone === true ||
+    (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+  let hidden = false;
+  try { hidden = localStorage.getItem("wk-a2hs-hide") === "1"; } catch (err) {}
+  if (standalone || hidden) return;   // already installed or opted out
+
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  text.textContent = ios
+    ? "Tap the Share button in Safari, then choose “Add to Home Screen” to use WatermelonKatana like an app."
+    : "Open your browser menu (⋮), then choose “Add to Home screen” or “Install app” to use WatermelonKatana like an app.";
+
+  setTimeout(() => { box.hidden = false; }, 1500);
+
+  document.getElementById("a2hs-ok").addEventListener("click", () => { box.hidden = true; });
+  document.getElementById("a2hs-never").addEventListener("click", () => {
+    try { localStorage.setItem("wk-a2hs-hide", "1"); } catch (err) {}
+    box.hidden = true;
+  });
+})();
+
 </script>
 </body>
 </html>
