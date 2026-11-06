@@ -613,15 +613,21 @@ function renderComments() {
     return `<div class="c-wrap">
     ${u ? '<div class="reply-hint"><i data-lucide="reply"></i></div>' : ""}
     <div class="comment" data-i="${i}">
-      <div class="c-head"> ... unchanged ... </div>
+      <div class="c-head">${esc(name)}${when ? " | " + esc(when) : ""}</div>
       <div class="c-body">${renderText(c.content)}</div>
-      ${u ? `...unchanged actions...` : ""}
+      ${u ? `<div class="c-actions">
+        <button class="c-btn ${vote === 1 ? "active" : ""}" data-act="up" data-i="${i}" type="button"><i data-lucide="thumbs-up"></i></button>
+        <button class="c-btn ${vote === -1 ? "active" : ""}" data-act="down" data-i="${i}" type="button"><i data-lucide="thumbs-down"></i></button>
+        <button class="c-btn" data-act="reply" data-i="${i}" type="button"><i data-lucide="reply"></i></button>
+        ${canDelete ? `<button class="c-btn" data-act="delete" data-i="${i}" type="button"><i data-lucide="trash-2"></i></button>` : ""}
+      </div>` : ""}
     </div>
   </div>`;
   }).join("") : '<div class="status">No comments yet.</div>';
   icons();
 }
-//Reply to Comments
+
+        //Reply to Comments
 function replyTo(i) {
   const c = project.comments[i];
   const input = document.getElementById("comment-input");
