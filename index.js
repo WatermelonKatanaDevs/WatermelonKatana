@@ -261,7 +261,8 @@ app.get("/project/:id", checkAuth, makeFormToken, async (req, res) => {
   if (!proj) return res.status(404).sendFile(cldir + "/404.html");
   var tok = res.locals.userToken;
   var user = tok ? await Users.findOne({ _id: tok.id }) : null;
-  var isAdmin = !!user && isadmin(user.role);
+  // var admin = !!user && isadmin(user.role);
+  admin = false;
   var projectOwner = !!tok && proj.posterId === tok.id;
   if (proj.mature && (!tok || !user || !user.mature)) return res.status(403).sendFile(__dirname + "/Middleware/403.html");
   if (tok && !proj.viewers.includes(tok.id)) { proj.viewers.push(tok.id) }
@@ -275,10 +276,10 @@ app.get("/project/:id", checkAuth, makeFormToken, async (req, res) => {
     <meta property="og:title" content="${makeLiteralChars(proj.title)}"/>
     <meta property="og:type" content="website"/>
     <meta property="og:image" content="${makeLiteralChars(proj.thumbnail)}"/>
-    <meta property="og:description" content="${makeLiteralChars(proj.content)} \n By: ${(proj.anon ? (!isAdmin ? "": proj.poster) + " (Anonymous)": proj.poster)} \n Score: ${proj.score} Views: ${proj.views} Plays: ${proj.plays || 0}"/>
+    <meta property="og:description" content="${makeLiteralChars(proj.content)} \n By: ${(proj.anon ? (!admin ? "": proj.poster) + " (Anonymous)": proj.poster)} \n Score: ${proj.score} Views: ${proj.views} Plays: ${proj.plays || 0}"/>
   `).replace("<!--content-->", () => `
     ${makeLiteralChars(proj.title)}<br>
-    By: ${(proj.anon ? (!isAdmin ? "": proj.poster) + " (Anonymous)": proj.poster)}<br>
+    By: ${(proj.anon ? (!admin ? "": proj.poster) + " (Anonymous)": proj.poster)}<br>
     ${makeLiteralChars(proj.content)}<br>
     <a href="${makeLiteralChars(proj.link)}">${makeLiteralChars(proj.link)}</a><br>
     ${proj.tags.map(v => "#" + makeLiteralChars(v)).join(", ")}<br>
