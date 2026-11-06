@@ -97,21 +97,28 @@ const cldir = __dirname + "/Pages";
 /**
  * Define route handlers for serving HTML files
  */
+// Detect devices before routes so each existing URL can select its mobile presentation.
+app.use(device.capture());
+
+function isMobileRequest(req) {
+  return req.device && (req.device.type === "phone" || req.device.type === "tablet");
+}
+
+function sendMobilePage(req, res, desktopPage) {
+  return res.sendFile(cldir + (isMobileRequest(req) ? "/mobile.html" : desktopPage));
+}
+
 //app.get("/", (req, res) => res.sendFile(cldir + "/home.html")); // Home page
 app.get("/dashboard", (req, res) => res.sendFile(cldir + "/dashboard.html")); // Dashboard page
-app.get("/preferences", (req, res) => res.sendFile(cldir + "/preferences.html")); // Preferences page
+app.get("/preferences", (req, res) => sendMobilePage(req, res, "/preferences.html")); // Preferences page
+app.get("/profile", (req, res) => {
+  if (isMobileRequest(req)) return res.sendFile(cldir + "/mobile.html");
+  return res.redirect("/profile/edit");
+}); // Mobile profile tab; desktop users use the existing profile editor
 app.get("/register", makeFormToken, (req, res) => res.sendFile(cldir + "/users/auth/register.html")); // Registration page
 app.get("/login", (req, res) => res.sendFile(cldir + "/users/auth/login.html"));
 
-//Detect Mobile Devices
-app.use(device.capture());
-app.get("/", (req, res) => {
-    if (req.device.type === 'phone' || req.device.type === 'tablet') {
-        res.sendFile(cldir + "/mobile.html");
-    } else {
-        res.sendFile(cldir + "/home.html");
-    }
-});
+app.get("/", (req, res) => sendMobilePage(req, res, "/home.html"));
 
 
 /**
@@ -131,7 +138,7 @@ app.get("/logout", (req, res) => {
 });
 
 // Chat page, users only
-app.get("/chat", userAuth, (req, res) => res.sendFile(cldir + "/chat.html"));
+app.get("/chat", userAuth, (req, res) => sendMobilePage(req, res, "/chat.html"));
 
 // Admin page, admins only
 app.get("/admin", adminAuth, (req, res) => res.sendFile(cldir + "/users/admin.html"));
@@ -145,7 +152,7 @@ const Users = require("./Database/model/Users"); // Users
 
 // Projects
 app.get("/gamejams", (req, res) => res.sendFile(cldir + "/projects/gamejams.html")); // game jam page
-app.get("/search", (req, res) => res.sendFile(cldir + "/projects/search.html")); // Search page
+app.get("/search", (req, res) => sendMobilePage(req, res, "/projects/search.html")); // Search page
 app.get("/publish", userAuth, makeFormToken, (req, res) => res.sendFile(cldir + "/projects/publish.html")); // Publish page, users only
 const Projects = require("./Database/model/Projects");
 
@@ -306,7 +313,7 @@ app.use("/editor", express.static(__dirname + "/Editor"));
 app.get("/authors", (req, res) => { res.sendFile(cldir + "/authors.html") });
 
 // Posts
-app.get("/forum", (req, res) => res.sendFile(cldir + "/forum/home.html")); // Forum Home/Search
+app.get("/forum", (req, res) => sendMobilePage(req, res, "/forum/home.html")); // Forum Home/Search
 app.get("/forum/post", userAuth, makeFormToken, (req, res) => res.sendFile(cldir + "/forum/publish.html")); // Publish page, users only
 const Posts = require("./Database/model/Posts"); // Post page with dynamic post ID
 app.get("/forum/discussion/:id", checkAuth, makeFormToken, async (req, res) => {
@@ -318,6 +325,10 @@ app.get("/forum/discussion/:id", checkAuth, makeFormToken, async (req, res) => {
   if (post.mature && (!tok || !user || !user.mature)) return res.status(403).sendFile(__dirname + "/Middleware/403.html");
   if (tok && !post.viewers.includes(tok.id)) { post.viewers.push(tok.id) }
   post.views = post.viewers.length;
+  if (isMobileRequest(req)) {
+    await post.save();
+    return res.sendFile(cldir + "/mobile.html");
+  }
   sendFileReplace(res, "./Pages/forum/discussion.html", (s) => s.replace("<!--og:meta-->", () => `
     <meta property="og:title" content="${makeLiteralChars(post.title)}"/>
     <meta property="og:type" content="website"/>
