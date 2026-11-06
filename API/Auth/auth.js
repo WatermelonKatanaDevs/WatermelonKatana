@@ -93,7 +93,7 @@ exports.register = async (req, res, next) => {
   } catch (error) {
     res.locals.clearCookie();
     res.status(400).json({
-      message: "User not successful created",
+      message: "User not successfully created",
       error: error.message.includes("E11000") ? "as there is an account already with this name" : error.message,
     });
   }
