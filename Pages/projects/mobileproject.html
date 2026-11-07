@@ -60,7 +60,8 @@ input, textarea { font-size: 16px; }
 .chip { padding: 3px 10px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); font-size: .72rem; }
 .chip.accent { color: var(--accent); }
 .desc { font-size: .95rem; line-height: 1.5; margin-bottom: 14px; }
-.desc a, .c-body a { color: #4facfe; }
+.desc a, .c-body a, .mention { color: var(--mention); }
+.mention { font-weight: 600; }
 .stats { display: flex; justify-content: space-around; padding: 12px 0; margin-bottom: 12px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); }
 .stats div { display: flex; flex-direction: column; align-items: center; }
 .stats strong { font-size: 1.15rem; }
@@ -82,6 +83,11 @@ input, textarea { font-size: 16px; }
 .form .btn { margin: 8px 0 0; }
 .status { color: var(--muted); font-size: .9rem; padding: 14px 0; text-align: center; }
 .msg { font-size: .85rem; margin-top: 6px; color: #ff6b6b; }
+.c-wrap { position: relative; margin-bottom: 8px; border-radius: 12px; overflow: hidden; }
+.c-wrap .comment { margin-bottom: 0; position: relative; transition: transform .2s ease; }
+.reply-hint { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); opacity: 0; color: var(--accent); pointer-events: none; }
+.reply-hint svg { width: 22px; height: 22px; }
+.c-btn.active { color: var(--accent); opacity: 1; }
 </style>
 </head>
 <body>
@@ -138,10 +144,30 @@ function esc(str) {
   return String(str ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 function renderText(str) {
-  return esc(str)
-    .replace(/(^|\s)@([\w-]+(?:\.[\w-]+)*)/g, '$1<span class="mention">@$2</span>')
-    .replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>')
-    .replace(/\n/g, "<br>");
+  const stash = [];
+  const keep = html => "\u0000" + (stash.push(html) - 1) + "\u0000";
+  const fmt = s => s
+    .replace(/\*\*([\s\S]+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/__([\s\S]+?)__/g, "<u>$1</u>")
+    .replace(/~~([\s\S]+?)~~/g, "<s>$1</s>")
+    .replace(/\*([^\s*](?:[\s\S]*?[^\s*])?)\*/g, "<em>$1</em>");
+
+  let s = esc(str);
+
+  // [text](link), http(s) or site-relative links only
+  s = s.replace(/\[([^\]\n]+)\]\(((?:https?:\/\/|\/)[^\s)]+)\)/g, (m, label, url) =>
+    keep('<a href="' + url + '"' + (url[0] === "/" ? "" : ' target="_blank" rel="noopener"') + ">" + fmt(label) + "</a>"));
+
+  // bare URLs
+  s = s.replace(/(https?:\/\/[^\s<\u0000]+)/g, (m, url) =>
+    keep('<a href="' + url + '" target="_blank" rel="noopener">' + url + "</a>"));
+
+  // @mentions
+  s = s.replace(/(^|[^\w@])@([\w-]{1,32})/g, (m, pre, name) =>
+    pre + keep('<a class="mention" href="/user/' + encodeURIComponent(name) + '">@' + name + "</a>"));
+
+  s = fmt(s).replace(/\n/g, "<br>");
+  return s.replace(/\u0000(\d+)\u0000/g, (m, i) => stash[Number(i)]);
 }
 function timeAgo(t) {
   t = Number(t) || 0;
@@ -696,18 +722,19 @@ document.addEventListener("click", async e => {
   const btn = e.target.closest && e.target.closest("[data-act]");
   if (!btn) return;
   const index = Number(btn.dataset.i);
-  const act = btn.dataset.act;
-  if (act === "del") {
-    btn.disabled = true;
-    try {
-      await jsonRequest("DELETE", "/api/project/comment/" + encodeURIComponent(pid) + "/delete", { index });
-      await refreshComments();
-    } catch (err) {
-      console.error(err);
-      btn.disabled = false;
-    }
-    return;
+const act = btn.dataset.act;
+if (act === "reply") { replyTo(index); return; }
+if (act === "delete") {
+  btn.disabled = true;
+  try {
+    await jsonRequest("DELETE", "/api/project/comment/" + encodeURIComponent(pid) + "/delete", { index });
+    await refreshComments();
+  } catch (err) {
+    console.error(err);
+    btn.disabled = false;
   }
+  return;
+}
   const c = project.comments[index];
   if (!c) return;
   const dir = act === "up" ? 1 : -1;
