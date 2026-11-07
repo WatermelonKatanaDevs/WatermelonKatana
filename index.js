@@ -108,7 +108,7 @@ function sendMobilePage(req, res, desktopPage) {
   return res.sendFile(cldir + (isMobileRequest(req) ? "/mobile.html" : desktopPage));
 }
 
-//app.get("/", (req, res) => res.sendFile(cldir + "/home.html")); // Home page
+app.get("/mobile", (req, res) => res.sendFile(cldir + "/mobile.html")); // Mobile Access on PC, for testing purposes
 app.get("/dashboard", (req, res) => res.sendFile(cldir + "/dashboard.html")); // Dashboard page
 app.get("/preferences", (req, res) => sendMobilePage(req, res, "/preferences.html")); // Preferences page
 app.get("/profile", (req, res) => {
