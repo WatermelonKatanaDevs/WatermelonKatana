@@ -12,6 +12,8 @@
   <script src="/scripts/markdowntextbox.js"></script>
   <script src="/editor/editor/github.js"></script>
   <style>
+    #githubRepositoryUrl { width: min(100%, 520px); margin: 6px 0; }
+    #githubLoadRepository { margin: 6px 0 12px; }
     #githubRepoPicker { margin: 6px 0 10px; }
     #githubSearch { width: min(100%, 520px); margin: 10px 0; }
     #githubRepoList { display: flex; flex-direction: column; gap: 6px; max-width: 520px; max-height: 260px; overflow-y: auto; }
@@ -43,6 +45,10 @@
       <span class="checkbox"></span>
     </label><br>
     <div id="editorGithub" style="display:none;">
+      <label for="githubRepositoryUrl">Public GitHub repository URL</label><br>
+      <input type="url" id="githubRepositoryUrl" placeholder="https://github.com/owner/repository/tree/main">
+      <button type="button" id="githubLoadRepository">Load Repository</button><br>
+      <span style="opacity:.7;">Public repositories can be published without signing in.</span><br>
       <button type="button" id="githubSignIn">Sign in with GitHub</button>
       <div id="githubRepoPicker" style="display:none;">
         <input type="text" id="githubSearch" placeholder="Search your GitHub repositories">
@@ -105,6 +111,8 @@
     const editorProject = document.querySelector('#editorProject');
     const editorGithub = document.querySelector('#editorGithub');
     const githubSignIn = document.querySelector('#githubSignIn');
+    const githubRepositoryUrl = document.querySelector('#githubRepositoryUrl');
+    const githubLoadRepository = document.querySelector('#githubLoadRepository');
     const githubRepoPicker = document.querySelector('#githubRepoPicker');
     const githubSearch = document.querySelector('#githubSearch');
     const githubRepoList = document.querySelector('#githubRepoList');
@@ -174,6 +182,82 @@
       githubSignIn.textContent = repo ? 'Change GitHub account' : 'Sign in with GitHub';
     }
 
+    async function publicGithubRequest(path) {
+      const response = await fetch('https://api.github.com' + path, {
+        headers: {'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'},
+        cache: 'no-store'
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.message || `GitHub request failed (${response.status}).`);
+      return data;
+    }
+    function parseGithubRepositoryUrl(value) {
+      let url;
+      try { url = new URL(String(value || '').trim()); } catch (_) { throw new Error('Enter a valid GitHub repository URL.'); }
+      if (url.hostname.toLowerCase() !== 'github.com' || !/^https?:$/.test(url.protocol)) throw new Error('Use a URL from github.com.');
+      const parts = url.pathname.split('/').filter(Boolean).map(decodeURIComponent);
+      if (parts.length < 2) throw new Error('The URL must include an owner and repository.');
+      const [owner, repo, action, ...rest] = parts;
+      if (!owner || !repo || repo.endsWith('.git')) throw new Error('Enter a GitHub repository page URL, not a clone URL.');
+      if (!action) return {owner, repo};
+      if (action !== 'tree' && action !== 'commit') throw new Error('Use a repository URL, a /tree/branch URL, or a /commit/SHA URL.');
+      if (!rest.length) throw new Error('The GitHub URL is missing its branch or commit.');
+      if (action === 'commit') {
+        if (rest.length !== 1 || !/^[0-9a-f]{7,40}$/i.test(rest[0])) throw new Error('The commit URL must contain a commit SHA.');
+        return {owner, repo, commit:rest[0]};
+      }
+      return {owner, repo, treeRef:rest.join('/')};
+    }
+    async function loadPublicGithubRepository() {
+      const parsed = parseGithubRepositoryUrl(githubRepositoryUrl.value);
+      githubLoadRepository.disabled = true;
+      githubLoadRepository.textContent = 'Loading…';
+      display.textContent = '';
+      try {
+        const base = `/repos/${encodeURIComponent(parsed.owner)}/${encodeURIComponent(parsed.repo)}`;
+        const repo = await publicGithubRequest(base);
+        if (repo.private) throw new Error('Only public GitHub repositories can be loaded without signing in.');
+        const branchesData = await publicGithubRequest(base + '/branches?per_page=100');
+        const branches = Array.isArray(branchesData) ? branchesData.map(item => item.name).filter(Boolean) : [];
+        const defaultBranch = String(repo.default_branch || branches[0] || 'main');
+        let branch = defaultBranch;
+        let commit = parsed.commit || '';
+        if (parsed.treeRef) {
+          if (/^[0-9a-f]{7,40}$/i.test(parsed.treeRef)) {
+            commit = parsed.treeRef;
+          } else {
+            const match = branches.filter(name => parsed.treeRef === name || parsed.treeRef.startsWith(name + '/')).sort((a,b) => b.length - a.length)[0];
+            if (!match) throw new Error('Could not find that branch in the repository. Check the URL and try again.');
+            branch = match;
+            if (parsed.treeRef !== match) throw new Error('Publishing a repository subdirectory is not supported yet. Use the branch URL without the subdirectory.');
+          }
+        }
+        if (!branches.includes(branch)) branches.unshift(branch);
+        selectedGithub = {
+          owner:repo.owner?.login || parsed.owner,
+          name:repo.name || parsed.repo,
+          repo:repo.name || parsed.repo,
+          fullName:repo.full_name || `${parsed.owner}/${parsed.repo}`,
+          private:false,
+          defaultBranch,
+          publicAccess:true,
+          branches,
+          initialBranch:branch,
+          initialCommit:commit
+        };
+        renderGithubSelection();
+        await loadEditorRevisionOptions();
+        githubRepositoryUrl.value = `https://github.com/${selectedGithub.fullName}${parsed.treeRef ? '/tree/' + parsed.treeRef : parsed.commit ? '/commit/' + parsed.commit : ''}`;
+      } catch (e) {
+        selectedGithub = null;
+        renderGithubSelection();
+        editorDeployment.style.display = 'none';
+        display.textContent = e?.message || String(e);
+      } finally {
+        githubLoadRepository.disabled = false;
+        githubLoadRepository.textContent = 'Load Repository';
+      }
+    }
     async function loadEditorRevisionOptions() {
       if (!selectedGithub) {
         editorDeployment.style.display = 'none';
@@ -184,31 +268,51 @@
         return;
       }
       editorDeployment.style.display = '';
-      const github = await githubConfig();
-      try {
-        editorBranches = await github.listBranches(selectedGithub.owner, selectedGithub.name || selectedGithub.repo);
-      } catch (_) {
-        editorBranches = [];
+      if (selectedGithub.publicAccess) {
+        editorBranches = [...(selectedGithub.branches || [])];
+      } else {
+        const github = await githubConfig();
+        try {
+          editorBranches = await github.listBranches(selectedGithub.owner, selectedGithub.name || selectedGithub.repo);
+        } catch (_) {
+          editorBranches = [];
+        }
       }
-      const defaultBranch = String(selectedGithub.defaultBranch || editorBranches[0] || 'main');
+      const defaultBranch = String(selectedGithub.initialBranch || selectedGithub.defaultBranch || editorBranches[0] || 'main');
       if (!editorBranches.includes(defaultBranch)) editorBranches.unshift(defaultBranch);
       editorBranch.innerHTML = editorBranches.map(branch => `<option value="${escapeHTML(branch)}">${escapeHTML(branch)}</option>`).join('');
       editorBranch.value = defaultBranch;
-      await loadEditorCommits();
+      await loadEditorCommits(selectedGithub.initialCommit || '');
     }
 
-    async function loadEditorCommits() {
+    async function loadEditorCommits(initialCommit = '') {
       if (!selectedGithub || !editorBranch.value) return;
-      const github = await githubConfig();
       try {
-        editorCommits = await github.listCommits(selectedGithub.owner, selectedGithub.name || selectedGithub.repo, editorBranch.value, 30);
+        if (selectedGithub.publicAccess) {
+          const items = await publicGithubRequest(`/repos/${encodeURIComponent(selectedGithub.owner)}/${encodeURIComponent(selectedGithub.name || selectedGithub.repo)}/commits?sha=${encodeURIComponent(editorBranch.value)}&per_page=30`);
+          editorCommits = Array.isArray(items) ? items.map(item => ({
+            sha:item.sha,
+            message:String(item.commit?.message || '').split(/\\r?\\n/, 1)[0]
+          })) : [];
+        } else {
+          const github = await githubConfig();
+          editorCommits = await github.listCommits(selectedGithub.owner, selectedGithub.name || selectedGithub.repo, editorBranch.value, 30);
+        }
       } catch (_) {
         editorCommits = [];
+      }
+      if (initialCommit && !editorCommits.some(item => item.sha === initialCommit)) {
+        try {
+          const item = await publicGithubRequest(`/repos/${encodeURIComponent(selectedGithub.owner)}/${encodeURIComponent(selectedGithub.name || selectedGithub.repo)}/commits/${encodeURIComponent(initialCommit)}`);
+          editorCommits.unshift({sha:item.sha, message:String(item.commit?.message || 'Selected commit').split(/\\r?\\n/, 1)[0]});
+        } catch (_) {
+          editorCommits.unshift({sha:initialCommit, message:'Selected commit'});
+        }
       }
       editorCommit.innerHTML =
         '<option value="latest">Latest</option>' +
         editorCommits.map(commit => `<option value="${escapeHTML(commit.sha)}">${escapeHTML(commit.message || commit.sha.slice(0, 12))}</option>`).join('');
-      editorCommit.value = 'latest';
+      editorCommit.value = initialCommit || 'latest';
     }
     function renderGithubRepoList() {
       const query = githubSearch.value.trim().toLowerCase();
@@ -225,6 +329,8 @@
       githubRepoList.querySelectorAll('[data-repo-index]').forEach(button => {
         button.onclick = () => {
           selectedGithub = githubRepos[Number(button.dataset.repoIndex)] || null;
+          if (selectedGithub) selectedGithub.publicAccess = false;
+          githubRepositoryUrl.value = selectedGithub ? `https://github.com/${selectedGithub.fullName}` : '';
           renderGithubSelection();
           renderGithubRepoList();
           loadEditorRevisionOptions().catch(e => display.textContent = e?.message || String(e));
@@ -232,7 +338,16 @@
       });
     }
     async function loadGithubRepositories() {
-      const github = await githubConfig();
+      let github;
+      try { github = await githubConfig(); } catch (_) {
+        githubSearch.value = '';
+        githubRepos = [];
+        githubRepoList.innerHTML = '';
+        githubRepoPicker.style.display = 'none';
+        githubSignIn.hidden = false;
+        githubSignIn.textContent = 'Sign in with GitHub';
+        return;
+      }
       githubRepoPicker.style.display = 'none';
       if (!github.isSignedIn()) {
         githubSearch.value = '';
@@ -276,9 +391,14 @@
     }
     editorProject.onchange = () => applyEditorProjectMode(editorProject.checked);
     editorBranch.onchange = () => loadEditorCommits().catch(e => display.textContent = e?.message || String(e));
+    githubLoadRepository.onclick = () => loadPublicGithubRepository();
+    githubRepositoryUrl.addEventListener('keydown', event => {
+      if (event.key === 'Enter') { event.preventDefault(); loadPublicGithubRepository(); }
+    });
     githubSignIn.onclick = async () => {
       try {
         display.textContent = '';
+        await githubConfig();
         await signInWithGitHub();
       } catch (e) {
         display.textContent = e?.message || String(e);
@@ -287,13 +407,8 @@
     githubSearch.addEventListener('input', renderGithubRepoList);
 
     (async () => {
-      try {
-        await githubConfig();
-        const params = new URLSearchParams(location.search);
-        if (params.get('editor') === '1') await applyEditorProjectMode(true);
-      } catch (e) {
-        if (new URLSearchParams(location.search).get('editor') === '1') display.textContent = e?.message || String(e);
-      }
+      const params = new URLSearchParams(location.search);
+      if (params.get('editor') === '1') await applyEditorProjectMode(true);
     })();
 
     markdownTextbox('#desc');
