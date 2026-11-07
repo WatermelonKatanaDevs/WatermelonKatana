@@ -242,7 +242,7 @@ function renderPage() {
       <h2 class="title">${esc(p.title || "Untitled")}</h2>
       <div class="byline">By <a href="/user/${encodeURIComponent(p.poster || "")}">${esc(p.poster || "unknown")}</a></div>
       <div class="chips"><span class="chip">${esc(platforms[p.platform] || "Unknown")}</span>${tags}</div>
-      ${p.content ? `<div class="desc">${convertMarkdown(p.content)}</div>` : ""}
+      ${p.content ? `<div class="desc">${renderText(p.content)}</div>` : ""}
       <div class="stats">
         <div><strong id="score">${esc(p.score ?? 0)}</strong><span>Score</span></div>
         <div><strong>${esc(p.views ?? 0)}</strong><span>Views</span></div>
@@ -662,7 +662,7 @@ function renderComments() {
     ${u ? '<div class="reply-hint"><i data-lucide="reply"></i></div>' : ""}
     <div class="comment" data-i="${i}">
       <div class="c-head">${esc(name)}${when ? " | " + esc(when) : ""}</div>
-      <div class="c-body">${convertMarkdown(c.content)}</div>
+      <div class="c-body">${renderText(c.content)}</div>
       ${u ? `<div class="c-actions">
         <button class="c-btn ${vote === 1 ? "active" : ""}" data-act="up" data-i="${i}" type="button"><i data-lucide="thumbs-up"></i></button>
         <button class="c-btn ${vote === -1 ? "active" : ""}" data-act="down" data-i="${i}" type="button"><i data-lucide="thumbs-down"></i></button>
