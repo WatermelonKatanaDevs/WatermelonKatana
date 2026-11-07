@@ -450,21 +450,13 @@ function makeKeyEvent(win, type, def) {
 
 function fireKey(type, def) {
   const game = document.getElementById("game");
-  if (!game || !game.contentDocument) return;
-
+  game.focus();
   game.contentWindow.focus();
-
-  allDocs(game.contentDocument, []).forEach(doc => {
-    const win = doc.defaultView;
-    if (!win) return;
-    const target = doc.activeElement || doc.body;
-    target.dispatchEvent(makeKeyEvent(win, type, def));
-    if (type === "keydown" && (def.key.length === 1 || def.key === "Enter")) {
-      target.dispatchEvent(makeKeyEvent(win, "keypress", def));
-    }
-  });
+  game.contentWindow.postMessage({
+    type: "touch-key", event: type,
+    key: def.key, code: def.code, keyCode: def.keyCode
+  }, "*");
 }
-  
 function press(name) {
   keyCounts[name] = (keyCounts[name] || 0) + 1;
   if (keyCounts[name] === 1) fireKey("keydown", KEYS[name]);
