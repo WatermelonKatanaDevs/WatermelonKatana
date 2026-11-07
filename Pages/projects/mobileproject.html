@@ -419,35 +419,6 @@ try {
   if (KEYS[saved]) customKey = saved;
 } catch (err) {}
 
-function allDocs(doc, out) {
-  out.push(doc);
-  doc.querySelectorAll("iframe").forEach(frame => {
-    if (frame.contentDocument && frame.contentDocument.body) allDocs(frame.contentDocument, out);
-  });
-  return out;
-}
-
-function makeKeyEvent(win, type, def) {
-  const ev = new win.KeyboardEvent(type, {
-    key: def.key,
-    code: def.code,
-    location: def.code === "ShiftLeft" || def.code === "ControlLeft" ? 1 : 0,
-    repeat: false,
-    shiftKey: !!keyCounts.ShiftLeft,
-    ctrlKey: !!keyCounts.ControlLeft,
-    bubbles: true,
-    cancelable: true,
-    composed: true,
-    view: win
-  });
-  // The constructor ignores keyCode/which/charCode, so force them
-  const code = type === "keypress" ? (def.key.length === 1 ? def.key.charCodeAt(0) : 13) : def.keyCode;
-  Object.defineProperty(ev, "keyCode", { get: () => code });
-  Object.defineProperty(ev, "which", { get: () => code });
-  Object.defineProperty(ev, "charCode", { get: () => (type === "keypress" ? code : 0) });
-  return ev;
-}
-
 function fireKey(type, def) {
   const game = document.getElementById("game");
   game.focus();
