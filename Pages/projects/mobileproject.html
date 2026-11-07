@@ -436,6 +436,7 @@ window.addEventListener("message", e => {
 });
 
 function fireKey(type, def) {
+  mark("pad");
   const game = document.getElementById("game");
   game.focus();
   game.contentWindow.focus();
