@@ -179,7 +179,7 @@
     function renderGithubSelection() {
       const repo = selectedGithub;
       githubSelection.textContent = repo ? `Selected: ${repo.fullName}` : '';
-      githubSignIn.textContent = repo ? 'Change GitHub account' : 'Sign in with GitHub';
+      githubSignIn.textContent = repo && !repo.publicAccess ? 'Change GitHub account' : 'Sign in with GitHub';
     }
 
     async function publicGithubRequest(path) {
