@@ -427,15 +427,26 @@ function allDocs(doc, out) {
   return out;
 }
 
+function makeKeyEvent(win, type, def) {
+  const ev = new win.KeyboardEvent(type, {
+    key: def.key, code: def.code,
+    keyCode: def.keyCode, which: def.keyCode,
+    bubbles: true, cancelable: true, composed: true, view: win
+  });
+  if (ev.keyCode !== def.keyCode) {
+    Object.defineProperty(ev, "keyCode", { get: () => def.keyCode });
+    Object.defineProperty(ev, "which", { get: () => def.keyCode });
+  }
+  return ev;
+}
+
 function fireKey(type, def) {
   const game = document.getElementById("game");
+  try { game.contentWindow.focus(); } catch (err) {}
   try {
     allDocs(game.contentDocument, []).forEach(doc => {
-      const win = doc.defaultView;
-      const ev = new win.KeyboardEvent(type, { key: def.key, code: def.code, bubbles: true, cancelable: true, composed: true });
-      Object.defineProperty(ev, "keyCode", { get: () => def.keyCode });
-      Object.defineProperty(ev, "which", { get: () => def.keyCode });
-      doc.body.dispatchEvent(ev);
+      const target = doc.activeElement || doc.body;
+      target.dispatchEvent(makeKeyEvent(doc.defaultView, type, def));
     });
   } catch (err) {}
   try {
