@@ -420,29 +420,49 @@ try {
 function allDocs(doc, out) {
   out.push(doc);
   doc.querySelectorAll("iframe").forEach(frame => {
-    try {
-      if (frame.contentDocument && frame.contentDocument.body) allDocs(frame.contentDocument, out);
-    } catch (err) {}
+    if (frame.contentDocument && frame.contentDocument.body) allDocs(frame.contentDocument, out);
   });
   return out;
 }
 
-function fireKey(type, def) {
-  const game = document.getElementById("game");
-  try {
-    allDocs(game.contentDocument, []).forEach(doc => {
-      const win = doc.defaultView;
-      const ev = new win.KeyboardEvent(type, { key: def.key, code: def.code, bubbles: true, cancelable: true, composed: true });
-      Object.defineProperty(ev, "keyCode", { get: () => def.keyCode });
-      Object.defineProperty(ev, "which", { get: () => def.keyCode });
-      doc.body.dispatchEvent(ev);
-    });
-  } catch (err) {}
-  try {
-    game.contentWindow.postMessage({ type: "touch-key", event: type, key: def.key, code: def.code, keyCode: def.keyCode }, "*");
-  } catch (err) {}
+function makeKeyEvent(win, type, def) {
+  const ev = new win.KeyboardEvent(type, {
+    key: def.key,
+    code: def.code,
+    location: def.code === "ShiftLeft" || def.code === "ControlLeft" ? 1 : 0,
+    repeat: false,
+    shiftKey: !!keyCounts.ShiftLeft,
+    ctrlKey: !!keyCounts.ControlLeft,
+    bubbles: true,
+    cancelable: true,
+    composed: true,
+    view: win
+  });
+  // The constructor ignores keyCode/which/charCode, so force them
+  const code = type === "keypress" ? (def.key.length === 1 ? def.key.charCodeAt(0) : 13) : def.keyCode;
+  Object.defineProperty(ev, "keyCode", { get: () => code });
+  Object.defineProperty(ev, "which", { get: () => code });
+  Object.defineProperty(ev, "charCode", { get: () => (type === "keypress" ? code : 0) });
+  return ev;
 }
 
+function fireKey(type, def) {
+  const game = document.getElementById("game");
+  if (!game || !game.contentDocument) return;
+
+  game.contentWindow.focus();
+
+  allDocs(game.contentDocument, []).forEach(doc => {
+    const win = doc.defaultView;
+    if (!win) return;
+    const target = doc.activeElement || doc.body;
+    target.dispatchEvent(makeKeyEvent(win, type, def));
+    if (type === "keydown" && (def.key.length === 1 || def.key === "Enter")) {
+      target.dispatchEvent(makeKeyEvent(win, "keypress", def));
+    }
+  });
+}
+  
 function press(name) {
   keyCounts[name] = (keyCounts[name] || 0) + 1;
   if (keyCounts[name] === 1) fireKey("keydown", KEYS[name]);
@@ -464,7 +484,7 @@ function releaseAll() {
   joyHeld.clear();
   document.querySelectorAll(".pad-btn.down").forEach(b => b.classList.remove("down"));
   const knob = document.getElementById("knob");
-  if (knob) knob.style.transform = "";
+  if (knob) knob.style.transform = "";  
 }
 
 function syncJoy(want) {
