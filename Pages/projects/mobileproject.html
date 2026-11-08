@@ -396,24 +396,7 @@ try {
   if (KEYS[saved]) customKey = saved;
 } catch (err) {}
 
-const seen = {};
-function mark(stage) {
-  seen[stage] = (seen[stage] || 0) + 1;
-  let b = document.getElementById("dbg");
-  if (!b) {
-    b = document.createElement("div");
-    b.id = "dbg";
-    b.style.cssText = "position:absolute;top:0;left:0;z-index:50;background:#000;color:#0f0;font:12px monospace;padding:4px;pointer-events:none";
-    document.getElementById("stage").appendChild(b);
-  }
-  b.textContent = Object.entries(seen).map(([k, v]) => k + ":" + v).join("  ");
-}
-window.addEventListener("message", e => {
-  if (e.data && e.data.type === "touch-dbg") mark(e.data.stage);
-});
-
 function fireKey(type, def) {
-  mark("pad");
   const game = document.getElementById("game");
   game.focus();
   game.contentWindow.focus();
