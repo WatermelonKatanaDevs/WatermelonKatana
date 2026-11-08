@@ -175,6 +175,7 @@ html, body {
 .pv-meta { font-size: .8rem; opacity: .65; margin: 6px 0 4px; }
 .pv-tags { font-size: .8rem; color: #00e676; margin-bottom: 10px; }
 .pv-body { font-size: .95rem; line-height: 1.5; overflow-wrap: anywhere; margin: 10px 0 18px; }
+.pv-body img, .pc-body img, .pf-bio img { max-width: 100%; height: auto; border-radius: 8px; vertical-align: middle; }
 .pv-body a, .pc-body a, .pf-bio a, .mention { color: #ffb3c7; }
 .mention { text-decoration: none; font-weight: 600; }
 .pv-scroll h3 { color: #00e676; font-size: 1.1rem; margin: 6px 0 10px; }
@@ -379,6 +380,7 @@ html[data-theme="light"] .a2hs-actions button.alt { background: #e6e6e6; color: 
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="/Assets/scripts/mobilemarkdown.js"></script>
 <script src="/scripts/mediaupload.js"></script>
 <script>
 // Claudes Plan ngl
@@ -502,32 +504,7 @@ searchInput.addEventListener("keydown", e => { if (e.key === "Enter") { clearTim
 function esc(str) {
   return String(str ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
-function renderText(str) {
-  const stash = [];
-  const keep = html => "\u0000" + (stash.push(html) - 1) + "\u0000";
-  const fmt = s => s
-    .replace(/\*\*([\s\S]+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/__([\s\S]+?)__/g, "<u>$1</u>")
-    .replace(/~~([\s\S]+?)~~/g, "<s>$1</s>")
-    .replace(/\*([^\s*](?:[\s\S]*?[^\s*])?)\*/g, "<em>$1</em>");
-
-  let s = esc(str);
-
-  // [text](link)
-  s = s.replace(/\[([^\]\n]+)\]\(((?:https?:\/\/|\/)[^\s)]+)\)/g, (m, label, url) =>
-    keep('<a href="' + url + '"' + (url[0] === "/" ? "" : ' target="_blank" rel="noopener"') + ">" + fmt(label) + "</a>"));
-
-  // URLS
-  s = s.replace(/(https?:\/\/[^\s<\u0000]+)/g, (m, url) =>
-    keep('<a href="' + url + '" target="_blank" rel="noopener">' + url + "</a>"));
-
-  // @mentions
-  s = s.replace(/(^|[^\w@])@([\w-]{1,32})/g, (m, pre, name) =>
-    pre + keep('<a class="mention" href="/user/' + encodeURIComponent(name) + '">@' + name + "</a>"));
-
-  s = fmt(s).replace(/\n/g, "<br>");
-  return s.replace(/\u0000(\d+)\u0000/g, (m, i) => stash[Number(i)]);
-}
+function renderText(str) { return renderMarkdownText(str); }
 function stripFormat(str) {
   return String(str ?? "")
     .replace(/\[([^\]\n]+)\]\((?:https?:\/\/|\/)[^\s)]+\)/g, "$1")
