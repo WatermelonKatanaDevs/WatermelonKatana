@@ -507,7 +507,7 @@ searchInput.addEventListener("keydown", e => { if (e.key === "Enter") { clearTim
 function esc(str) {
   return String(str ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
-function renderText(str) { return convertMarkdown(str); }
+function renderText(str) { return window.convertMarkdown(str); }
 function stripFormat(str) {
   return String(str ?? "")
     .replace(/\[([^\]\n]+)\]\((?:https?:\/\/|\/)[^\s)]+\)/g, "$1")
