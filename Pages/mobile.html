@@ -1425,6 +1425,7 @@ function goToPage(index) {
   updateSlidePosition();
   const path = tabPaths[index];
   if (location.pathname !== path) history.pushState({ tab: index }, "", path);
+  if (index === 3) syncChatTab(path);
 }
 
 function updateSlidePosition() {
