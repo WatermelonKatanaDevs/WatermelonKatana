@@ -60,6 +60,7 @@ input, textarea { font-size: 16px; }
 .chip { padding: 3px 10px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); font-size: .72rem; }
 .chip.accent { color: var(--accent); }
 .desc { font-size: .95rem; line-height: 1.5; margin-bottom: 14px; }
+.desc img, .c-body img { max-width: 100%; height: auto; border-radius: 8px; vertical-align: middle; }
 .desc a, .c-body a, .mention { color: var(--mention); }
 .mention { font-weight: 600; }
 .stats { display: flex; justify-content: space-around; padding: 12px 0; margin-bottom: 12px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); }
@@ -100,6 +101,7 @@ input, textarea { font-size: 16px; }
 
 <script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 <script src="/Assets/scripts/script.js"></script>
+<script src="/Assets/scripts/mobilemarkdown.js"></script>
 <script>
 const pid = location.pathname.split("/")[2];
 const projectOwner = <!--project-owner-->;
@@ -145,32 +147,7 @@ function esc(str) {
   return String(str ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
-function renderText(str) {
-  const stash = [];
-  const keep = html => "\u0000" + (stash.push(html) - 1) + "\u0000";
-  const fmt = s => s
-    .replace(/\*\*([\s\S]+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/__([\s\S]+?)__/g, "<u>$1</u>")
-    .replace(/~~([\s\S]+?)~~/g, "<s>$1</s>")
-    .replace(/\*([^\s*](?:[\s\S]*?[^\s*])?)\*/g, "<em>$1</em>");
-
-  let s = esc(str);
-
-  // [text](link), http(s) or site-relative links only
-  s = s.replace(/\[([^\]\n]+)\]\(((?:https?:\/\/|\/)[^\s)]+)\)/g, (m, label, url) =>
-    keep('<a href="' + url + '"' + (url[0] === "/" ? "" : ' target="_blank" rel="noopener"') + ">" + fmt(label) + "</a>"));
-
-  // bare URLs
-  s = s.replace(/(https?:\/\/[^\s<\u0000]+)/g, (m, url) =>
-    keep('<a href="' + url + '" target="_blank" rel="noopener">' + url + "</a>"));
-
-  // @mentions
-  s = s.replace(/(^|[^\w@])@([\w-]{1,32})/g, (m, pre, name) =>
-    pre + keep('<a class="mention" href="/user/' + encodeURIComponent(name) + '">@' + name + "</a>"));
-
-  s = fmt(s).replace(/\n/g, "<br>");
-  return s.replace(/\u0000(\d+)\u0000/g, (m, i) => stash[Number(i)]);
-}
+function renderText(str) { return renderMarkdownText(str); }
 function timeAgo(t) {
   t = Number(t) || 0;
   if (!t) return "";
