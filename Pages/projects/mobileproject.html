@@ -13,7 +13,8 @@ html[data-theme="light"] { --bg: #f2f2f2; --card: #fff; --text: #111; --accent: 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 body { background: var(--bg); color: var(--text); font-family: sans-serif; overflow-wrap: anywhere; padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
-a { color: var(--accent); text-decoration: none; }
+a { color: var(--palette-link, #ff9c9c); text-decoration: none; }
+a:hover, a:active { color: var(--palette-link-hover, #39ff14); }
 button { font-family: inherit; color: var(--text); -webkit-tap-highlight-color: transparent; }
 input, textarea { font-size: 16px; }
 
@@ -101,7 +102,6 @@ input, textarea { font-size: 16px; }
 
 <script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 <script src="/Assets/scripts/script.js"></script>
-<script src="/Assets/scripts/mobilemarkdown.js"></script>
 <script>
 const pid = location.pathname.split("/")[2];
 const projectOwner = <!--project-owner-->;
@@ -147,7 +147,7 @@ function esc(str) {
   return String(str ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
-function renderText(str) { return renderMarkdownText(str); }
+function renderText(str) { return convertMarkdown(str); }
 function timeAgo(t) {
   t = Number(t) || 0;
   if (!t) return "";
