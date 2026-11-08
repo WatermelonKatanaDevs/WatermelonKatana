@@ -102,6 +102,10 @@ html, body {
 .chat-tab-btn.active { opacity: 1; background-color: #00e676; color: #222; font-weight: bold; }
 .chat-tab-content { display: none; flex-direction: column; width: 100%; }
 .chat-tab-content.active { display: flex; }
+#mobile-widgetbot-container { width: 100%; height: min(68vh, 720px); min-height: 360px; overflow: hidden; border-radius: 12px; background: #1e1e1e; }
+#mobile-widgetbot-container widgetbot { display: block; width: 100%; height: 100%; }
+#mobile-widgetbot-status { margin: 12px 0; }
+#mobile-widgetbot-status[hidden] { display: none; }
 
 .project-grid {
   display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;
@@ -321,17 +325,18 @@ html[data-theme="light"] .a2hs-actions button.alt { background: #e6e6e6; color: 
 
     <main class="page" id="page-chat">
       <div class="chat-tab-bar">
-        <button class="chat-tab-btn active" onclick="openChatTab(event, 'chat-messages')">Chat</button>
-        <button class="chat-tab-btn" onclick="openChatTab(event, 'chat-forum')">Forum</button>
+        <button class="chat-tab-btn active" onclick="openChatTab(event, 'chat-forum')">Forum</button>
+        <button class="chat-tab-btn" onclick="openChatTab(event, 'chat-messages')">Chat</button>
       </div>
-      <div class="chat-tab-content active" id="chat-messages">
-        <h2>Chat</h2>
-        <p>Quickchat here</p>
-      </div>
-      <div class="chat-tab-content" id="chat-forum">
+      <div class="chat-tab-content active" id="chat-forum">
         <h2>Forum</h2>
         <div class="status" id="forum-status">Loading…</div>
         <div id="forum-list"></div>
+      </div>
+      <div class="chat-tab-content" id="chat-messages">
+        <h2>Chat</h2>
+        <div id="mobile-widgetbot-status" class="status">Loading…</div>
+        <div id="mobile-widgetbot-container"></div>
       </div>
     </main>
 
@@ -710,6 +715,35 @@ async function loadAuth() {
   serverNotifs = list.slice().sort((a, b) => b.createdAt - a.createdAt);
   notifs = serverNotifs.filter(n => !pendingDeletes.has(notifKey(n)));
   updateBadge();
+  renderMobileWidgetbot();
+}
+
+let mobileWidgetbotScript = null;
+function renderMobileWidgetbot() {
+  const container = document.getElementById("mobile-widgetbot-container");
+  const status = document.getElementById("mobile-widgetbot-status");
+  if (!container || !status) return;
+  container.replaceChildren();
+  if (!authData?.auth || !authData.user) {
+    status.hidden = false;
+    status.textContent = "Please sign in to use this feature.";
+    return;
+  }
+  status.hidden = true;
+  const widget = document.createElement("widgetbot");
+  widget.setAttribute("server", "1250572359077724291");
+  widget.setAttribute("channel", "1250572359467925570");
+  widget.setAttribute("avatar", authData.user.avatar || "https://t4.ftcdn.net/jpg/03/59/58/91/360_F_359589186_JDLl8dIWoBNf1iqEkHxhUeeOulx0wOC5.jpg");
+  widget.setAttribute("username", authData.user.username || "User");
+  container.appendChild(widget);
+  if (!customElements.get("widgetbot")) {
+    if (!mobileWidgetbotScript) {
+      mobileWidgetbotScript = document.createElement("script");
+      mobileWidgetbotScript.src = "https://cdn.jsdelivr.net/npm/@widgetbot/html-embed";
+      mobileWidgetbotScript.async = true;
+      document.body.appendChild(mobileWidgetbotScript);
+    }
+  }
 }
 
 async function getNotifUser(id) {
@@ -1375,10 +1409,10 @@ function dragMove(e) {
   track.style.transform = `translateX(${-currentIndex * viewport.clientWidth + deltaX}px)`;
 }
 
-const tabPaths = ["/", "/profile", "/search", "/chat", "/preferences"];
+const tabPaths = ["/", "/profile", "/search", "/forum", "/preferences"];
 
 function pageForPath(path = location.pathname) {
-  if (path === "/forum" || path.startsWith("/forum/discussion/")) return 3;
+  if (path === "/forum" || path === "/chat" || path.startsWith("/forum/discussion/")) return 3;
   const page = tabPaths.indexOf(path);
   return page === -1 ? 0 : page;
 }
