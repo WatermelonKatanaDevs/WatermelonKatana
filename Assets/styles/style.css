@@ -211,6 +211,7 @@ button:hover,
 input[type=text],
 input[type=password],
 input[type=email],
+input[type=url],
 textarea,
 .uploadbutton {
 	padding: 10px;
@@ -228,6 +229,7 @@ textarea,
 
 input[type=text]:focus,
 input[type=password]:focus,
+input[type=url]:focus,
 textarea:focus,
 .uploadbutton:hover {
 	border-color: var(--palette-primary-hover);
