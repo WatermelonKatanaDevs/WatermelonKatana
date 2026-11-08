@@ -107,7 +107,7 @@ app.use((req, res, next) => {
   if (
     typeof emulatedUserAgent === "string" &&
     emulatedUserAgent.length <= 512 &&
-    /\\b(?:Android|iPhone|iPad|iPod|Mobile)\\b/i.test(emulatedUserAgent)
+    /\b(?:Android|iPhone|iPad|iPod|Mobile)\b/i.test(emulatedUserAgent)
   ) {
     req.headers["user-agent"] = emulatedUserAgent;
   }
