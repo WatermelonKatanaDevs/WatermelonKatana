@@ -165,6 +165,8 @@ function convertMarkdown(string) {
   return string;
 }
 
+window.convertMarkdown = convertMarkdown;
+
 function previewContent(str, len) {
   str = String(str ?? "");
   return makeLiteralChars(str).replace(/\n[^]*$/, "").slice(0, len) + ((str.includes("\n") || str.length > len) ? "..." : "");
