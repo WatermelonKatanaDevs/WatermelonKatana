@@ -147,7 +147,7 @@ function esc(str) {
   return String(str ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
-function renderText(str) { return convertMarkdown(str); }
+function renderText(str) { return window.convertMarkdown(str); }
 function timeAgo(t) {
   t = Number(t) || 0;
   if (!t) return "";
