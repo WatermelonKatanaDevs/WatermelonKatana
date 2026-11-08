@@ -98,6 +98,22 @@ const cldir = __dirname + "/Pages";
  * Define route handlers for serving HTML files
  */
 // Detect devices before routes so each existing URL can select its mobile presentation.
+// The browser's mobile emulation runs through a cross-origin proxy. Browsers
+// do not reliably allow page JavaScript to set the User-Agent request header,
+// so the browser sends its selected UA in this ordinary header instead. Apply
+// it before express-device captures the request.
+app.use((req, res, next) => {
+  const emulatedUserAgent = req.get("x-wk-emulated-user-agent");
+  if (
+    typeof emulatedUserAgent === "string" &&
+    emulatedUserAgent.length <= 512 &&
+    /\\b(?:Android|iPhone|iPad|iPod|Mobile)\\b/i.test(emulatedUserAgent)
+  ) {
+    req.headers["user-agent"] = emulatedUserAgent;
+  }
+  next();
+});
+
 app.use(device.capture());
 
 function isMobileRequest(req) {
