@@ -284,6 +284,9 @@ html[data-theme="light"] .a2hs { background: #fff; color: #111; border-color: rg
 html[data-theme="light"] .a2hs-title { color: #00a152; }
 html[data-theme="light"] .a2hs-actions button.alt { background: #e6e6e6; color: #111; }
 
+a { color: var(--palette-link, #ff9c9c); }
+a:hover, a:active { color: var(--palette-link-hover, #39ff14); }
+.pv-body img, .pc-body img, .pf-bio img { max-width: 100%; height: auto; border-radius: 8px; vertical-align: middle; }
 </style>
 </head>
 <body>
@@ -380,7 +383,7 @@ html[data-theme="light"] .a2hs-actions button.alt { background: #e6e6e6; color: 
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
-<script src="/Assets/scripts/mobilemarkdown.js"></script>
+<script src="/Assets/scripts/script.js"></script>
 <script src="/scripts/mediaupload.js"></script>
 <script>
 // Claudes Plan ngl
@@ -504,7 +507,7 @@ searchInput.addEventListener("keydown", e => { if (e.key === "Enter") { clearTim
 function esc(str) {
   return String(str ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
-function renderText(str) { return renderMarkdownText(str); }
+function renderText(str) { return convertMarkdown(str); }
 function stripFormat(str) {
   return String(str ?? "")
     .replace(/\[([^\]\n]+)\]\((?:https?:\/\/|\/)[^\s)]+\)/g, "$1")
