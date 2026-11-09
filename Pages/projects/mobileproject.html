@@ -90,6 +90,15 @@ input, textarea { font-size: 16px; }
 .reply-hint { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); opacity: 0; color: var(--accent); pointer-events: none; }
 .reply-hint svg { width: 22px; height: 22px; }
 .c-btn.active { color: var(--accent); opacity: 1; }
+
+.poster-row { display: inline-flex; align-items: center; gap: 8px; color: inherit; max-width: 100%; }
+.poster-row:hover, .poster-row:active { color: inherit; }
+.poster-row b { font-weight: 600; font-size: .85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.poster-row:active b { text-decoration: underline; }
+.mini-avatar { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; background: #1a1a1a; flex: 0 0 auto; }
+.byline .mini-avatar { width: 30px; height: 30px; }
+.byline .poster-row b { font-size: .95rem; }
+.c-head { align-items: center; }
 </style>
 </head>
 <body>
@@ -182,6 +191,47 @@ async function loadAuth() {
   }
 }
 
+const FALLBACK_PFP = "/images/default_pfp.png";
+const userCache = {};
+
+function safeSrc(url, fallback) {
+  return /^(https?:\/\/|\/)/.test(url || "") && !/["'<>]/.test(url) ? url : fallback;
+}
+
+function getUser(id) {
+  if (!id) return Promise.resolve({});
+  if (!userCache[id]) {
+    userCache[id] = fetch("/api/auth/userdata?id=" + encodeURIComponent(id))
+      .then(r => r.json())
+      .then(u => (u && !u.error ? u : {}))
+      .catch(() => ({}));
+  }
+  return userCache[id];
+}
+
+const avatarCache = {};
+
+function posterLink(name, id) {
+  const src = safeSrc(avatarCache[id], FALLBACK_PFP);
+  return `<a class="poster-row" href="/user/${encodeURIComponent(name)}">` +
+    `<img class="mini-avatar" alt="" data-uid="${esc(id || "")}" src="${esc(src)}" onerror="this.onerror=null;this.src='${FALLBACK_PFP}'">` +
+    `<b>${esc(name)}</b></a>`;
+}
+
+function hydrateAvatars() {
+  document.querySelectorAll("img[data-uid]").forEach(img => {
+    const id = img.dataset.uid;
+    if (!id || img.dataset.done) return;
+    img.dataset.done = "1";
+    getUser(id).then(u => {
+      if (u && u.avatar) {
+        avatarCache[id] = u.avatar;
+        img.src = safeSrc(u.avatar, FALLBACK_PFP);
+      }
+    });
+  });
+}
+
 async function load() {
   try {
     const [res] = await Promise.all([fetch("/api/project/data/" + encodeURIComponent(pid)), loadAuth()]);
@@ -217,7 +267,7 @@ function renderPage() {
     </div>
     <section class="info">
       <h2 class="title">${esc(p.title || "Untitled")}</h2>
-      <div class="byline">By <a href="/user/${encodeURIComponent(p.poster || "")}">${esc(p.poster || "unknown")}</a></div>
+      <div class="byline">${posterLink(p.poster || "unknown", p.posterId)}</div>
       <div class="chips"><span class="chip">${esc(platforms[p.platform] || "Unknown")}</span>${tags}</div>
       ${p.content ? `<div class="desc">${renderText(p.content)}</div>` : ""}
       <div class="stats">
@@ -244,6 +294,7 @@ function renderPage() {
     syncFavText();
     fav.addEventListener("click", toggleFav);
   }
+  hydrateAvatars();
   icons();
 }
 
@@ -601,7 +652,7 @@ function renderComments() {
     return `<div class="c-wrap">
     ${u ? '<div class="reply-hint"><i data-lucide="reply"></i></div>' : ""}
     <div class="comment" data-i="${i}">
-      <div class="c-head">${esc(name)}${when ? " | " + esc(when) : ""}</div>
+     <div class="c-head">${posterLink(name, c.posterId)}${when ? `<span>${esc(when)}</span>` : ""}</div>
       <div class="c-body">${renderText(c.content)}</div>
       ${u ? `<div class="c-actions">
         <button class="c-btn ${vote === 1 ? "active" : ""}" data-act="up" data-i="${i}" type="button"><i data-lucide="thumbs-up"></i></button>
@@ -612,6 +663,7 @@ function renderComments() {
     </div>
   </div>`;
   }).join("") : '<div class="status">No comments yet.</div>';
+  hydrateAvatars();
   icons();
 }
 
