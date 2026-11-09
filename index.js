@@ -160,15 +160,9 @@ function sendEditorForbidden(res) {
   return res.status(403).sendFile(__dirname + "/Middleware/403.html");
 }
 
-function setEditorIsolationHeaders(res, topLevel = false) {
-  res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
-  if (topLevel) res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
-}
-
 app.get("/editor", makeFormToken, async (req, res) => {
   try {
     const src = "/editor/index.html" ;
-    setEditorIsolationHeaders(res, true);
     sendFileReplace(res, "./Pages/editor/editor.html", s => s.replace("EDITOR_SRC", src));
   } catch (e) {
     console.error(e);
@@ -250,7 +244,6 @@ app.get("/editor/project/:id", checkAuth, async (req, res) => {
       git: owner ? '1' : '0'
     });
     const src = "/editor/index.html?" + params.toString();
-    setEditorIsolationHeaders(res, true);
     sendFileReplace(res, "./Pages/editor/editor.html", s => s.replace("EDITOR_SRC", src).replace("WORKSPACE_NAME", makeLiteralChars(project.title)).replace("<title>Editor | WatermelonKatana</title>", `<title>${makeLiteralChars(project.title)} | Editor</title>`));
   } catch (e) {
     console.error(e);
@@ -323,7 +316,6 @@ app.use("/editor", (req, res, next) => {
   if (requestPath === openDAWPrefix || requestPath.startsWith(openDAWPrefix + "/")) {
     // openDAW runs in a same-origin child frame and needs its own COEP response
     // to join the isolated Editor browsing context.
-    setEditorIsolationHeaders(res, false);
     const relativePath = requestPath.slice(openDAWPrefix.length);
     const leaf = relativePath.split("/").pop() || "";
     // openDAW uses client-side routes; serve its app shell on reload/deep links.
@@ -335,7 +327,6 @@ app.use("/editor", (req, res, next) => {
   // The Browser and embedded third-party tools must retain the default
   // unsafe-none policy so they can load arbitrary cross-origin resources.
   if (requestPath === "/editor/index.html") {
-    setEditorIsolationHeaders(res, false);
   }
   next();
 });
