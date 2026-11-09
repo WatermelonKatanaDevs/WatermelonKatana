@@ -287,6 +287,14 @@ html[data-theme="light"] .a2hs-actions button.alt { background: #e6e6e6; color: 
 a { color: var(--palette-link, #ff9c9c); }
 a:hover, a:active { color: var(--palette-link-hover, #39ff14); }
 .pv-body img, .pc-body img, .pf-bio img { max-width: 100%; height: auto; border-radius: 8px; vertical-align: middle; }
+.poster-row { display: inline-flex; align-items: center; gap: 8px; color: inherit; text-decoration: none; max-width: 100%; -webkit-tap-highlight-color: transparent; }
+.poster-row span { font-size: .8rem; opacity: .85; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.poster-row:active span { opacity: 1; text-decoration: underline; }
+.mini-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; background: #1a1a1a; flex: 0 0 auto; }
+.fc-poster { margin-bottom: 6px; }
+.pv-poster { margin: 8px 0 4px; }
+.pc-head { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.pc-head .mini-avatar { width: 22px; height: 22px; }
 </style>
 </head>
 <body>
@@ -530,6 +538,30 @@ function timeAgo(t) {
 function tagLine(tags) {
   return (Array.isArray(tags) ? tags : []).map(t => "#" + t).join(", ");
 }
+  function posterRow(obj) {
+  const name = obj.poster || obj.username || obj.author || "unknown";
+  const fallback = "/images/default_pfp.png";
+  const a = document.createElement("a");
+  a.className = "poster-row";
+  a.href = "/user/" + encodeURIComponent(name);
+  a.addEventListener("click", e => e.stopPropagation());
+  const img = document.createElement("img");
+  img.className = "mini-avatar";
+  img.alt = "";
+  img.draggable = false;
+  img.src = safeSrc(obj.avatar, fallback);
+  img.onerror = () => { img.onerror = null; img.src = fallback; };
+  const label = document.createElement("span");
+  label.textContent = name;
+  a.append(img, label);
+  const id = obj.posterId || obj.userId || obj.authorId;
+  if (id) {
+    getNotifUser(id).then(u => {
+      if (u && u.avatar) img.src = safeSrc(u.avatar, fallback);
+    });
+  }
+  return a;
+}
 
 function makeForumCard(post) {
   const d = document.createElement("div");
@@ -537,13 +569,16 @@ function makeForumCard(post) {
   d.addEventListener("click", () => { if (!justSwiped) openPost(post.id); });
   const h = document.createElement("h4");
   h.textContent = post.title || "Untitled";
+  const poster = document.createElement("div");
+  poster.className = "fc-poster";
+  poster.appendChild(posterRow(post));
   const pre = document.createElement("div");
   pre.className = "fc-preview";
   pre.textContent = stripFormat(post.content).slice(0, 160);
   const meta = document.createElement("div");
   meta.className = "fc-meta";
-  meta.textContent = "By " + (post.poster || "unknown") + " | Views " + (post.views ?? 0) + (post.activeAt ? " | Active " + timeAgo(post.activeAt) : "");
-  d.append(h, pre, meta);
+  meta.textContent = "Views " + (post.views ?? 0) + (post.activeAt ? " | Active " + timeAgo(post.activeAt) : "");
+  d.append(h, poster, pre, meta);
   const tags = tagLine(post.tags);
   if (tags) {
     const t = document.createElement("div");
@@ -612,7 +647,8 @@ function renderPost(post, extraComments) {
   const tags = tagLine(post.tags);
   pvScroll.innerHTML = `
     <div class="pv-title">${esc(post.title || "Untitled")}</div>
-    <div class="pv-meta">By ${esc(post.poster || "unknown")} | Views ${esc(post.views ?? 0)}${post.postedAt ? " | " + esc(timeAgo(post.postedAt)) : ""}</div>
+    <div class="pv-poster" id="pv-poster"></div>
+    <div class="pv-meta">Views ${esc(post.views ?? 0)}${post.postedAt ? " | " + esc(timeAgo(post.postedAt)) : ""}</div>
     ${tags ? `<div class="pv-tags">${esc(tags)}</div>` : ""}
     <div class="pv-body">${renderText(post.content)}</div>
     <h3>Comments (${comments.length})</h3>
@@ -622,6 +658,7 @@ function renderPost(post, extraComments) {
       <button id="pv-send">Post comment</button>
       <div class="pv-msg" id="pv-msg"></div>
     </div>`;
+  document.getElementById("pv-poster").appendChild(posterRow(post));
   const box = document.getElementById("pv-comments");
   if (!comments.length) box.innerHTML = '<div class="status">No comments yet.</div>';
   comments.forEach(c => box.appendChild(makeComment(c)));
@@ -631,9 +668,19 @@ function renderPost(post, extraComments) {
 function makeComment(c) {
   const d = document.createElement("div");
   d.className = "pv-comment";
+  const head = document.createElement("div");
+  head.className = "pc-head";
+  head.appendChild(posterRow(c));
   const when = timeAgo(c.postedAt || c.createdAt || c.time || c.date);
-  d.innerHTML = `<div class="pc-head">${esc(c.poster || c.username || c.author || "unknown")}${when ? " | " + esc(when) : ""}</div>
-    <div class="pc-body">${renderText(c.content)}</div>`;
+  if (when) {
+    const t = document.createElement("span");
+    t.textContent = "| " + when;
+    head.appendChild(t);
+  }
+  const body = document.createElement("div");
+  body.className = "pc-body";
+  body.innerHTML = renderText(c.content);
+  d.append(head, body);
   return d;
 }
 
