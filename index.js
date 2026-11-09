@@ -370,7 +370,10 @@ app.get("/user/:name", async (req, res) => {
   const dbio = showanon ? "" : user.biography;
   const dbadges = showanon ? "" : user.badges.join(", ");
   const drole = showanon ? "Basic" : user.role;
-  sendFileReplace(res, "./Pages/users/user.html", (s) => s.replace("<!--og:meta-->", () => `
+  const userPage = wantsMobile(req)
+    ? "./Pages/users/mobileuser.html"
+    : "./Pages/users/user.html";
+  sendFileReplace(res, userPage, (s) => s.replace("<!--og:meta-->", () => `
     <meta property="og:title" content="@${dname} on WatermelonKatana"/>
     <meta property="og:type" content="website"/>
     <meta property="og:image" content="${makeLiteralChars(davatar)}"/>
