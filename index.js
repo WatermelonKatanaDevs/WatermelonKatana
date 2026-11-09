@@ -160,9 +160,15 @@ function sendEditorForbidden(res) {
   return res.status(403).sendFile(__dirname + "/Middleware/403.html");
 }
 
+function setEditorIsolationHeaders(res, topLevel = false) {
+  res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+  if (topLevel) res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+}
+
 app.get("/editor", makeFormToken, async (req, res) => {
   try {
     const src = "/editor/index.html" ;
+    setEditorIsolationHeaders(res, true);
     sendFileReplace(res, "./Pages/editor/editor.html", s => s.replace("EDITOR_SRC", src));
   } catch (e) {
     console.error(e);
@@ -244,6 +250,7 @@ app.get("/editor/project/:id", checkAuth, async (req, res) => {
       git: owner ? '1' : '0'
     });
     const src = "/editor/index.html?" + params.toString();
+    setEditorIsolationHeaders(res, true);
     sendFileReplace(res, "./Pages/editor/editor.html", s => s.replace("EDITOR_SRC", src).replace("WORKSPACE_NAME", makeLiteralChars(project.title)).replace("<title>Editor | WatermelonKatana</title>", `<title>${makeLiteralChars(project.title)} | Editor</title>`));
   } catch (e) {
     console.error(e);
@@ -305,6 +312,17 @@ app.get("/project/:id/edit", userAuth, async (req, res) => {
   res.sendFile(cldir + "/projects/edit.html");
 }); // Edit project page, users only
 app.get("/project/:id/delete", userAuth, (req, res) => res.redirect("/api/project/delete/" + req.params.id)); // Delete project route, users only
+
+// The Editor app document must join the isolated top-level Editor wrapper so
+// cross-origin-isolated applications (such as openDAW) can run in its workbench.
+// Keep this limited to index.html; the embedded Browser must remain free to load
+// arbitrary third-party pages without inheriting COEP.
+app.use("/editor", (req, res, next) => {
+  if (req.originalUrl.split("?")[0] === "/editor/index.html") {
+    setEditorIsolationHeaders(res, false);
+  }
+  next();
+});
 
 // Add Editor
 app.use("/editor", express.static(__dirname + "/Editor"));
