@@ -314,19 +314,13 @@ app.use("/editor", (req, res, next) => {
   const requestPath = req.originalUrl.split("?")[0];
   const openDAWPrefix = "/editor/editor/previews/vendor/opendaw";
   if (requestPath === openDAWPrefix || requestPath.startsWith(openDAWPrefix + "/")) {
-    // openDAW runs in a same-origin child frame and needs its own COEP response
-    // to join the isolated Editor browsing context.
+    // Preserve openDAW's client-side routes when the isolated proxy reloads a deep link.
     const relativePath = requestPath.slice(openDAWPrefix.length);
     const leaf = relativePath.split("/").pop() || "";
     // openDAW uses client-side routes; serve its app shell on reload/deep links.
     if (!relativePath || relativePath.endsWith("/") || !leaf.includes(".")) {
       return res.sendFile(__dirname + "/Editor/editor/previews/vendor/opendaw/index.html");
     }
-  }
-  // Only the Editor application shell needs COEP for cross-origin isolation.
-  // The Browser and embedded third-party tools must retain the default
-  // unsafe-none policy so they can load arbitrary cross-origin resources.
-  if (requestPath === "/editor/index.html") {
   }
   next();
 });
