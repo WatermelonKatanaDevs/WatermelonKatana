@@ -306,33 +306,6 @@ app.get("/project/:id/edit", userAuth, async (req, res) => {
 }); // Edit project page, users only
 app.get("/project/:id/delete", userAuth, (req, res) => res.redirect("/api/project/delete/" + req.params.id)); // Delete project route, users only
 
-// The Editor app document must join the isolated top-level Editor wrapper so
-// cross-origin-isolated applications (such as openDAW) can run in its workbench.
-// Keep this limited to index.html; the embedded Browser must remain free to load
-// arbitrary third-party pages without inheriting COEP.
-app.use("/editor", (req, res, next) => {
-  const requestPath = req.originalUrl.split("?")[0];
-  const openDAWPrefix = "/editor/editor/previews/vendor/opendaw";
-  const photoCraftPrefix = "/editor/editor/previews/vendor/photocraft";
-  if (requestPath === photoCraftPrefix || requestPath.startsWith(photoCraftPrefix + "/")) {
-    const relativePath = requestPath.slice(photoCraftPrefix.length);
-    const leaf = relativePath.split("/").pop() || "";
-    if (!relativePath || relativePath.endsWith("/") || !leaf.includes(".")) {
-      return res.sendFile(__dirname + "/Editor/editor/previews/vendor/photocraft/index.html");
-    }
-  }
-  if (requestPath === openDAWPrefix || requestPath.startsWith(openDAWPrefix + "/")) {
-    // Preserve openDAW's client-side routes when the isolated proxy reloads a deep link.
-    const relativePath = requestPath.slice(openDAWPrefix.length);
-    const leaf = relativePath.split("/").pop() || "";
-    // openDAW uses client-side routes; serve its app shell on reload/deep links.
-    if (!relativePath || relativePath.endsWith("/") || !leaf.includes(".")) {
-      return res.sendFile(__dirname + "/Editor/editor/previews/vendor/opendaw/index.html");
-    }
-  }
-  next();
-});
-
 // Add Editor
 app.use("/editor", express.static(__dirname + "/Editor"));
 

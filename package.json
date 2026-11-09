@@ -8,7 +8,7 @@
         "dev": "nodemon index.js",
         "cleanup": "npx prettier . --write",
         "test": "jest",
-        "preinstall": "rm -rf Editor/editor/previews/vendor/opendaw-src && git submodule update --init --recursive"
+        "preinstall": "git submodule update --init --recursive"
     },
     "author": "The WatermelonKatana Developers",
     "license": "MIT",
