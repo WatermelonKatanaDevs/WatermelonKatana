@@ -8,7 +8,7 @@
         "dev": "nodemon index.js",
         "cleanup": "npx prettier . --write",
         "test": "jest",
-        "preinstall": "git submodule update --init --recursive",
+        "preinstall": "rm -rf Editor/editor/previews/vendor/opendaw-src && git submodule update --init --recursive",
         "build:opendaw": "node Editor/scripts/build-opendaw.mjs",
         "postinstall": "npm run build:opendaw && npm run build:photocraft",
         "build:photocraft": "node Editor/scripts/build-photocraft.mjs"
