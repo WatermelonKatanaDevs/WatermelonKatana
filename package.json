@@ -8,7 +8,9 @@
         "dev": "nodemon index.js",
         "cleanup": "npx prettier . --write",
         "test": "jest",
-        "preinstall": "git submodule update --init --recursive"
+        "preinstall": "git submodule update --init --recursive",
+        "build:opendaw": "node Editor/scripts/build-opendaw.mjs",
+        "postinstall": "npm run build:opendaw"
     },
     "author": "The WatermelonKatana Developers",
     "license": "MIT",
@@ -35,5 +37,8 @@
     "devDependencies": {
         "jest": "^29.7.0",
         "prettier": "^3.4.2"
+    },
+    "engines": {
+        "node": ">=23"
     }
 }

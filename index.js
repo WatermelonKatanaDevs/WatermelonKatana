@@ -318,7 +318,20 @@ app.get("/project/:id/delete", userAuth, (req, res) => res.redirect("/api/projec
 // Keep this limited to index.html; the embedded Browser must remain free to load
 // arbitrary third-party pages without inheriting COEP.
 app.use("/editor", (req, res, next) => {
-  if (req.originalUrl.split("?")[0] === "/editor/index.html") {
+  const requestPath = req.originalUrl.split("?")[0];
+  const openDAWPrefix = "/editor/editor/previews/vendor/opendaw";
+  if (requestPath === openDAWPrefix || requestPath.startsWith(openDAWPrefix + "/")) {
+    // openDAW runs in a same-origin child frame and needs its own COEP response
+    // to join the isolated Editor browsing context.
+    setEditorIsolationHeaders(res, false);
+    const relativePath = requestPath.slice(openDAWPrefix.length);
+    const leaf = relativePath.split("/").pop() || "";
+    // openDAW uses client-side routes; serve its app shell on reload/deep links.
+    if (!relativePath || relativePath.endsWith("/") || !leaf.includes(".")) {
+      return res.sendFile(__dirname + "/Editor/editor/previews/vendor/opendaw/index.html");
+    }
+  }
+  if (requestPath === "/editor/index.html") {
     setEditorIsolationHeaders(res, false);
   }
   next();
