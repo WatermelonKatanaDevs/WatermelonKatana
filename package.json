@@ -8,9 +8,7 @@
         "dev": "nodemon index.js",
         "cleanup": "npx prettier . --write",
         "test": "jest",
-        "preinstall": "git submodule update --init --recursive",
-        "build:blockbench": "node scripts/build-blockbench.mjs",
-        "postinstall": "npm run build:blockbench"
+        "preinstall": "git submodule update --init"
     },
     "author": "The WatermelonKatana Developers",
     "license": "MIT",
