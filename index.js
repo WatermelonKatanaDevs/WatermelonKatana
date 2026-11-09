@@ -309,6 +309,11 @@ app.get("/project/:id/delete", userAuth, (req, res) => res.redirect("/api/projec
 // Add Editor
 app.use("/editor", express.static(__dirname + "/Editor"));
 
+// Serve the standalone Blockbench web build at /blockbench.html.
+// Keep its assets under /blockbench/ so Blockbench's relative URLs stay isolated.
+app.use("/blockbench", express.static(__dirname + "/Editor/vendor/blockbench"));
+app.get("/blockbench.html", (req, res) => res.sendFile(cldir + "/blockbench.html"));
+
 // Authors
 app.get("/authors", (req, res) => { res.sendFile(cldir + "/authors.html") });
 
