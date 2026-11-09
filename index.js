@@ -331,15 +331,10 @@ app.use("/editor", (req, res, next) => {
       return res.sendFile(__dirname + "/Editor/editor/previews/vendor/opendaw/index.html");
     }
   }
-  // Every local Editor document embedded beneath the isolated Editor must
-  // opt into COEP as well. This includes the Browser, Blockbench, Piskel, and
-  // their nested iframe documents; otherwise the browser rejects those frames.
-  // Keep deployment.html unrestricted because it embeds arbitrary project URLs.
-  if (
-    requestPath.endsWith(".html") &&
-    requestPath !== "/editor/deployment.html" &&
-    requestPath !== "/editor/github-callback.html"
-  ) {
+  // Only the Editor application shell needs COEP for cross-origin isolation.
+  // The Browser and embedded third-party tools must retain the default
+  // unsafe-none policy so they can load arbitrary cross-origin resources.
+  if (requestPath === "/editor/index.html") {
     setEditorIsolationHeaders(res, false);
   }
   next();
