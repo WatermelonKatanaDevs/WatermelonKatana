@@ -313,6 +313,14 @@ app.get("/project/:id/delete", userAuth, (req, res) => res.redirect("/api/projec
 app.use("/editor", (req, res, next) => {
   const requestPath = req.originalUrl.split("?")[0];
   const openDAWPrefix = "/editor/editor/previews/vendor/opendaw";
+  const photoCraftPrefix = "/editor/editor/previews/vendor/photocraft";
+  if (requestPath === photoCraftPrefix || requestPath.startsWith(photoCraftPrefix + "/")) {
+    const relativePath = requestPath.slice(photoCraftPrefix.length);
+    const leaf = relativePath.split("/").pop() || "";
+    if (!relativePath || relativePath.endsWith("/") || !leaf.includes(".")) {
+      return res.sendFile(__dirname + "/Editor/editor/previews/vendor/photocraft/index.html");
+    }
+  }
   if (requestPath === openDAWPrefix || requestPath.startsWith(openDAWPrefix + "/")) {
     // Preserve openDAW's client-side routes when the isolated proxy reloads a deep link.
     const relativePath = requestPath.slice(openDAWPrefix.length);
