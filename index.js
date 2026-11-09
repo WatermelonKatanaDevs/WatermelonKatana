@@ -331,7 +331,15 @@ app.use("/editor", (req, res, next) => {
       return res.sendFile(__dirname + "/Editor/editor/previews/vendor/opendaw/index.html");
     }
   }
-  if (requestPath === "/editor/index.html") {
+  // Every local Editor document embedded beneath the isolated Editor must
+  // opt into COEP as well. This includes the Browser, Blockbench, Piskel, and
+  // their nested iframe documents; otherwise the browser rejects those frames.
+  // Keep deployment.html unrestricted because it embeds arbitrary project URLs.
+  if (
+    requestPath.endsWith(".html") &&
+    requestPath !== "/editor/deployment.html" &&
+    requestPath !== "/editor/github-callback.html"
+  ) {
     setEditorIsolationHeaders(res, false);
   }
   next();
