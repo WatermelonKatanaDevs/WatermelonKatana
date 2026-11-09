@@ -1,1 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #222; color: #fff; font-family: sans-serif; padding: calc(56px + env(safe-area-inset-top)) 12px 12px; text-align: center; }
+    #profile-root { max-width: 420px; margin: 0 auto; }
+    .status { opacity: .7; font-size: .9rem; padding: 20px 0; }
+    .pf-card { background: #2a2a2a; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 18px; overflow: hidden; }
+    .pf-banner { width: 100%; height: 110px; background: #1a1a1a; overflow: hidden; }
+    .pf-banner img, .pf-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .pf-body { padding: 0 16px 18px; }
+    .pf-avatar { width: 84px; height: 84px; border-radius: 50%; overflow: hidden; border: 4px solid #2a2a2a; background: #1a1a1a; margin: -42px auto 0; position: relative; }
+    .pf-name { font-size: 1.3rem; font-weight: bold; margin-top: 8px; overflow-wrap: anywhere; }
+    .pf-role { font-size: .8rem; color: #00e676; margin-top: 2px; }
+    .pf-bio { font-size: .9rem; line-height: 1.45; opacity: .85; margin: 12px 0; overflow-wrap: anywhere; user-select: text; -webkit-user-select: text; }
+    .pf-bio a { color: #4facfe; }
+    .pf-bio img { max-width: 100%; height: auto; border-radius: 8px; }
+    .pf-stats { display: flex; justify-content: space-around; margin: 14px 0; }
+    .pf-stats div { display: flex; flex-direction: column; }
+    .pf-stats strong { font-size: 1.1rem; }
+    .pf-stats span { font-size: .7rem; opacity: .6; }
+    .pf-joined { font-size: .75rem; opacity: .55; margin-bottom: 14px; }
+    .back-btn { position: fixed; top: calc(8px + env(safe-area-inset-top)); left: 8px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(40, 40, 40, 0.75); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; text-decoration: none; z-index: 10; -webkit-tap-highlight-color: transparent; }
+    .back-btn:active { background: #3a3a3a; }
+    .back-btn svg { width: 24px; height: 24px; }
+  </style>
+</head>
+<body>
+<a class="back-btn" href="/" aria-label="Back to home"><i data-lucide="arrow-left"></i></a>
+<div id="profile-root"><div class="status">Loading…</div></div>
 
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="/scripts/markdown.js"></script>
+<script>
+  if (window.lucide) lucide.createIcons();
+  const profileRoot = document.getElementById("profile-root");
+
+  function pfEsc(str) {
+    return String(str ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  function pfText(str) {
+    return typeof window.convertMarkdown === "function" ? window.convertMarkdown(str) : pfEsc(str);
+  }
+
+  function pfSafeSrc(url, fallback) {
+    return /^(https?:\/\/|\/)/.test(url || "") && !/["'<>]/.test(url) ? url : fallback;
+  }
+
+  function pfImg(url, pos, fallback) {
+    pos = pos || {};
+    const clamp = (v, lo, hi, d) => { v = Number(v); return isFinite(v) ? Math.max(lo, Math.min(hi, v)) : d; };
+    const x = clamp(pos.x, 0, 100, 50), y = clamp(pos.y, 0, 100, 50), zoom = clamp(pos.zoom, 100, 400, 100);
+    return `<img alt="" src="${pfEsc(pfSafeSrc(url, fallback))}" style="object-position:${x}% ${y}%;transform:scale(${zoom / 100});transform-origin:${x}% ${y}%">`;
+  }
+
+  function renderAccount(u) {
+    const joined = u.joinedAt ? new Date(Number(u.joinedAt)).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "";
+    const count = a => Array.isArray(a) ? a.length : 0;
+    profileRoot.innerHTML = `
+      <div class="pf-card">
+        <div class="pf-banner">${pfImg(u.banner, u.bannerpos, "/images/default_banner.png")}</div>
+        <div class="pf-body">
+          <div class="pf-avatar">${pfImg(u.avatar, u.avatarpos, "/images/default_pfp.png")}</div>
+          <div class="pf-name">${pfEsc(u.username)}</div>
+          <div class="pf-role">${pfEsc(u.role || "")}</div>
+          <div class="pf-bio">${pfText(u.biography || "No biography yet.")}</div>
+          <div class="pf-stats">
+            <div><strong>${count(u.followers)}</strong><span>Followers</span></div>
+            <div><strong>${count(u.following)}</strong><span>Following</span></div>
+            <div><strong>${count(u.favorites)}</strong><span>Favorites</span></div>
+          </div>
+          ${joined ? `<div class="pf-joined">Joined ${pfEsc(joined)}</div>` : ""}
+        </div>
+      </div>`;
+  }
+
+ async function loadProfile() {
+    const username = getUsername();
+    if (!username) {
+      profileRoot.innerHTML = '<div class="status">No user specified.</div>';
+      return;
+    }
+    try {
+      const res = await fetch("/api/auth/userdata?username=" + encodeURIComponent(username));
+      let user = {};
+      try { user = await res.json(); } catch (err) {}
+      if (!res.ok || !user || user.error || !user.username) {
+        profileRoot.innerHTML = '<div class="status">User not found.</div>';
+        return;
+      }
+      document.title = user.username + " | Profile";
+      renderAccount(user);
+    } catch (err) {
+      console.error(err);
+      profileRoot.innerHTML = '<div class="status">Couldn\u2019t load the profile.</div>';
+    }
+  }
+
+  loadProfile();
+</script>
+</body>
+</html>
