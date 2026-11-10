@@ -267,8 +267,7 @@ app.get("/project/:id", checkAuth, makeFormToken, async (req, res) => {
   if (!proj) return res.status(404).sendFile(cldir + "/404.html");
   var tok = res.locals.userToken;
   var user = tok ? await Users.findOne({ _id: tok.id }) : null;
-  var isAdmin = tok?.role && isadmin(tok.role);
-  var poster = proj.anon ? (!isAdmin ? "anon-" + proj.posterId.slice(-4): proj.poster) + " (Anonymous)": proj.poster;
+  var poster = proj.anon ? (!isadmin(tok?.role) ? "": proj.poster) + " (Anonymous)": proj.poster;
   var projectOwner = !!tok && proj.posterId === tok.id;
   if (proj.mature && (!tok || !user || !user.mature)) return res.status(403).sendFile(__dirname + "/Middleware/403.html");
   if (tok && !proj.viewers.includes(tok.id)) { proj.viewers.push(tok.id) }
@@ -322,8 +321,7 @@ app.get("/forum/discussion/:id", checkAuth, makeFormToken, async (req, res) => {
   if (!post) return res.status(404).sendFile(cldir + "/404.html");
   var tok = res.locals.userToken;
   var user = await Users.findOne({ _id: tok.id });
-  var isAdmin = tok?.role && isadmin(tok.role);
-  var poster = post.anon ? (!isAdmin ? "anon-" + post.posterId.slice(-4): post.poster) + " (Anonymous)": post.poster;
+  var poster = post.anon ? (!isadmin(tok?.role) ? "": post.poster) + " (Anonymous)": post.poster;
   if (post.mature && (!tok || !user || !user.mature)) return res.status(403).sendFile(__dirname + "/Middleware/403.html");
   if (tok && !post.viewers.includes(tok.id)) { post.viewers.push(tok.id) }
   post.views = post.viewers.length;
