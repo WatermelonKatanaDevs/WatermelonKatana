@@ -268,6 +268,7 @@ app.get("/project/:id", checkAuth, makeFormToken, async (req, res) => {
   var tok = res.locals.userToken;
   var user = tok ? await Users.findOne({ _id: tok.id }) : null;
   var isAdmin = tok?.role && isadmin(tok.role);
+  var poster = proj.anon ? (!isAdmin ? "anon-" + proj.posterId.slice(-4): proj.poster) + " (Anonymous)": proj.poster;
   var projectOwner = !!tok && proj.posterId === tok.id;
   if (proj.mature && (!tok || !user || !user.mature)) return res.status(403).sendFile(__dirname + "/Middleware/403.html");
   if (tok && !proj.viewers.includes(tok.id)) { proj.viewers.push(tok.id) }
@@ -281,10 +282,10 @@ app.get("/project/:id", checkAuth, makeFormToken, async (req, res) => {
     <meta property="og:title" content="${makeLiteralChars(proj.title)}"/>
     <meta property="og:type" content="website"/>
     <meta property="og:image" content="${makeLiteralChars(proj.thumbnail)}"/>
-    <meta property="og:description" content="${makeLiteralChars(proj.content)} \n By: ${proj.anon ? (!isAdmin ? "": proj.poster) + " (Anonymous)": proj.poster} \n Score: ${proj.score} Views: ${proj.views} Plays: ${proj.plays || 0}"/>
+    <meta property="og:description" content="${makeLiteralChars(proj.content)} \n By: ${poster} \n Score: ${proj.score} Views: ${proj.views} Plays: ${proj.plays || 0}"/>
   `).replace("<!--content-->", () => `
     ${makeLiteralChars(proj.title)}<br>
-    By: ${proj.anon ? (!isAdmin ? "anon-" + proj.posterId.slice(-4): proj.poster) + " (Anonymous)": proj.poster}<br>
+    By: ${poster}<br>
     ${makeLiteralChars(proj.content)}<br>
     <a href="${makeLiteralChars(proj.link)}">${makeLiteralChars(proj.link)}</a><br>
     ${proj.tags.map(v => "#" + makeLiteralChars(v)).join(", ")}<br>
@@ -322,6 +323,7 @@ app.get("/forum/discussion/:id", checkAuth, makeFormToken, async (req, res) => {
   var tok = res.locals.userToken;
   var user = await Users.findOne({ _id: tok.id });
   var isAdmin = tok?.role && isadmin(tok.role);
+  var poster = post.anon ? (!isAdmin ? "anon-" + post.posterId.slice(-4): post.poster) + " (Anonymous)": post.poster;
   if (post.mature && (!tok || !user || !user.mature)) return res.status(403).sendFile(__dirname + "/Middleware/403.html");
   if (tok && !post.viewers.includes(tok.id)) { post.viewers.push(tok.id) }
   post.views = post.viewers.length;
@@ -332,10 +334,10 @@ app.get("/forum/discussion/:id", checkAuth, makeFormToken, async (req, res) => {
   sendFileReplace(res, "./Pages/forum/discussion.html", (s) => s.replace("<!--og:meta-->", () => `
     <meta property="og:title" content="${makeLiteralChars(post.title)}"/>
     <meta property="og:type" content="website"/>
-    <meta property="og:description" content="${makeLiteralChars(post.content)} \n By: ${post.anon ? (!isAdmin ? "anon-" + post.posterId.slice(-4): post.poster) + " (Anonymous)": post.poster} \n Views: ${post.views}"/>
+    <meta property="og:description" content="${makeLiteralChars(post.content)} \n By: ${poster} \n Views: ${post.views}"/>
   `).replace("<!--content-->", () => `
     ${makeLiteralChars(post.title)}<br>
-    By: ${post.anon ? (!isAdmin ? "": post.poster) + " (Anonymous)": post.poster}<br>
+    By: ${poster}<br>
     ${makeLiteralChars(post.content)}<br>
     ${post.tags.map(v => "#" + makeLiteralChars(v)).join(", ")}<br>
     Views: ${post.views} Featured: ${post.featured}
