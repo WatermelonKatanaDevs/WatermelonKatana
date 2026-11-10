@@ -24,7 +24,7 @@ const { Turbo } = require("./Turbo/index");
 const app = express();
 // Render sits behind a trusted reverse proxy and forwards the client IP in X-Forwarded-For.
 app.set("trust proxy", 1);
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || (process.env.RENDER === "true" ? 10000 : 3000);
 
 /**
   Rate Limiting
@@ -444,8 +444,8 @@ app.use("/api", (req, res) => res.status(404).json({ error: "Error: API Not Foun
 /**
  * Start the server and listen on the specified port
  */
-const server = app.listen(PORT, () => {
-  console.log(logInfo(`Server running on port ${PORT}`));
+const server = app.listen(PORT, "0.0.0.0", () => {
+  console.log(logInfo(`Server running on 0.0.0.0:${PORT}`));
 });
 
 // 404 response page
