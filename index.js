@@ -293,18 +293,17 @@ app.get("/editor/project/:id", checkAuth, async (req, res) => {
     if (project.privateRecipients?.length && !owner && !(tok && project.privateRecipients.includes(tok.id))) return sendEditorForbidden(res);
     if (project.mature && !owner && !viewer?.mature) return sendEditorForbidden(res);
     const deployment = project.editorDeployment || {};
-     const params = new URLSearchParams({
+    const params = new URLSearchParams({
       github: String(project.editorRepository),
       branch: String(deployment.branch || 'main'),
       commit: String(deployment.commit || 'latest'),
       projectId: String(project._id),
       projectOwner: owner ? '1' : '0',
       git: owner ? '1' : '0',
-      wkExtension: req.query.wkExtension === '1' ? '1' : undefined,
-      wkHost: '1'
+      wkHost: '1',
+      workspaceName: String(project.title || 'Workspace')
     });
-    params.set('wkHost', '1');
-    params.set('workspaceName', String(project.title || 'Workspace'));
+    if (req.query.wkExtension === '1') params.set('wkExtension', '1');
     const src = editorPageUrl('index.html', params);
     const bridge = editorPageUrl('editor/remote-bridge.js');
     sendFileReplace(res, "./Pages/editor/editor.html", s => s
