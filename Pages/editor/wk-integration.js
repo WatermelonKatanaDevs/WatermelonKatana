@@ -1695,7 +1695,7 @@
             'Please sign in to WatermelonKatana to use this extension.',
             'Sign in to WatermelonKatana',
             () => {
-              const returnUrl = new URL(location.href);
+              const returnUrl = new URL(window.WKHostConfig.hostUrl || (WK_HOST_ORIGIN + '/editor'));
               returnUrl.searchParams.set('wkExtension', '1');
               WKHost.navigate(new URL('/login?redir=' + encodeURIComponent(returnUrl.href), WK_HOST_ORIGIN).href);
             }
