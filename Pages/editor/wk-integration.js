@@ -17,13 +17,19 @@
   // requests are routed through the bridge; Editor/GitHub traffic stays local.
   async function wkHostFetch(input, options = {}) {
     const url = new URL(typeof input === 'string' ? input : input.url, WK_HOST_ORIGIN);
-    const headers = options.headers instanceof Headers
-      ? Array.from(options.headers.entries())
-      : options.headers || {};
+    const normalizedHeaders = new Headers(options.headers || {});
+    let body = options.body == null ? null : options.body;
+    if (typeof URLSearchParams !== 'undefined' && body instanceof URLSearchParams) {
+      body = body.toString();
+      if (!normalizedHeaders.has('Content-Type')) normalizedHeaders.set('Content-Type', 'application/x-www-form-urlencoded;charset=UTF-8');
+    } else if (typeof FormData !== 'undefined' && body instanceof FormData) {
+      body = {__wkFormData:true, entries:Array.from(body.entries())};
+    }
+    const headers = Array.from(normalizedHeaders.entries());
     const result = await WKHost.fetch(url.href, {
       method: options.method || 'GET',
       headers,
-      body: options.body == null ? null : options.body,
+      body,
       cache: options.cache || 'no-store'
     });
     const responseText = String(result.body ?? '');
