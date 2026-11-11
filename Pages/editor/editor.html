@@ -34,8 +34,20 @@
           if (url.origin !== window.location.origin) {
             throw new Error('The Editor host bridge only permits requests to the WatermelonKatana origin.');
           }
+          const headers = new Headers(options.headers || {});
+          let body = options.body;
+          if (body && body.__wkFormData === true && Array.isArray(body.entries)) {
+            const form = new FormData();
+            for (const entry of body.entries) {
+              if (Array.isArray(entry) && entry.length >= 2) form.append(String(entry[0]), entry[1]);
+            }
+            body = form;
+            headers.delete('Content-Type');
+          }
           const response = await window.fetch(url.href, {
             ...options,
+            headers,
+            body,
             credentials: 'same-origin'
           });
           return {
