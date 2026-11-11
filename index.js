@@ -35,6 +35,7 @@ const limiter = RateLimit({
   max: 100,
   message: "Too many requests from this IP, please try again after 15 minutes",
 });
+// this is probably too harsh
 
 /*
   Database Connection
