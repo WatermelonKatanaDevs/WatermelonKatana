@@ -2,6 +2,7 @@
   External Modules
 */
 const express = require("express");
+const fs = require("fs");
 const cookieParser = require("cookie-parser");
 const RateLimit = require("express-rate-limit");
 const device = require('express-device');
@@ -22,6 +23,50 @@ const { Turbo } = require("./Turbo/index");
   Constants
 */
 const app = express();
+const DEFAULT_EDITOR_URL = "https://watermelonkatanadevs.github.io/Editor/";
+
+function normalizeEditorBaseUrl(value) {
+  const url = new URL(String(value || '').trim());
+  if (url.protocol !== 'https:' && url.protocol !== 'http:') {
+    throw new Error('EDITOR_URL must use http or https.');
+  }
+  url.search = '';
+  url.hash = '';
+  if (/\/index\.html?$/i.test(url.pathname)) {
+    url.pathname = url.pathname.slice(0, url.pathname.lastIndexOf('/') + 1);
+  } else if (!url.pathname.endsWith('/')) {
+    url.pathname += '/';
+  }
+  return url.href;
+}
+
+function readEditorBaseUrl() {
+  if (process.env.EDITOR_URL && process.env.EDITOR_URL.trim()) {
+    return normalizeEditorBaseUrl(process.env.EDITOR_URL);
+  }
+  try {
+    const config = JSON.parse(fs.readFileSync(__dirname + '/config/editor.json', 'utf8'));
+    if (config?.url) return normalizeEditorBaseUrl(config.url);
+  } catch (error) {
+    logWarn('Could not read config/editor.json; using the default Editor URL.', error);
+  }
+  return DEFAULT_EDITOR_URL;
+}
+
+const EDITOR_BASE_URL = readEditorBaseUrl();
+
+function editorPageUrl(page, params) {
+  const url = new URL(String(page).replace(/^\/+/, ''), EDITOR_BASE_URL);
+  if (params instanceof URLSearchParams) {
+    for (const [key, value] of params.entries()) url.searchParams.set(key, value);
+  } else if (params && typeof params === 'object') {
+    for (const [key, value] of Object.entries(params)) {
+      if (value !== undefined && value !== null) url.searchParams.set(key, String(value));
+    }
+  }
+  return url.href;
+}
+
 // Render sits behind a trusted reverse proxy and forwards the client IP in X-Forwarded-For.
 app.set("trust proxy", 1);
 const PORT = process.env.PORT || (process.env.RENDER === "true" ? 10000 : 3000);
@@ -161,10 +206,18 @@ function sendEditorForbidden(res) {
   return res.status(403).sendFile(__dirname + "/Middleware/403.html");
 }
 
+app.get("/editor-integration.js", (req, res) => {
+  res.type('application/javascript');
+  res.sendFile(__dirname + '/Pages/editor/wk-integration.js');
+});
+
 app.get("/editor", makeFormToken, async (req, res) => {
   try {
-    const src = "/editor/index.html" ;
-    sendFileReplace(res, "./Pages/editor/editor.html", s => s.replace("EDITOR_SRC", src));
+    const src = editorPageUrl('index.html', {wkHost:'1'});
+    const bridge = editorPageUrl('editor/remote-bridge.js');
+    sendFileReplace(res, "./Pages/editor/editor.html", s => s
+      .replace("EDITOR_SRC", src)
+      .replace("BRIDGE_SRC", bridge));
   } catch (e) {
     console.error(e);
     res.status(404).sendFile(cldir + "/404.html");
@@ -208,9 +261,10 @@ app.get("/editor/project/:id/deployment", checkAuth, async (req, res) => {
         branch: String(deployment.branch),
         commit: String(deployment.commit),
         path: String(deployment.path),
-        usePeerServer: deployment.usePeerServer === true ? '1' : '0'
+        usePeerServer: deployment.usePeerServer === true ? '1' : '0',
+        wkHostOrigin: `${req.protocol}://${req.get('host')}`
       });
-      src = "/editor/deployment.html?" + params.toString();
+      src = editorPageUrl('deployment.html', params);
     }
     sendFileReplace(
       res,
@@ -244,8 +298,14 @@ app.get("/editor/project/:id", checkAuth, async (req, res) => {
       projectOwner: owner ? '1' : '0',
       git: owner ? '1' : '0'
     });
-    const src = "/editor/index.html?" + params.toString();
-    sendFileReplace(res, "./Pages/editor/editor.html", s => s.replace("EDITOR_SRC", src).replace("WORKSPACE_NAME", makeLiteralChars(project.title)).replace("<title>Editor | WatermelonKatana</title>", `<title>${makeLiteralChars(project.title)} | Editor</title>`));
+    params.set('wkHost', '1');
+    params.set('workspaceName', String(project.title || 'Workspace'));
+    const src = editorPageUrl('index.html', params);
+    const bridge = editorPageUrl('editor/remote-bridge.js');
+    sendFileReplace(res, "./Pages/editor/editor.html", s => s
+      .replace("EDITOR_SRC", src)
+      .replace("BRIDGE_SRC", bridge)
+      .replace("<title>Editor | WatermelonKatana</title>", `<title>${makeLiteralChars(project.title)} | Editor</title>`));
   } catch (e) {
     console.error(e);
     res.status(404).sendFile(cldir + "/404.html");
@@ -307,8 +367,7 @@ app.get("/project/:id/edit", userAuth, async (req, res) => {
 }); // Edit project page, users only
 app.get("/project/:id/delete", userAuth, (req, res) => res.redirect("/api/project/delete/" + req.params.id)); // Delete project route, users only
 
-// Add Editor
-app.use("/editor", express.static(__dirname + "/Editor"));
+// The Editor is hosted independently; /editor routes above embed its configured URL.
 
 // Authors
 app.get("/authors", (req, res) => { res.sendFile(cldir + "/authors.html") });
