@@ -213,7 +213,10 @@ app.get("/editor-integration.js", (req, res) => {
 
 app.get("/editor", makeFormToken, async (req, res) => {
   try {
-    const src = editorPageUrl('index.html', {wkHost:'1'});
+    const src = editorPageUrl('index.html', {
+      wkHost:'1',
+      wkExtension: req.query.wkExtension === '1' ? '1' : undefined
+    });
     const bridge = editorPageUrl('editor/remote-bridge.js');
     sendFileReplace(res, "./Pages/editor/editor.html", s => s
       .replace("EDITOR_SRC", src)
