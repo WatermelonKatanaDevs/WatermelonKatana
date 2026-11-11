@@ -2,6 +2,7 @@
   External Modules
 */
 const express = require("express");
+const compression = require("compression");
 const cookieParser = require("cookie-parser");
 const RateLimit = require("express-rate-limit");
 const device = require('express-device');
@@ -45,6 +46,7 @@ const databaseReady = connectDB();
 /*
   Middleware setup
 */
+app.use(compression()); // Compress HTTP responses
 const bigPaths = new RegExp(`^/datablock_storage/[^/]+/(${["populate_key_values", "populate_tables"].join("|")})`);
 app.use((req, res, next) => {
   const maxSize = req.path.match(bigPaths) !== null ? "10mb" : "100kb";
