@@ -76,6 +76,7 @@
             localObjects: {WKHost: host},
             config: {
               origin: window.location.origin,
+              hostUrl: window.location.href,
               integrationUrl: new URL('/editor-integration.js', window.location.origin).href
             },
             timeout: 15000
