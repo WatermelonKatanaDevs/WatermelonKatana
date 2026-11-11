@@ -299,7 +299,9 @@ app.get("/editor/project/:id", checkAuth, async (req, res) => {
       commit: String(deployment.commit || 'latest'),
       projectId: String(project._id),
       projectOwner: owner ? '1' : '0',
-      git: owner ? '1' : '0'
+      git: owner ? '1' : '0',
+      wkExtension: req.query.wkExtension === '1' ? '1' : undefined,
+      wkHost: '1'
     });
     params.set('wkHost', '1');
     params.set('workspaceName', String(project.title || 'Workspace'));
