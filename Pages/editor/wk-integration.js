@@ -6,7 +6,9 @@
   const framedoc = document;
   const WKHost = window.WKHost;
   const WK_HOST_ORIGIN = new URL(window.WKHostConfig?.origin || document.referrer).origin;
-  const pid = new URLSearchParams(location.search).get('projectId');
+  const hostParams = new URLSearchParams(location.search);
+  const pid = hostParams.get('projectId');
+  const workspaceName = hostParams.get('workspaceName') || 'Workspace';
   const wait = t => new Promise(resolve => setTimeout(resolve, t));
 
   if (!WKHost) throw new Error('WatermelonKatana host bridge is unavailable.');
@@ -81,7 +83,7 @@
         }
         nameplate.style['font-weight'] = "bold";
         nameplate.id = "";
-        nameplate.innerText = "WORKSPACE_NAME";
+        nameplate.innerText = workspaceName;
         
         var replaceRepo = (clear) => {
           var repoSelect = framedoc.querySelector('[data-repo]');
