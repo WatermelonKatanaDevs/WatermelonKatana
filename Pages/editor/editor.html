@@ -1886,12 +1886,35 @@
       }
 
       // After WatermelonKatana login, return directly to this extension.
+      // The Editor restores the last recent project from Cache Storage during
+      // EditorApp.start(). Do not open the panel while that restore is in
+      // progress: replaceFileSystem resets the workbench later in the restore
+      // sequence, which would discard a panel opened too early.
       if (!pid && new URLSearchParams(location.search).get('wkExtension') === '1') {
         const autoOpenTimer = setInterval(() => {
-          const chooser = framedoc.querySelector('.startup-modal');
           const info = editor.EditorApp?.getWorkspaceInfo?.();
+          const chooser = framedoc.querySelector('.startup-modal');
           if (!editor.EditorApp?.openBuiltin) return;
-          if (!chooser && !info?.gitRemote && !info?.loading) return;
+
+          // If startup fell back to the project chooser, there was no cached
+          // GitHub workspace to resume. Leave the normal chooser visible.
+          if (chooser && !info?.projectId && !info?.loading) {
+            clearInterval(autoOpenTimer);
+            return;
+          }
+
+          // projectId is assigned when the cached workspace starts restoring;
+          // loading remains true until its filesystem, Git metadata, layout,
+          // and runtime initialization are all finished.
+          if (!info?.projectId || info.loading) return;
+
+          // Only resume the WatermelonKatana panel when the restored workspace
+          // actually contains the GitHub repository this panel operates on.
+          if (!info.hasGitHubRepository) {
+            clearInterval(autoOpenTimer);
+            return;
+          }
+
           chooser?.remove();
           clearInterval(autoOpenTimer);
           const cleanURL = new URL(location.href);
@@ -1899,7 +1922,10 @@
           history.replaceState({}, document.title, cleanURL.pathname + cleanURL.search + cleanURL.hash);
           editor.EditorApp.openBuiltin('watermelonkatanaEditor');
         }, 100);
-        setTimeout(() => clearInterval(autoOpenTimer), 15000);
+
+        // Safety valve for a failed Editor startup; normal no-cache startup
+        // stops the poll as soon as the project chooser appears.
+        setTimeout(() => clearInterval(autoOpenTimer), 120000);
       }
 
       // ---------------------------------------------------------------------------
