@@ -197,17 +197,9 @@ const UserSchema = new Mongoose.Schema({
     anonpack: function() {
       return {
         username: this.anonname || ("anon-" + String(this._id).slice(-4)),
-        verified: false,
         avatar: "/images/anon_pfp.png",
         banner: "/images/anon_banner.png",
-        biography: "",
-        badges: [],
         role: "Basic",
-        favorites: [],
-        following: [],
-        followers: [],
-        joinedAt: this.joinedAt,
-        mature: false,
         signedinbanner: false,
         rolegradient: false,
         avatarpos: { x: 50, y: 50, zoom: 100 },
