@@ -32,14 +32,7 @@ optimizedFiles(app, {
     { source: "Turbo" }
   ]
 });
-optimizedFiles.patchFS(require("fs"), {
-  directories: [
-    { source: "Assets" },
-    { source: "Pages" },
-    { source: "Editor" },
-    { source: "Turbo" }
-  ]
-});
+optimizedFiles.patchFS(require("fs"));
 // Render sits behind a trusted reverse proxy and forwards the client IP in X-Forwarded-For.
 app.set("trust proxy", 1);
 const PORT = process.env.PORT || (process.env.RENDER === "true" ? 10000 : 3000);
