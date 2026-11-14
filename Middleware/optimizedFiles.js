@@ -276,42 +276,45 @@ function createOptimizer(app, options = {}) {
     if (PATCHED_FS.has(fsModule)) return PATCHED_FS.get(fsModule);
 
     const originals = {};
-    for (const name of ["createReadStream", "readFile", "readFileSync"]) {
-      if (typeof fsModule[name] !== "function") continue;
-      originals[name] = fsModule[name];
-    }
-
-    if (originals.createReadStream) {
-      fsModule.createReadStream = function (filePath, ...args) {
-        return originals.createReadStream.call(this, resolveForRead(filePath), ...args);
+    const patchMethod = (name, shouldResolve = () => true) => {
+      if (typeof fsModule[name] !== "function") return;
+      const original = fsModule[name];
+      originals[name] = original;
+      fsModule[name] = function (filePath, ...args) {
+        const resolvedPath = shouldResolve(filePath, args) ? resolveForRead(filePath) : filePath;
+        return original.call(this, resolvedPath, ...args);
       };
-    }
+    };
 
-    if (originals.readFile) {
-      fsModule.readFile = function (filePath, ...args) {
-        return originals.readFile.call(this, resolveForRead(filePath), ...args);
-      };
-    }
+    patchMethod("createReadStream", (_filePath, args) => {
+      // Byte ranges refer to offsets in the original file, so leave ranged
+      // streams untouched rather than silently changing their meaning.
+      const streamOptions = args[0];
+      return !(streamOptions && typeof streamOptions === "object" &&
+        (Object.prototype.hasOwnProperty.call(streamOptions, "start") ||
+         Object.prototype.hasOwnProperty.call(streamOptions, "end")));
+    });
+    patchMethod("readFile");
+    patchMethod("readFileSync");
+    patchMethod("stat");
+    patchMethod("statSync");
 
-    if (originals.readFileSync) {
-      fsModule.readFileSync = function (filePath, ...args) {
-        return originals.readFileSync.call(this, resolveForRead(filePath), ...args);
-      };
-    }
-
-    if (fsModule.promises && typeof fsModule.promises.readFile === "function") {
-      const promises = fsModule.promises;
-      const originalPromiseReadFile = promises.readFile;
-      promises.readFile = function (filePath, ...args) {
-        return originalPromiseReadFile.call(this, resolveForRead(filePath), ...args);
-      };
-      originals.promiseReadFile = originalPromiseReadFile;
+    const promises = fsModule.promises;
+    if (promises) {
+      for (const name of ["readFile", "stat"]) {
+        if (typeof promises[name] !== "function") continue;
+        const original = promises[name];
+        originals["promises." + name] = original;
+        promises[name] = function (filePath, ...args) {
+          return original.call(this, resolveForRead(filePath), ...args);
+        };
+      }
     }
 
     const undo = () => {
       for (const [name, original] of Object.entries(originals)) {
-        if (name === "promiseReadFile") {
-          if (fsModule.promises) fsModule.promises.readFile = original;
+        if (name.startsWith("promises.")) {
+          if (fsModule.promises) fsModule.promises[name.slice(9)] = original;
         } else {
           fsModule[name] = original;
         }
