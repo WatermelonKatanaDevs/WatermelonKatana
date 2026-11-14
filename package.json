@@ -9,7 +9,8 @@
         "cleanup": "npx prettier . --write",
         "test": "jest",
         "preinstall": "git submodule update --init --recursive",
-        "postinstall": "node Middleware/optimizedFiles.js --build"
+        "postinstall": "npm run build:optimized",
+        "build:optimized": "node Middleware/optimizedFiles.js --build"
     },
     "author": "The WatermelonKatana Developers",
     "license": "MIT",
