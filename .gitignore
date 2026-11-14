@@ -61,3 +61,5 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 web_modules/
 yarn-debug.log*
 yarn-error.log*
+# Build-time optimized copies (generated during install/deploy)
+.optimized/
