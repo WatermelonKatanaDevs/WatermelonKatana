@@ -9,8 +9,10 @@ function interpretBool(obj, name, str) {
   if (str == "1" || str == "true") obj[name] = true;
 }
 
-function anonify(user) {
-  return (!isadmin(user.role) && user.anonymous) ? { username: user.anonname, _id: "(Anonymous)" }: user;
+function anonify(user, adminOverride) {
+  return !user.anonymous ? user:
+    adminOverride ? Object.assign(user, { username: user.username + " (Anonymous)" }):
+      { username: user.anonname, id: "(Anonymous)" }
 }
 
 module.exports = class {
@@ -43,14 +45,14 @@ module.exports = class {
     return Promise.all([...new Set(message.match(/(?<=@)[^\s]+/g))].map(async function (name) {
       var mention = await Users.findOne({ username: name });
       if (!mention) { return }
-      user = anonify(user);
+      user = anonify(user, isadmin(mention.role));
       mention.notify(user.username + " mentioned you!", content, link, user._id, user.username);
       await mention.save();
     }));
   }
 
   notifyUserFollowers(title, user, content, link) {
-    if(user.anonymous) { return }
+    if (user.anonymous) { return }
     return Promise.all(user.followers.map(async function (fid) {
       var follower = await Users.findOne({ _id: fid });
       if (!follower) { return }
@@ -182,7 +184,7 @@ module.exports = class {
     if (res.locals.userToken) {
       const uid = res.locals.userToken.id;
       var user = await Users.findOne({ _id: uid });
-      if (user && user.mature) return dataIsArray ? data: JSON.parse(JSON.stringify(data));
+      if (user && user.mature) return dataIsArray ? data : JSON.parse(JSON.stringify(data));
     }
     var entries = [].concat(data);
     var censoredData = [].concat(JSON.parse(Profanity.censorText(JSON.stringify(data))));
