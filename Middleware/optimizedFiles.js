@@ -17,6 +17,7 @@ const native = {
 
 const PATCHED_FS = new WeakMap();
 const PATCHED_EXPRESS = new WeakMap();
+let defaultOptimizer = null;
 
 function inside(parent, candidate) {
   const relative = path.relative(parent, candidate);
@@ -367,6 +368,7 @@ function createOptimizer(app, options = {}) {
 
 function optimizedFiles(app, options) {
   const optimizer = createOptimizer(app, options);
+  defaultOptimizer = optimizer;
   if (app) {
     optimizer.patchExpress(require("express"));
     const response = app.response || app;
@@ -392,11 +394,11 @@ function optimizedFiles(app, options) {
 }
 
 optimizedFiles.create = createOptimizer;
-optimizedFiles.patchFS = function (fsModule, options) {
-  if (!options || !Array.isArray(options.directories)) {
-    throw new TypeError("patchFS(fs, options) requires the optimizer options, including directories.");
+optimizedFiles.patchFS = function (fsModule) {
+  if (!defaultOptimizer) {
+    throw new Error("Call optimizedFiles(app, options) before optimizedFiles.patchFS(fs).");
   }
-  return createOptimizer(null, options).patchFS(fsModule);
+  return defaultOptimizer.patchFS(fsModule);
 };
 optimizedFiles.minifyHTML = minifyHTML;
 
