@@ -384,12 +384,9 @@ function optimizedFiles(app, options) {
   defaultOptimizer = optimizer;
   if (app) {
     optimizer.patchExpress(require("express"));
-    const response = app.response || app;
-    if (response) {
-      const originalAppResponse = app.response;
-      optimizer.patchResponse = undefined;
+    const proto = app.response;
+    if (proto) {
       // Patch this app's response prototype without affecting unrelated Express apps.
-      const proto = originalAppResponse;
       if (proto && !proto.__optimizedFilesPatched) {
         for (const method of ["sendFile", "sendfile", "download"]) {
           if (typeof proto[method] !== "function") continue;
