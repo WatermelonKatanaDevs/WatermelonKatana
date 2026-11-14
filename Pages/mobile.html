@@ -422,6 +422,166 @@ async function apiGet(path) {
   return list;
 }
 
+const PAGE_SIZE = 30;
+const apiPageCache = new Map();
+const infiniteLists = new Map();
+
+async function apiGetPage(path, page) {
+  const url = path + (path.includes("?") ? "&" : "?") + "page=" + page;
+  const hit = apiPageCache.get(url);
+  if (hit && Date.now() - hit.time < 60000) return hit.result;
+
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  const data = await res.json();
+  const list = Array.isArray(data) ? data : (data.projects || data.posts || data.results || data.list || data.data || []);
+  const result = { list, hasMore: list.length === PAGE_SIZE };
+
+  if (apiPageCache.size > 60) apiPageCache.delete(apiPageCache.keys().next().value);
+  apiPageCache.set(url, { time: Date.now(), result });
+  return result;
+}
+
+function stopInfiniteList(id, invalidate = true) {
+  const state = infiniteLists.get(id);
+  if (state) {
+    if (state.observer) state.observer.disconnect();
+    if (state.root && state.onScroll) state.root.removeEventListener("scroll", state.onScroll);
+    state.sentinel.remove();
+  }
+  infiniteLists.delete(id);
+  if (invalidate) nextToken(id);
+}
+
+function startInfiniteList(options) {
+  stopInfiniteList(options.id, false);
+  const token = nextToken(options.id);
+  const sentinel = document.createElement("div");
+  sentinel.className = "infinite-sentinel";
+  sentinel.setAttribute("aria-live", "polite");
+  sentinel.style.minHeight = "1px";
+  sentinel.style.margin = "6px 0 14px";
+  sentinel.style.textAlign = "center";
+  sentinel.style.opacity = ".7";
+  options.list.insertAdjacentElement("afterend", sentinel);
+
+  const state = {
+    ...options,
+    token,
+    page: 1,
+    hasMore: true,
+    loading: false,
+    awaitingRetry: false,
+    seen: new Set(),
+    sentinel,
+    observer: null,
+    onScroll: null
+  };
+  infiniteLists.set(options.id, state);
+
+  if ("IntersectionObserver" in window) {
+    state.observer = new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) loadNextPage(state);
+    }, { root: state.root, rootMargin: "500px 0px", threshold: 0 });
+    state.observer.observe(sentinel);
+  } else {
+    state.onScroll = () => {
+      if (state.root.scrollHeight - state.root.scrollTop - state.root.clientHeight < 500) {
+        loadNextPage(state);
+      }
+    };
+    state.root.addEventListener("scroll", state.onScroll, { passive: true });
+  }
+
+  loadNextPage(state);
+  return state;
+}
+
+function showInfiniteRetry(state, error) {
+  const target = state.page === 1 ? state.status : state.sentinel;
+  target.style.display = "";
+  target.textContent = "Couldn't load " + state.label + " (" + error.message + "). ";
+  const button = document.createElement("button");
+  button.type = "button";
+  button.textContent = "Try again";
+  button.addEventListener("click", () => {
+    state.awaitingRetry = false;
+    target.textContent = "Loading…";
+    loadNextPage(state);
+  }, { once: true });
+  target.appendChild(button);
+}
+
+async function loadNextPage(state) {
+  if (!state || infiniteLists.get(state.id) !== state || state.token !== loadTokens[state.id]) return;
+  if (state.loading || state.awaitingRetry || !state.hasMore) return;
+
+  const requestedPage = state.page;
+  const firstPage = requestedPage === 1;
+  state.loading = true;
+  state.sentinel.hidden = false;
+  state.sentinel.textContent = firstPage ? "" : "Loading more…";
+  if (firstPage) {
+    state.status.style.display = "";
+    state.status.textContent = "Loading…";
+  }
+
+  try {
+    const result = await apiGetPage(state.path, requestedPage);
+    if (infiniteLists.get(state.id) !== state || state.token !== loadTokens[state.id]) return;
+
+    const fragment = document.createDocumentFragment();
+    let added = 0;
+    result.list.forEach(item => {
+      const rawId = item && (item.id ?? item._id);
+      const key = rawId == null ? null : String(rawId);
+      if (key !== null && state.seen.has(key)) return;
+      if (key !== null) state.seen.add(key);
+      fragment.appendChild(state.renderItem(item));
+      added++;
+    });
+    state.list.appendChild(fragment);
+
+    state.page = requestedPage + 1;
+    state.hasMore = result.hasMore;
+
+    if (firstPage) {
+      if (!added) {
+        state.status.style.display = "";
+        state.status.textContent = state.emptyText;
+        state.hasMore = false;
+        state.sentinel.hidden = true;
+        return;
+      }
+      state.status.style.display = "none";
+    }
+
+    if (!state.hasMore) {
+      state.sentinel.hidden = true;
+      state.sentinel.textContent = "";
+      if (state.observer) state.observer.unobserve(state.sentinel);
+    } else {
+      state.sentinel.textContent = "";
+      state.sentinel.hidden = false;
+      requestAnimationFrame(() => {
+        if (infiniteLists.get(state.id) !== state || state.loading || !state.hasMore) return;
+        const rootBounds = state.root.getBoundingClientRect();
+        const sentinelBounds = state.sentinel.getBoundingClientRect();
+        if (sentinelBounds.top <= rootBounds.bottom + 500 && sentinelBounds.bottom >= rootBounds.top - 500) {
+          loadNextPage(state);
+        }
+      });
+    }
+  } catch (error) {
+    if (infiniteLists.get(state.id) !== state || state.token !== loadTokens[state.id]) return;
+    console.error(error);
+    state.awaitingRetry = true;
+    showInfiniteRetry(state, error);
+  } finally {
+    state.loading = false;
+  }
+}
+
 function makeCard(p) {
   const a = document.createElement("a");
   a.className = "project-card" + (p.featured ? " featured" : "");
@@ -458,37 +618,26 @@ function makeCard(p) {
   return a;
 }
 
-async function loadProjects(path, gridId, statusId, emptyText) {
+function loadProjects(path, gridId, statusId, emptyText) {
   const grid = document.getElementById(gridId);
   const status = document.getElementById(statusId);
-  const token = nextToken(gridId);
-  grid.innerHTML = "";
-  status.style.display = "";
-  status.textContent = "Loading…";
-  try {
-    const list = await apiGet(path);
-    if (token !== loadTokens[gridId]) return;
-    if (!list.length) { status.textContent = emptyText; return; }
-    status.style.display = "none";
-    const frag = document.createDocumentFragment();
-    list.forEach(p => frag.appendChild(makeCard(p)));
-    grid.appendChild(frag);
-  } catch (err) {
-    console.error(err);
-    if (token !== loadTokens[gridId]) return;
-    status.style.display = "";
-    status.textContent = "Couldn't load projects (" + err.message + "). ";
-    const btn = document.createElement("button");
-    btn.textContent = "Try again";
-    btn.onclick = () => loadProjects(path, gridId, statusId, emptyText);
-    status.appendChild(btn);
-  }
-}
+  const rootId = gridId === "featured-grid" || gridId === "latest-grid" ? "page-home" : "page-search";
 
+  startInfiniteList({
+    id: gridId,
+    path,
+    list: grid,
+    root: document.getElementById(rootId),
+    status,
+    label: "projects",
+    emptyText,
+    renderItem: makeCard
+  });
+}
 
 function refreshProjects() {
   loadProjects("/api/project/list?featured=true&sort=latest", "featured-grid", "featured-status", "No featured projects yet.");
-  loadProjects("/api/project/list?sort=latest&page=1", "latest-grid", "latest-status", "No projects yet.");
+  loadProjects("/api/project/list?sort=latest", "latest-grid", "latest-status", "No projects yet.");
 }
 
 const searchInput = document.getElementById("search-input");
@@ -589,30 +738,20 @@ function makeForumCard(post) {
   return d;
 }
 
-async function loadForum() {
+function loadForum() {
   const list = document.getElementById("forum-list");
   const status = document.getElementById("forum-status");
-  const token = nextToken("forum-list");
-  list.innerHTML = "";
-  status.style.display = "";
-  status.textContent = "Loading…";
-  try {
-    const posts = await apiGet("/api/forum/list?sort=active");
-    if (token !== loadTokens["forum-list"]) return;
-    if (!posts.length) { status.textContent = "No forum posts yet."; return; }
-    status.style.display = "none";
-    const frag = document.createDocumentFragment();
-    posts.forEach(p => frag.appendChild(makeForumCard(p)));
-    list.appendChild(frag);
-  } catch (err) {
-    console.error(err);
-    if (token !== loadTokens["forum-list"]) return;
-    status.textContent = "Couldn't load the forum (" + err.message + "). ";
-    const btn = document.createElement("button");
-    btn.textContent = "Try again";
-    btn.onclick = loadForum;
-    status.appendChild(btn);
-  }
+
+  startInfiniteList({
+    id: "forum-list",
+    path: "/api/forum/list?sort=active",
+    list,
+    root: document.getElementById("page-chat"),
+    status,
+    label: "the forum",
+    emptyText: "No forum posts yet.",
+    renderItem: makeForumCard
+  });
 }
 const postView = document.getElementById("post-view");
 const pvScroll = document.getElementById("pv-scroll");
@@ -1355,6 +1494,7 @@ async function submitCompose(e) {
     }
     if (history.state?.compose) history.back(); else closeCompose();
     apiCache.clear();
+    apiPageCache.clear();
     reloadPage(currentIndex);
   } catch (err) {
     errBox.textContent = err.message;
@@ -1511,8 +1651,8 @@ function resetStatus(statusId) {
 }
 
 function unloadHome() {
-  nextToken("featured-grid");
-  nextToken("latest-grid");
+  stopInfiniteList("featured-grid");
+  stopInfiniteList("latest-grid");
   document.getElementById("featured-grid").innerHTML = "";
   document.getElementById("latest-grid").innerHTML = "";
   resetStatus("featured-status");
@@ -1520,13 +1660,13 @@ function unloadHome() {
 }
 
 function unloadSearch() {
-  nextToken("search-grid");
+  stopInfiniteList("search-grid");
   document.getElementById("search-grid").innerHTML = "";
   resetStatus("search-status");
 }
 
 function unloadForum() {
-  nextToken("forum-list");
+  stopInfiniteList("forum-list");
   document.getElementById("forum-list").innerHTML = "";
   resetStatus("forum-status");
 }
