@@ -92,6 +92,41 @@ function minifyHTML(input) {
     output += token === "<" ? token : token.replace(/\s+/g, " ");
   }
 
+  // Minify inline CSS and JavaScript as well as the surrounding markup.
+  // External scripts/styles are handled by their own optimized files.
+  const esbuild = require("esbuild");
+  output = output.replace(/(<script\\b([^>]*)>)([\\s\\S]*?)(<\\/script\\s*>)/gi,
+    (whole, open, attributes, body, close) => {
+      if (/\\bsrc\\s*=/i.test(attributes) || !body.trim()) return whole;
+      const type = (attributes.match(/\\btype\\s*=\\s*["']?([^"'\\s>]+)/i) || [])[1] || "text/javascript";
+      if (!/^(?:text|application)\\/(?:javascript|ecmascript)$|^module$/i.test(type)) return whole;
+      try {
+        const result = esbuild.transformSync(body, {
+          loader: "js",
+          minify: true,
+          legalComments: "none",
+          target: "esnext"
+        });
+        return open + result.code + close;
+      } catch (_) {
+        return whole;
+      }
+    });
+  output = output.replace(/(<style\\b[^>]*>)([\\s\\S]*?)(<\\/style\\s*>)/gi,
+    (whole, open, body, close) => {
+      if (!body.trim()) return whole;
+      try {
+        const result = esbuild.transformSync(body, {
+          loader: "css",
+          minify: true,
+          legalComments: "none"
+        });
+        return open + result.code + close;
+      } catch (_) {
+        return whole;
+      }
+    });
+
   return output;
 }
 
