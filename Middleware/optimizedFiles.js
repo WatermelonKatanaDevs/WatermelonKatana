@@ -147,8 +147,7 @@ function createOptimizer(app, options = {}) {
   }
 
   function resolveForRead(filePath) {
-    const result = resolve(filePath);
-    return result;
+    return resolve(filePath);
   }
 
   function transformFile(source, destination, relative, entry) {
@@ -163,17 +162,18 @@ function createOptimizer(app, options = {}) {
 
     if (extension === ".js" || extension === ".mjs" || extension === ".cjs") {
       const esbuild = require("esbuild");
-      const loader = extension === ".mjs" ? "js" : extension === ".cjs" ? "js" : "js";
       const result = esbuild.transformSync(data.toString("utf8"), {
-        loader,
+        loader: "js",
         minifyWhitespace: true,
         minifySyntax: true,
-        minifyIdentifiers: false,
+        // Mangle function parameters and local bindings for substantially
+        // smaller output. Top-level names and object properties remain stable.
+        minifyIdentifiers: options.minifyIdentifiers !== false,
         legalComments: "none",
         target: "esnext"
       });
       native.writeFileSync(destination, result.code);
-      return;
+      return true;
     }
 
     if (extension === ".css") {
@@ -184,12 +184,12 @@ function createOptimizer(app, options = {}) {
         legalComments: "none"
       });
       native.writeFileSync(destination, result.code);
-      return;
+      return true;
     }
 
     if (extension === ".html" || extension === ".htm") {
       native.writeFileSync(destination, minifyHTML(data.toString("utf8")));
-      return;
+      return true;
     }
 
     if (extension === ".json") {
@@ -198,7 +198,7 @@ function createOptimizer(app, options = {}) {
       } catch (_) {
         native.writeFileSync(destination, data);
       }
-      return;
+      return true;
     }
 
     // Binary/unknown formats are served from the original directory. Avoid
