@@ -12,7 +12,8 @@ const native = {
   writeFileSync: fs.writeFileSync.bind(fs),
   copyFileSync: fs.copyFileSync.bind(fs),
   renameSync: fs.renameSync.bind(fs),
-  unlinkSync: fs.unlinkSync.bind(fs)
+  unlinkSync: fs.unlinkSync.bind(fs),
+  rmSync: fs.rmSync.bind(fs)
 };
 
 const PATCHED_FS = new WeakMap();
@@ -251,6 +252,8 @@ function createOptimizer(app, options = {}) {
     };
     native.mkdirSync(outputDir, { recursive: true });
     for (const entry of entries) {
+      // Remove stale generated files so deleted/renamed source files cannot linger.
+      native.rmSync(entry.outputRoot, { recursive: true, force: true });
       native.mkdirSync(entry.outputRoot, { recursive: true });
       walk(entry.sourceRoot, entry, counts);
     }
@@ -333,7 +336,8 @@ function createOptimizer(app, options = {}) {
       const optimizedRoot = path.resolve(entry.outputRoot, relativeRoot);
       if (!inside(entry.outputRoot, optimizedRoot)) return originalStatic.call(this, root, staticOptions);
 
-      const optimizedMiddleware = originalStatic.call(this, optimizedRoot, staticOptions);
+      const optimizedOptions = { ...(staticOptions || {}), fallthrough: true };
+      const optimizedMiddleware = originalStatic.call(this, optimizedRoot, optimizedOptions);
       const originalMiddleware = originalStatic.call(this, root, staticOptions);
       return function optimizedStaticFallback(req, res, next) {
         optimizedMiddleware(req, res, error => {
