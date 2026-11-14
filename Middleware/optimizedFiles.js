@@ -131,131 +131,6 @@ function minifyHTML(input) {
   return output;
 }
 
-
-  function readTagAttribute(tag, name) {
-    const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\function createOptimizer(app, options = {}) {");
-    const match = tag.match(new RegExp("(?:^|\\\\s)" + escapedName + "\\\\s*=\\\\s*(?:\\\\"([^\\\\"]*)\\\\"|'([^']*)'|([^\\\\s>]+))", "i"));
-    return match ? (match[1] !== undefined ? match[1] : match[2] !== undefined ? match[2] : match[3]) : null;
-  }
-
-  function replaceTagAttribute(tag, name, value) {
-    const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\function createOptimizer(app, options = {}) {");
-    const quoted = new RegExp("(\\\\s" + escapedName + "\\\\s*=\\\\s*)([\\\\"'])(.*?)\\\\2", "i");
-    if (quoted.test(tag)) {
-      return tag.replace(quoted, (_whole, prefix, quote) => prefix + quote + value + quote);
-    }
-    const unquoted = new RegExp("(\\\\s" + escapedName + "\\\\s*=\\\\s*)([^\\\\s>]+)", "i");
-    return tag.replace(unquoted, (_whole, prefix) => prefix + "\\\"" + value + "\\\"");
-  }
-
-  function resolveIntegrityResource(resourceUrl, htmlSource) {
-    const value = String(resourceUrl || "").trim();
-    if (!value || /^(?:[a-z][a-z\\d+.-]*:|\\\\/\\\\/|#)/i.test(value)) return null;
-
-    const withoutQuery = value.split(/[?#]/, 1)[0];
-    if (!withoutQuery) return null;
-
-    let decoded;
-    try {
-      decoded = decodeURIComponent(withoutQuery);
-    } catch (_) {
-      decoded = withoutQuery;
-    }
-
-    const candidates = [];
-    if (decoded.startsWith("/")) {
-      const relative = decoded.replace(/^[/\\\\]+/, "");
-      const firstSegment = relative.split(/[\\\\/]/, 1)[0].toLowerCase();
-
-      for (const candidateEntry of entries) {
-        const rootName = path.basename(candidateEntry.sourceRoot).toLowerCase();
-        if (firstSegment === rootName) {
-          candidates.push(path.resolve(candidateEntry.sourceRoot, relative.slice(relative.indexOf("/") + 1)));
-        }
-        candidates.push(path.resolve(candidateEntry.sourceRoot, relative));
-      }
-      candidates.push(path.resolve(baseDir, relative));
-    } else {
-      candidates.push(path.resolve(path.dirname(htmlSource), decoded));
-    }
-
-    for (const candidate of candidates) {
-      const candidateEntry = findEntry(candidate);
-      if (!candidateEntry || !inside(candidateEntry.sourceRoot, candidate)) continue;
-      try {
-        if (native.statSync(candidate).isFile()) return candidate;
-      } catch (_) {
-        // Try the next possible local mapping.
-      }
-    }
-    return null;
-  }
-
-  function refreshIntegrity(entry, counts) {
-    function visit(directory) {
-      if (!native.existsSync(directory)) return;
-      for (const item of native.readdirSync(directory, { withFileTypes: true })) {
-        const source = path.join(directory, item.name);
-        if (item.isSymbolicLink()) continue;
-        if (item.isDirectory()) {
-          visit(source);
-          continue;
-        }
-
-        const extension = path.extname(item.name).toLowerCase();
-        if (!item.isFile() || (extension !== ".html" && extension !== ".htm")) continue;
-
-        const relative = path.relative(entry.sourceRoot, source);
-        const destination = path.join(entry.outputRoot, relative);
-        const hasOptimizedHTML = native.existsSync(destination) && native.statSync(destination).isFile();
-        const currentHTML = native.readFileSync(hasOptimizedHTML ? destination : source).toString("utf8");
-        let updatedHashes = 0;
-
-        const rewrittenHTML = currentHTML.replace(/<[a-z][\\w:-]*\\b[^>]*>/gi, tag => {
-          const existingIntegrity = readTagAttribute(tag, "integrity");
-          if (!existingIntegrity) return tag;
-
-          const resourceUrl = readTagAttribute(tag, "href") || readTagAttribute(tag, "src");
-          if (!resourceUrl) return tag;
-
-          const sourceResource = resolveIntegrityResource(resourceUrl, source);
-          if (!sourceResource) return tag;
-
-          // Hash precisely what resolve() will cause the server to deliver:
-          // optimized text assets when available, original bytes for binaries.
-          const servedResource = resolve(sourceResource);
-          if (typeof servedResource !== "string" && !Buffer.isBuffer(servedResource)) return tag;
-          if (!native.existsSync(servedResource)) return tag;
-
-          const algorithms = [...new Set(
-            existingIntegrity.trim().split(/\\s+/)
-              .map(token => token.split("-", 1)[0].toLowerCase())
-              .filter(algorithm => ["sha256", "sha384", "sha512"].includes(algorithm))
-          )];
-          if (!algorithms.length) return tag;
-
-          const bytes = native.readFileSync(servedResource);
-          const nextIntegrity = algorithms.map(algorithm =>
-            algorithm + "-" + crypto.createHash(algorithm).update(bytes).digest("base64")
-          ).join(" ");
-
-          if (nextIntegrity === existingIntegrity.trim()) return tag;
-          updatedHashes++;
-          return replaceTagAttribute(tag, "integrity", nextIntegrity);
-        });
-
-        if (updatedHashes > 0) {
-          native.mkdirSync(path.dirname(destination), { recursive: true });
-          native.writeFileSync(destination, rewrittenHTML);
-          counts.integrityUpdated += updatedHashes;
-          counts.integrityFiles++;
-        }
-      }
-    }
-
-    visit(entry.sourceRoot);
-  }
-
 function createOptimizer(app, options = {}) {
   const baseDir = path.resolve(options.baseDir || process.cwd());
   const outputDir = path.resolve(baseDir, options.output || ".optimized");
@@ -313,32 +188,22 @@ function createOptimizer(app, options = {}) {
 
 
   function readTagAttribute(tag, name) {
-    const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\  function resolveForRead(filePath) {
-    return resolve(filePath);
-  }
-
-  function transformFile");
-    const match = tag.match(new RegExp("(?:^|\\\\s)" + escapedName + "\\\\s*=\\\\s*(?:\\\\"([^\\\\"]*)\\\\"|'([^']*)'|([^\\\\s>]+))", "i"));
+    const match = tag.match(new RegExp("(?:^|\\s)" + name + "\\s*=\\s*(?:\"([^\"]*)\"|'([^']*)'|([^\\s>]+))", "i"));
     return match ? (match[1] !== undefined ? match[1] : match[2] !== undefined ? match[2] : match[3]) : null;
   }
 
   function replaceTagAttribute(tag, name, value) {
-    const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\  function resolveForRead(filePath) {
-    return resolve(filePath);
-  }
-
-  function transformFile");
-    const quoted = new RegExp("(\\\\s" + escapedName + "\\\\s*=\\\\s*)([\\\\"'])(.*?)\\\\2", "i");
+    const quoted = new RegExp("(\\s" + name + "\\s*=\\s*)([\"'])(.*?)\\2", "i");
     if (quoted.test(tag)) {
       return tag.replace(quoted, (_whole, prefix, quote) => prefix + quote + value + quote);
     }
-    const unquoted = new RegExp("(\\\\s" + escapedName + "\\\\s*=\\\\s*)([^\\\\s>]+)", "i");
-    return tag.replace(unquoted, (_whole, prefix) => prefix + "\\\"" + value + "\\\"");
+    const unquoted = new RegExp("(\\s" + name + "\\s*=\\s*)([^\\s>]+)", "i");
+    return tag.replace(unquoted, (_whole, prefix) => prefix + "\"" + value + "\"");
   }
 
   function resolveIntegrityResource(resourceUrl, htmlSource) {
     const value = String(resourceUrl || "").trim();
-    if (!value || /^(?:[a-z][a-z\\d+.-]*:|\\\\/\\\\/|#)/i.test(value)) return null;
+    if (!value || /^(?:[a-z][a-z\\d+.-]*:|\\/\\/|#)/i.test(value)) return null;
 
     const withoutQuery = value.split(/[?#]/, 1)[0];
     if (!withoutQuery) return null;
@@ -353,12 +218,13 @@ function createOptimizer(app, options = {}) {
     const candidates = [];
     if (decoded.startsWith("/")) {
       const relative = decoded.replace(/^[/\\\\]+/, "");
-      const firstSegment = relative.split(/[\\\\/]/, 1)[0].toLowerCase();
+      const segments = relative.split("/");
+      const firstSegment = (segments[0] || "").toLowerCase();
 
       for (const candidateEntry of entries) {
         const rootName = path.basename(candidateEntry.sourceRoot).toLowerCase();
         if (firstSegment === rootName) {
-          candidates.push(path.resolve(candidateEntry.sourceRoot, relative.slice(relative.indexOf("/") + 1)));
+          candidates.push(path.resolve(candidateEntry.sourceRoot, ...segments.slice(1)));
         }
         candidates.push(path.resolve(candidateEntry.sourceRoot, relative));
       }
@@ -409,7 +275,7 @@ function createOptimizer(app, options = {}) {
           const sourceResource = resolveIntegrityResource(resourceUrl, source);
           if (!sourceResource) return tag;
 
-          // Hash precisely what resolve() will cause the server to deliver:
+          // Hash precisely what resolve() causes the server to deliver:
           // optimized text assets when available, original bytes for binaries.
           const servedResource = resolve(sourceResource);
           if (typeof servedResource !== "string" && !Buffer.isBuffer(servedResource)) return tag;
@@ -560,15 +426,16 @@ function createOptimizer(app, options = {}) {
       walk(entry.sourceRoot, entry, counts);
     }
 
-    // All files must be transformed before SRI is recalculated, otherwise an
-    // HTML file encountered early in the directory walk could hash stale assets.
+    // Wait until every configured directory has been transformed before
+    // recalculating SRI, so HTML always hashes the final files that are served.
     for (const entry of entries) refreshIntegrity(entry, counts);
 
     if (options.log !== false) {
       const saved = counts.sourceBytes - counts.outputBytes;
       console.log(
         "[optimizedFiles] Optimized " + counts.files + " files; skipped " +
-        counts.skipped + " unchanged/binary files; reduced " + counts.reducedFiles + "; saved " + Math.max(0, saved) + " bytes."
+        counts.skipped + " unchanged/binary files; reduced " + counts.reducedFiles + "; saved " + Math.max(0, saved) +
+        " bytes; refreshed " + counts.integrityUpdated + " SRI hashes across " + counts.integrityFiles + " HTML files."
       );
       if (counts.missing.length) console.warn("[optimizedFiles] Missing directories:", counts.missing.join(", "));
       for (const fallback of counts.fallbacks) {
