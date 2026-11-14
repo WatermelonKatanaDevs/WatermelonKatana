@@ -75,6 +75,7 @@
             throw new Error('The Editor host bridge only permits same-origin history updates.');
           }
           window.history.replaceState({}, document.title, url.href);
+          sendHostContext();
         },
         navigate(destination) {
           const url = new URL(String(destination), window.location.href);
