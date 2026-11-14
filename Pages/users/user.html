@@ -160,7 +160,7 @@
         const isOwnProfile = isAuthenticated && String(currentUserId) === String(userData.id);
         await renderProfile(userData, isAuthenticated, isOwnProfile, currentUserId);
         if (!userData.anonymous) {
-          document.querySelector("#projects-container").style.display = "";
+          document.querySelector(".projects-container").style.display = "";
           const publishedProjects = await fetch("/api/project/list?poster=" + name +
             (isMature ? `&showMature=${isMature}` : "") +
             (isOwnProfile ? `&showHidden=${isOwnProfile}` : ""));
