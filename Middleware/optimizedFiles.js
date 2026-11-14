@@ -203,7 +203,7 @@ function createOptimizer(app, options = {}) {
 
   function resolveIntegrityResource(resourceUrl, htmlSource) {
     const value = String(resourceUrl || "").trim();
-    if (!value || /^(?:[a-z][a-z\\d+.-]*:|\\/\\/|#)/i.test(value)) return null;
+    if (!value || /^(?:[a-z][a-z\d+.-]*:|\/\/|#)/i.test(value)) return null;
 
     const withoutQuery = value.split(/[?#]/, 1)[0];
     if (!withoutQuery) return null;
@@ -217,7 +217,7 @@ function createOptimizer(app, options = {}) {
 
     const candidates = [];
     if (decoded.startsWith("/")) {
-      const relative = decoded.replace(/^[/\\\\]+/, "");
+      const relative = decoded.replace(/^[/\\]+/, "");
       const segments = relative.split("/");
       const firstSegment = (segments[0] || "").toLowerCase();
 
