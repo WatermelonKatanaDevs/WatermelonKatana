@@ -109,14 +109,18 @@
           </div>` : `<span class="${nameCSSClass}" style="${finalnamecss}; margin-top: 35px; width: 100%">${userData.username} ${verifiedmark(userData.verifiedbadge)}</span>`
         }
       </div>
-      <p class="biography">${convertMarkdown(userData.biography)}</p>
-      ${userData.showEmail && userData.email ? `<p class="profile-email">Email: <a href="mailto:${makeLiteralChars(userData.email)}">${makeLiteralChars(userData.email)}</a></p>` : ""}
-      <p class="role" title="${makeLiteralChars(roletip)}" style="${rolestyle}">${userData.role}</p>
-      Joined on ${new Date(userData.joinedAt).toUTCString().replace(/\d\d:[^]+$/, "")} |
-      <span id="followercount" class="link">${userData.followers.length}</span> Followers |
-      <span id="followingcount" class="link">${userData.following.length}</span> Following
-      ${isAuthenticated && !isOwnProfile ? `| <label><input type="checkbox" id="follow-btn" onclick="followbtnclick(this.checked);" ${userData.followers.includes(String(currentUserId)) ? "checked" : ""}><span class="checkbox"></span></label> Follow` : ""}
-      | <a href="/uploadedmedia?poster=${userData.username}">Uploaded Media</a>
+      ${!userData.anonymous ? `
+        <footer>
+          <p class="biography">${convertMarkdown(userData.biography)}</p>
+          ${userData.showEmail && userData.email ? `<p class="profile-email">Email: <a href="mailto:${makeLiteralChars(userData.email)}">${makeLiteralChars(userData.email)}</a></p>` : ""}
+          <p class="role" title="${makeLiteralChars(roletip)}" style="${rolestyle}">${userData.role}</p>
+          Joined on ${new Date(userData.joinedAt).toUTCString().replace(/\d\d:[^]+$/, "")} |
+          <span id="followercount" class="link">${userData.followers.length}</span> Followers |
+          <span id="followingcount" class="link">${userData.following.length}</span> Following
+          ${isAuthenticated && !isOwnProfile ? `| <label><input type="checkbox" id="follow-btn" onclick="followbtnclick(this.checked);" ${userData.followers.includes(String(currentUserId)) ? "checked" : ""}><span class="checkbox"></span></label> Follow` : ""}
+          | <a href="/uploadedmedia?poster=${userData.username}">Uploaded Media</a>
+        </footer>
+      `: ""}
     </div>`;
     }
 
