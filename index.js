@@ -281,6 +281,7 @@ app.get("/editor/project/:id/deployment", checkAuth, async (req, res) => {
         commit: String(deployment.commit),
         path: String(deployment.path),
         usePeerServer: deployment.usePeerServer === true ? '1' : '0',
+        wkHostURL: `${req.protocol}://${req.get('host')}${req.originalUrl}`,
         wkHostOrigin: `${req.protocol}://${req.get('host')}`
       });
       src = editorPageUrl('deployment.html', params);
