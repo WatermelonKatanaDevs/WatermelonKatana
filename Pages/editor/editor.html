@@ -23,6 +23,17 @@
       const frame = document.getElementById('editorFrame');
       const errorPanel = document.getElementById('editorBridgeError');
       const editorOrigin = new URL(frame.src).origin;
+      const sendHostContext = () => {
+        try {
+          frame.contentWindow?.postMessage({
+            type: 'watermelonkatanas:host-context',
+            url: window.location.href,
+            origin: window.location.origin
+          }, editorOrigin);
+        } catch (_) {}
+      };
+      window.addEventListener('popstate', sendHostContext);
+      window.addEventListener('hashchange', sendHostContext);
 
       const host = {
         async getAuth() {
@@ -75,6 +86,7 @@
       };
 
       frame.addEventListener('load', async () => {
+        sendHostContext();
         errorPanel.style.display = 'none';
         try {
           window.__wkEditorBridge?.close?.();
