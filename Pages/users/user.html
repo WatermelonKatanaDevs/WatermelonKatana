@@ -19,7 +19,7 @@
     <!-- User profile content will be inserted here -->
   </div>
 
-  <div class="projects-container">
+  <div class="projects-container" style="display: none;">
     <h2>Published Projects</h2>
     <ul id="list" class="project-list"></ul>
     <h2>Favorites</h2>
@@ -160,6 +160,7 @@
         const isOwnProfile = isAuthenticated && String(currentUserId) === String(userData.id);
         await renderProfile(userData, isAuthenticated, isOwnProfile, currentUserId);
         if (!userData.anonymous) {
+          document.querySelector("#projects-container").style.display = "";
           const publishedProjects = await fetch("/api/project/list?poster=" + name +
             (isMature ? `&showMature=${isMature}` : "") +
             (isOwnProfile ? `&showHidden=${isOwnProfile}` : ""));
