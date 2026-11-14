@@ -276,7 +276,7 @@ function renderPage() {
         <div><strong id="plays">${esc(p.plays || 0)}</strong><span>Plays</span></div>
       </div>
       ${/^https?:\/\//.test(link || "") ? `<a class="btn alt" href="${esc(link)}" target="_blank" rel="noopener">Open original</a>` : ""}
-      ${p.editorProject ? `<a class="btn alt" href="/editor/project/${encodeURIComponent(p.id)}">${projectOwner ? "Edit Code" : "View Code"}</a>` : ""}
+      ${p.editorProject ? `<a class="btn alt" href="/editor/project/${encodeURIComponent(p.id)}">${projectOwner === true ? "Edit Code" : "View Code"}</a>` : ""}
       <div id="owner"></div>
     </section>
     <section class="comments">

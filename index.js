@@ -281,7 +281,9 @@ app.get("/project/:id", checkAuth, makeFormToken, async (req, res) => {
   var tok = res.locals.userToken;
   var user = tok ? await Users.findOne({ _id: tok.id }) : null;
   var poster = proj.anon ? (!isadmin(tok?.role) ? "": proj.poster) + " (Anonymous)": proj.poster;
-  var projectOwner = !!tok && proj.posterId === tok.id;
+  // Code-page wording reflects actual game ownership, not merely sign-in state.
+  // Normalize both IDs because JWT and Mongoose values may use different representations.
+  var projectOwner = !!tok?.id && String(proj.posterId || "") === String(tok.id);
   if (proj.mature && (!tok || !user || !user.mature)) return res.status(403).sendFile(__dirname + "/Middleware/403.html");
   if (tok && !proj.viewers.includes(tok.id)) { proj.viewers.push(tok.id) }
   proj.views = proj.viewers.length;
