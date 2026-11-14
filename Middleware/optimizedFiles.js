@@ -265,7 +265,7 @@ function createOptimizer(app, options = {}) {
         const currentHTML = native.readFileSync(hasOptimizedHTML ? destination : source).toString("utf8");
         let updatedHashes = 0;
 
-        const rewrittenHTML = currentHTML.replace(/<[a-z][\\w:-]*\\b[^>]*>/gi, tag => {
+        const rewrittenHTML = currentHTML.replace(/<[a-z][\w:-]*\b[^>]*>/gi, tag => {
           const existingIntegrity = readTagAttribute(tag, "integrity");
           if (!existingIntegrity) return tag;
 
@@ -282,7 +282,7 @@ function createOptimizer(app, options = {}) {
           if (!native.existsSync(servedResource)) return tag;
 
           const algorithms = [...new Set(
-            existingIntegrity.trim().split(/\\s+/)
+            existingIntegrity.trim().split(/\s+/)
               .map(token => token.split("-", 1)[0].toLowerCase())
               .filter(algorithm => ["sha256", "sha384", "sha512"].includes(algorithm))
           )];
