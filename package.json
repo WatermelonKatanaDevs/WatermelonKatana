@@ -8,7 +8,8 @@
         "dev": "nodemon index.js",
         "cleanup": "npx prettier . --write",
         "test": "jest",
-        "preinstall": "git submodule update --init --recursive"
+        "preinstall": "git submodule update --init --recursive",
+        "postinstall": "node Middleware/optimizedFiles.js --build"
     },
     "author": "The WatermelonKatana Developers",
     "license": "MIT",
@@ -31,7 +32,8 @@
         "picocolors": "^1.1.1",
         "profane-words": "^1.6.0",
         "slugify": "^1.6.6",
-        "compression": "^1.8.1"
+        "compression": "^1.8.1",
+        "esbuild": "^0.28.2"
     },
     "devDependencies": {
         "jest": "^29.7.0",
