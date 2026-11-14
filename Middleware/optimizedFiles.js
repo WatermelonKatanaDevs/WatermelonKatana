@@ -157,8 +157,8 @@ function createOptimizer(app, options = {}) {
     const data = native.readFileSync(source);
 
     if (excluded) {
-      native.writeFileSync(destination, data);
-      return;
+      // Excluded files are served directly from the original directory.
+      return false;
     }
 
     if (extension === ".js" || extension === ".mjs" || extension === ".cjs") {
@@ -201,8 +201,9 @@ function createOptimizer(app, options = {}) {
       return;
     }
 
-    // Images, fonts, audio, archives, and unknown formats are copied byte-for-byte.
-    native.writeFileSync(destination, data);
+    // Binary/unknown formats are served from the original directory. Avoid
+    // duplicating large images, audio, archives, and fonts in the build output.
+    return false;
   }
 
   function walk(sourceDir, entry, counts) {
@@ -225,7 +226,11 @@ function createOptimizer(app, options = {}) {
       } else if (item.isFile()) {
         native.mkdirSync(path.dirname(destination), { recursive: true });
         try {
-          transformFile(source, destination, relative, entry);
+          const written = transformFile(source, destination, relative, entry);
+          if (!written) {
+            counts.skipped++;
+            continue;
+          }
           counts.files++;
           const sourceSize = native.statSync(source).size;
           const outputSize = native.statSync(destination).size;
@@ -244,6 +249,7 @@ function createOptimizer(app, options = {}) {
   async function build() {
     const counts = {
       files: 0,
+      skipped: 0,
       reducedFiles: 0,
       sourceBytes: 0,
       outputBytes: 0,
@@ -260,8 +266,8 @@ function createOptimizer(app, options = {}) {
     if (options.log !== false) {
       const saved = counts.sourceBytes - counts.outputBytes;
       console.log(
-        "[optimizedFiles] Processed " + counts.files + " files; reduced " +
-        counts.reducedFiles + "; saved " + Math.max(0, saved) + " bytes."
+        "[optimizedFiles] Optimized " + counts.files + " files; skipped " +
+        counts.skipped + " unchanged/binary files; reduced " + counts.reducedFiles + "; saved " + Math.max(0, saved) + " bytes."
       );
       if (counts.missing.length) console.warn("[optimizedFiles] Missing directories:", counts.missing.join(", "));
       for (const fallback of counts.fallbacks) {
