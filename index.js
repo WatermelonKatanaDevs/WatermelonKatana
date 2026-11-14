@@ -17,12 +17,29 @@ const connectDB = require("./Database/connect");
 const { isadmin } = require("./util/js/roles");
 const { adminAuth, userAuth, checkAuth, makeFormToken } = require("./Middleware/auth");
 const sendFileReplace = require("./Middleware/replace");
+const optimizedFiles = require("./Middleware/optimizedFiles");
 const { Turbo } = require("./Turbo/index");
 
 /*
   Constants
 */
 const app = express();
+optimizedFiles(app, {
+  directories: [
+    { source: "Assets" },
+    { source: "Pages" },
+    { source: "Editor" },
+    { source: "Turbo" }
+  ]
+});
+optimizedFiles.patchFS(require("fs"), {
+  directories: [
+    { source: "Assets" },
+    { source: "Pages" },
+    { source: "Editor" },
+    { source: "Turbo" }
+  ]
+});
 // Render sits behind a trusted reverse proxy and forwards the client IP in X-Forwarded-For.
 app.set("trust proxy", 1);
 const PORT = process.env.PORT || (process.env.RENDER === "true" ? 10000 : 3000);
