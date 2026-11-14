@@ -111,10 +111,6 @@
         }
       } else {
         const toolbarLeft = framedoc.getElementsByClassName("toolbar-left")[0];
-        const menuButton = framedoc.createElement("button");
-        menuButton.textContent = "Select Project";
-        menuButton.addEventListener("click", () => editor.EditorApp.openBuiltin("watermelonkatana"));
-        toolbarLeft.prepend(menuButton);
         const exitLink = framedoc.createElement("a");
         exitLink.href = WK_HOST_ORIGIN + "/";
         exitLink.target = "_top";
