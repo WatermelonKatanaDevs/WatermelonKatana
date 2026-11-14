@@ -9,6 +9,10 @@ function interpretBool(obj, name, str) {
   if (str == "1" || str == "true") obj[name] = true;
 }
 
+function anonify(user) {
+  return (!isadmin(user.role) && user.anonymous) ? { username: user.anonname, _id: "(Anonymous)" }: user;
+}
+
 module.exports = class {
   constructor(model, name) {
     this.model = model;
@@ -39,12 +43,14 @@ module.exports = class {
     return Promise.all([...new Set(message.match(/(?<=@)[^\s]+/g))].map(async function (name) {
       var mention = await Users.findOne({ username: name });
       if (!mention) { return }
+      user = anonify(user);
       mention.notify(user.username + " mentioned you!", content, link, user._id, user.username);
       await mention.save();
     }));
   }
 
   notifyUserFollowers(title, user, content, link) {
+    if(user.anonymous) { return }
     return Promise.all(user.followers.map(async function (fid) {
       var follower = await Users.findOne({ _id: fid });
       if (!follower) { return }
@@ -536,6 +542,7 @@ module.exports = class {
       });
       var type = this.name === "posts" ? "discussion" : "project";
       if (owner.id !== user.id) {
+        user = anonify(user);
         owner.notify(user.username + " commented on your " + type, post.name, link, user._id, user.username);
       }
       await owner.save();
