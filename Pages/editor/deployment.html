@@ -43,7 +43,7 @@
         }
         const method = String(options.method || 'GET').toUpperCase();
         const headers = new Headers(options.headers || []);
-        if (target.pathname.startsWith('/api/')) headers.set('X-From-Emulator', '1');
+        headers.set('X-From-Emulator', '1');
         const response = await window.fetch(target.href, {
           method,
           headers,
