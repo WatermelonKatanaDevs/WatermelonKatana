@@ -44,12 +44,13 @@
       };
       try {
         const target = new URL(String(data.url || ''), window.location.href);
-        if (target.origin !== window.location.origin || !target.pathname.startsWith('/api/')) {
-          throw new Error('Only same-origin API requests are available through the deployment host bridge.');
+        const allowedPath = target.pathname.startsWith('/api/') || target.pathname.startsWith('/datablock_storage/');
+        if (target.origin !== window.location.origin || !allowedPath) {
+          throw new Error('Only same-origin API and datablock storage requests are available through the deployment host bridge.');
         }
         const method = String(data.method || 'GET').toUpperCase();
         const headers = new Headers(Array.isArray(data.headers) ? data.headers : []);
-        headers.set('X-From-Emulator', '1');
+        if (target.pathname.startsWith('/api/')) headers.set('X-From-Emulator', '1');
         const body = ['GET','HEAD'].includes(method) ? undefined : (typeof data.body === 'string' ? data.body : undefined);
         const response = await window.fetch(target.href, {
           method,
