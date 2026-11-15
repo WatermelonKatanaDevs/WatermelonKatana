@@ -10,64 +10,68 @@
   </style>
 </head>
 <body>
+  <script src="BRIDGE_SRC"></script>
   <iframe id="deploymentFrame" src="DEPLOYMENT_SRC" allow="fullscreen; clipboard-read; clipboard-write"></iframe>
   <script>
     const frame = document.getElementById('deploymentFrame');
     let expectedOrigin = '';
     try { expectedOrigin = new URL(frame.src).origin; } catch (_) {}
 
-    window.addEventListener('message', async event => {
+    window.addEventListener('message', event => {
       if (event.source !== frame.contentWindow || event.origin !== expectedOrigin) return;
       const data = event.data;
-      if (!data || typeof data !== 'object') return;
-
-      if (data.type === 'wk-deployment-metadata') {
-        if (typeof data.title === 'string' && data.title) document.title = data.title;
-        if (typeof data.icon === 'string' && data.icon) {
-          let icon = document.querySelector('link[data-emulated-favicon="1"]');
-          if (!icon) {
-            icon = document.createElement('link');
-            icon.rel = 'icon';
-            icon.dataset.emulatedFavicon = '1';
-            document.head.appendChild(icon);
-          }
-          icon.href = data.icon;
+      if (!data || data.type !== 'wk-deployment-metadata') return;
+      if (typeof data.title === 'string' && data.title) document.title = data.title;
+      if (typeof data.icon === 'string' && data.icon) {
+        let icon = document.querySelector('link[data-emulated-favicon="1"]');
+        if (!icon) {
+          icon = document.createElement('link');
+          icon.rel = 'icon';
+          icon.dataset.emulatedFavicon = '1';
+          document.head.appendChild(icon);
         }
-        return;
+        icon.href = data.icon;
       }
+    });
 
-      // Generic parent-origin fetch relay for the embedded deployment runtime.
-      // The host performs the request itself so its same-origin cookies apply.
-      if (data.type !== 'deployment-host-fetch' || typeof data.id !== 'string') return;
-      const reply = payload => {
-        try { frame.contentWindow.postMessage({type:'deployment-host-fetch-result', id:data.id, ...payload}, expectedOrigin); } catch (_) {}
-      };
-      try {
-        const target = new URL(String(data.url || ''), window.location.href);
-        const allowedPath = target.pathname.startsWith('/api/') || target.pathname.startsWith('/datablock_storage/');
-        if (target.origin !== window.location.origin || !allowedPath) {
-          throw new Error('Only same-origin API and datablock storage requests are available through the deployment host bridge.');
+    const host = {
+      async fetch(input, options = {}) {
+        const target = new URL(String(input), window.location.href);
+        if (target.origin !== window.location.origin ||
+            !(target.pathname.startsWith('/api/') || target.pathname.startsWith('/datablock_storage/'))) {
+          throw new Error('The deployment host bridge only permits same-origin API and datablock storage requests.');
         }
-        const method = String(data.method || 'GET').toUpperCase();
-        const headers = new Headers(Array.isArray(data.headers) ? data.headers : []);
+        const method = String(options.method || 'GET').toUpperCase();
+        const headers = new Headers(options.headers || []);
         if (target.pathname.startsWith('/api/')) headers.set('X-From-Emulator', '1');
-        const body = ['GET','HEAD'].includes(method) ? undefined : (typeof data.body === 'string' ? data.body : undefined);
         const response = await window.fetch(target.href, {
           method,
           headers,
-          body,
+          body: ['GET','HEAD'].includes(method) ? undefined : (typeof options.body === 'string' ? options.body : undefined),
           credentials: 'same-origin',
           cache: 'no-store'
         });
-        reply({
+        return {
           ok: response.ok,
           status: response.status,
           statusText: response.statusText,
           headers: Array.from(response.headers.entries()),
-          body: response.status === 204 || response.status === 205 ? '' : await response.text()
+          body: [204,205,304].includes(response.status) ? '' : await response.text()
+        };
+      }
+    };
+
+    frame.addEventListener('load', async () => {
+      try {
+        window.__wkDeploymentBridge?.close?.();
+        window.__wkDeploymentBridge = await window.EditorRemoteBridge.connect(frame.contentWindow, {
+          targetOrigin: expectedOrigin,
+          localObjects: {EditorHost: host},
+          config: {origin: window.location.origin},
+          timeout: 15000
         });
       } catch (error) {
-        reply({ok:false, status:502, statusText:'Host bridge error', headers:[], body:String(error?.message || error)});
+        console.error('Unable to connect deployment host bridge:', error);
       }
     });
   </script>
