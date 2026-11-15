@@ -16,21 +16,57 @@
     let expectedOrigin = '';
     try { expectedOrigin = new URL(frame.src).origin; } catch (_) {}
 
-    window.addEventListener('message', event => {
+    window.addEventListener('message', async event => {
       if (event.source !== frame.contentWindow || event.origin !== expectedOrigin) return;
       const data = event.data;
-      if (!data || data.type !== 'wk-deployment-metadata') return;
+      if (!data || typeof data !== 'object') return;
 
-      if (typeof data.title === 'string' && data.title) document.title = data.title;
-      if (typeof data.icon === 'string' && data.icon) {
-        let icon = document.querySelector('link[data-emulated-favicon="1"]');
-        if (!icon) {
-          icon = document.createElement('link');
-          icon.rel = 'icon';
-          icon.dataset.emulatedFavicon = '1';
-          document.head.appendChild(icon);
+      if (data.type === 'wk-deployment-metadata') {
+        if (typeof data.title === 'string' && data.title) document.title = data.title;
+        if (typeof data.icon === 'string' && data.icon) {
+          let icon = document.querySelector('link[data-emulated-favicon="1"]');
+          if (!icon) {
+            icon = document.createElement('link');
+            icon.rel = 'icon';
+            icon.dataset.emulatedFavicon = '1';
+            document.head.appendChild(icon);
+          }
+          icon.href = data.icon;
         }
-        icon.href = data.icon;
+        return;
+      }
+
+      // Generic parent-origin fetch relay for the embedded deployment runtime.
+      // The host performs the request itself so its same-origin cookies apply.
+      if (data.type !== 'deployment-host-fetch' || typeof data.id !== 'string') return;
+      const reply = payload => {
+        try { frame.contentWindow.postMessage({type:'deployment-host-fetch-result', id:data.id, ...payload}, expectedOrigin); } catch (_) {}
+      };
+      try {
+        const target = new URL(String(data.url || ''), window.location.href);
+        if (target.origin !== window.location.origin || !target.pathname.startsWith('/api/')) {
+          throw new Error('Only same-origin API requests are available through the deployment host bridge.');
+        }
+        const method = String(data.method || 'GET').toUpperCase();
+        const headers = new Headers(Array.isArray(data.headers) ? data.headers : []);
+        headers.set('X-From-Emulator', '1');
+        const body = ['GET','HEAD'].includes(method) ? undefined : (typeof data.body === 'string' ? data.body : undefined);
+        const response = await window.fetch(target.href, {
+          method,
+          headers,
+          body,
+          credentials: 'same-origin',
+          cache: 'no-store'
+        });
+        reply({
+          ok: response.ok,
+          status: response.status,
+          statusText: response.statusText,
+          headers: Array.from(response.headers.entries()),
+          body: response.status === 204 || response.status === 205 ? '' : await response.text()
+        });
+      } catch (error) {
+        reply({ok:false, status:502, statusText:'Host bridge error', headers:[], body:String(error?.message || error)});
       }
     });
   </script>
