@@ -281,8 +281,11 @@ app.get("/editor/project/:id/deployment", checkAuth, async (req, res) => {
         commit: String(deployment.commit),
         path: String(deployment.path),
         usePeerServer: deployment.usePeerServer === true ? '1' : '0',
-        wkHostURL: `${req.protocol}://${req.get('host')}${req.originalUrl}`,
-        wkHostOrigin: `${req.protocol}://${req.get('host')}`
+        hostURL: `${req.protocol}://${req.get('host')}${req.originalUrl}`,
+        hostOrigin: `${req.protocol}://${req.get('host')}`,
+        emulatorHostOrigin: `${req.protocol}://${req.get('host')}`,
+        emulatorHeader: 'X-From-Emulator',
+        emulatorHeaderValue: '1'
       });
       src = editorPageUrl('deployment.html', params);
     }
