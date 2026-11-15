@@ -64,7 +64,7 @@
     const headers = new request.headers.constructor(request.headers);
     if (!headers.has('X-From-Emulator')) headers.append('X-From-Emulator', '1');
     const modifiedRequest = new request.constructor(request, {headers});
-    return EditorHost.fetch.call(this, modifiedRequest, ...args);
+    return wkHostFetch.call(this, modifiedRequest, ...args);
   };
 
 
