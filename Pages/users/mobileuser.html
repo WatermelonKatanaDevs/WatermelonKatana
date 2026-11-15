@@ -27,6 +27,38 @@
     .back-btn { position: fixed; top: calc(8px + env(safe-area-inset-top)); left: 8px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(40, 40, 40, 0.75); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; text-decoration: none; z-index: 10; -webkit-tap-highlight-color: transparent; }
     .back-btn:active { background: #3a3a3a; }
     .back-btn svg { width: 24px; height: 24px; }
+
+    .projects-section { margin: 20px auto 0; text-align: left; }
+    .projects-section h2 { color: #00e676; font-size: 1.15rem; margin: 0 0 10px; }
+    .project-grid {
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;
+      margin-bottom: 18px; text-align: left;
+    }
+    .project-card {
+      display: block; min-width: 0; background: #2a2a2a;
+      border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 14px;
+      overflow: hidden; color: inherit; text-decoration: none;
+      -webkit-tap-highlight-color: transparent; transition: transform .15s ease, background .15s ease;
+    }
+    .project-card:active { background: #333; transform: scale(0.98); }
+    .project-thumb { position: relative; width: 100%; aspect-ratio: 4 / 3; background: #1a1a1a; }
+    .project-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .project-card.featured .project-thumb::after {
+      content: "Featured"; position: absolute; top: 6px; left: 6px; padding: 2px 8px;
+      border-radius: 10px; background: rgba(0, 230, 118, 0.9); color: #111;
+      font-size: .65rem; font-weight: bold;
+    }
+    .project-info { min-width: 0; padding: 9px 11px 11px; }
+    .project-title {
+      font-size: .9rem; font-weight: 600; line-height: 1.25; overflow-wrap: anywhere;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .project-author {
+      font-size: .75rem; color: #00e676; opacity: .85; margin-top: 4px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .project-stats { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: .68rem; opacity: .55; margin-top: 7px; }
+    .project-status { opacity: .7; font-size: .85rem; margin: 6px 0 12px; text-align: center; }
   </style>
 </head>
 <body>
@@ -91,6 +123,118 @@
       </div>`;
   }
 
+
+  function createProjectCard(project) {
+    const card = document.createElement("a");
+    card.className = "project-card" + (project.featured ? " featured" : "");
+    card.href = "/project/" + encodeURIComponent(project.id);
+
+    const thumb = document.createElement("div");
+    thumb.className = "project-thumb";
+    const image = document.createElement("img");
+    image.alt = "";
+    image.loading = "lazy";
+    image.draggable = false;
+    image.src = pfSafeSrc(project.thumbnail, "/images/blank_project.png");
+    image.onerror = () => {
+      image.onerror = null;
+      image.src = "/images/blank_project.png";
+    };
+    thumb.appendChild(image);
+
+    const info = document.createElement("div");
+    info.className = "project-info";
+
+    const title = document.createElement("div");
+    title.className = "project-title";
+    title.textContent = project.title || "Untitled";
+
+    const author = document.createElement("div");
+    author.className = "project-author";
+    author.textContent = "By " + (project.poster || "unknown");
+
+    const stats = document.createElement("div");
+    stats.className = "project-stats";
+    [["Score", project.score], ["Views", project.views], ["Plays", project.plays]].forEach(([label, value]) => {
+      const item = document.createElement("span");
+      item.textContent = label + " " + (value ?? 0);
+      stats.appendChild(item);
+    });
+
+    info.append(title, author, stats);
+    card.append(thumb, info);
+    return card;
+  }
+
+  function createProjectSection(title, id, emptyText) {
+    const section = document.createElement("section");
+    section.className = "projects-section";
+    const heading = document.createElement("h2");
+    heading.textContent = title;
+    const status = document.createElement("div");
+    status.className = "project-status";
+    status.textContent = "Loading…";
+    const grid = document.createElement("div");
+    grid.className = "project-grid";
+    grid.id = id;
+    section.append(heading, status, grid);
+    return { section, status, grid, emptyText };
+  }
+
+  async function loadUserProjects(user) {
+    const published = createProjectSection("Published Projects", "published-project-grid", "No published projects yet.");
+    const favorites = createProjectSection("Favorites", "favorite-project-grid", "No favorites yet.");
+    profileRoot.append(published.section, favorites.section);
+
+    let viewer = { mature: false, isOwnProfile: false };
+    try {
+      const authResponse = await fetch("/api/auth/check");
+      if (authResponse.ok) {
+        const auth = await authResponse.json();
+        viewer.mature = !!auth.user?.mature;
+        viewer.isOwnProfile = !!(auth.auth && auth.user &&
+          String(auth.user.id) === String(user.id));
+      }
+    } catch (err) {
+      console.warn("Could not check viewer permissions for profile projects", err);
+    }
+
+    const params = new URLSearchParams({ poster: user.username });
+    if (viewer.mature) params.set("showMature", "true");
+    if (viewer.isOwnProfile) params.set("showHidden", "true");
+
+    try {
+      const response = await fetch("/api/project/list?" + params.toString());
+      if (!response.ok) throw new Error("HTTP " + response.status);
+      const data = await response.json();
+      const projects = Array.isArray(data.projects) ? data.projects : [];
+      published.status.textContent = projects.length ? "" : published.emptyText;
+      projects.forEach(project => published.grid.appendChild(createProjectCard(project)));
+      published.status.hidden = projects.length > 0;
+    } catch (err) {
+      console.error("Could not load published projects", err);
+      published.status.textContent = "Couldn't load published projects.";
+    }
+
+    const favoriteIds = Array.isArray(user.favorites) ? user.favorites : [];
+    const favoriteResults = await Promise.all(favoriteIds.map(async id => {
+      try {
+        const response = await fetch("/api/project/data/" + encodeURIComponent(id));
+        if (!response.ok) return null;
+        const project = await response.json();
+        if (!project || project.error || (project.mature && !viewer.mature)) return null;
+        return project;
+      } catch (err) {
+        console.warn("Could not load favorite project", id, err);
+        return null;
+      }
+    }));
+    const visibleFavorites = favoriteResults.filter(Boolean);
+    visibleFavorites.forEach(project => favorites.grid.appendChild(createProjectCard(project)));
+    favorites.status.textContent = visibleFavorites.length ? "" : favorites.emptyText;
+    favorites.status.hidden = visibleFavorites.length > 0;
+  }
+
  async function loadProfile() {
     const username = getUsername();
     if (!username) {
@@ -107,6 +251,7 @@
       }
       document.title = user.username + " | Profile";
       renderAccount(user);
+      if (!user.anonymous) await loadUserProjects(user);
     } catch (err) {
       console.error(err);
       profileRoot.innerHTML = '<div class="status">Couldn\u2019t load the profile.</div>';
