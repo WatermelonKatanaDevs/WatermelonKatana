@@ -39,6 +39,18 @@
   if (window.lucide) lucide.createIcons();
   const profileRoot = document.getElementById("profile-root");
 
+  // The mobile profile is served at /user/:name, just like the desktop profile.
+  function getUsername() {
+    const pathParts = window.location.pathname.split("/").filter(Boolean);
+    const userIndex = pathParts.indexOf("user");
+    if (userIndex === -1 || !pathParts[userIndex + 1]) return "";
+    try {
+      return decodeURIComponent(pathParts[userIndex + 1]);
+    } catch (err) {
+      return pathParts[userIndex + 1];
+    }
+  }
+
   function pfEsc(str) {
     return String(str ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
