@@ -287,10 +287,12 @@ app.get("/editor/project/:id/deployment", checkAuth, async (req, res) => {
       });
       src = editorPageUrl('deployment.html', params);
     }
+    const deploymentBridge = editorPageUrl('editor/remote-bridge.js');
     sendFileReplace(
       res,
       "./Pages/editor/deployment.html",
       s => s
+        .replace("BRIDGE_SRC", deploymentBridge)
         .replace("DEPLOYMENT_SRC", src)
         .replace("<title>Project</title>", `<title>${makeLiteralChars(project.title)}</title>`)
     );
