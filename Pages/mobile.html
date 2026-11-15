@@ -1379,7 +1379,7 @@ async function openCompose(mode) {
   composeView.classList.add("open");
   composeScroll.scrollTop = 0;
   composeScroll.innerHTML = '<div class="status">Loading…</div>';
-  if (!history.state?.compose) history.pushState({ compose: true }, "");
+  if (!history.state?.compose) history.pushState({ compose: true, mode }, "", mode === "forum" ? "/forum/post" : "/publish");
   await loadAuth();
   renderCompose();
 }
