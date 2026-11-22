@@ -353,6 +353,7 @@ html[data-theme="light"] .pc-del { color: #111; }
       </div>
       <div class="chat-tab-content active" id="chat-forum">
         <h2>Forum</h2>
+        <input class="search-input" id="forum-search" type="search" placeholder="Search forum posts…" enterkeyhint="search" autocomplete="off">
         <div class="status" id="forum-status">Loading…</div>
         <div id="forum-list"></div>
       </div>
@@ -749,21 +750,40 @@ function makeForumCard(post) {
   return d;
 }
 
+const forumSearch = document.getElementById("forum-search");
+let forumTimer = null;
+
 function loadForum() {
   const list = document.getElementById("forum-list");
   const status = document.getElementById("forum-status");
+  const q = forumSearch.value.trim();
+  list.innerHTML = "";
 
   startInfiniteList({
     id: "forum-list",
-    path: "/api/forum/list?sort=active",
+    path: q
+      ? "/api/forum/search?query=" + encodeURIComponent(q)
+      : "/api/forum/list?sort=active",
     list,
     root: document.getElementById("page-chat"),
     status,
     label: "the forum",
-    emptyText: "No forum posts yet.",
+    emptyText: q ? "No results for \u201c" + q + "\u201d." : "No forum posts yet.",
     renderItem: makeForumCard
   });
 }
+
+forumSearch.addEventListener("input", () => {
+  clearTimeout(forumTimer);
+  forumTimer = setTimeout(loadForum, 400);
+});
+forumSearch.addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    clearTimeout(forumTimer);
+    forumSearch.blur();
+    loadForum();
+  }
+});
 const postView = document.getElementById("post-view");
 const pvScroll = document.getElementById("pv-scroll");
 let openPostId = null;
