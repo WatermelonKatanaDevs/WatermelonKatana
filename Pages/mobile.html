@@ -306,6 +306,9 @@ html[data-theme="light"] .reply-hint { color: #00a152; }
 .pc-del svg { width: 18px; height: 18px; }
 .pc-del:disabled { opacity: .3; }
 html[data-theme="light"] .pc-del { color: #111; }
+.auth-btn.danger { color: #ff6b6b; }
+.pv-owner:empty { display: none; }
+.pv-owner { margin-bottom: 18px; }
 </style>
 </head>
 <body>
@@ -353,7 +356,13 @@ html[data-theme="light"] .pc-del { color: #111; }
       </div>
       <div class="chat-tab-content active" id="chat-forum">
         <h2>Forum</h2>
-        <input class="search-input" id="forum-search" type="search" placeholder="Search forum posts…" enterkeyhint="search" autocomplete="off">
+        <input class="search-input" id="forum-search" type="search" placeholder="Search title, author, or tags…" enterkeyhint="search" autocomplete="off">
+        <div class="auth-tabs" id="forum-modes">
+          <button class="chat-tab-btn active" data-mode="all" type="button">All</button>
+          <button class="chat-tab-btn" data-mode="title" type="button">Title</button>
+          <button class="chat-tab-btn" data-mode="author" type="button">Author</button>
+          <button class="chat-tab-btn" data-mode="tags" type="button">Tags</button>
+        </div>
         <div class="status" id="forum-status">Loading…</div>
         <div id="forum-list"></div>
       </div>
@@ -539,7 +548,7 @@ async function loadNextPage(state) {
   }
 
   try {
-    const result = await apiGetPage(state.path, requestedPage);
+    const result = state.fetchPage ? await state.fetchPage(requestedPage) : await apiGetPage(state.path, requestedPage);
     if (infiniteLists.get(state.id) !== state || state.token !== loadTokens[state.id]) return;
 
     const fragment = document.createDocumentFragment();
@@ -751,27 +760,77 @@ function makeForumCard(post) {
 }
 
 const forumSearch = document.getElementById("forum-search");
+const forumPlaceholders = {
+  all: "Search title, author, or tags…",
+  title: "Search by post title…",
+  author: "Search by author name…",
+  tags: "Search by tags (e.g. game, help)…"
+};
+let forumMode = "all";
 let forumTimer = null;
 
-function loadForum() {
-  const list = document.getElementById("forum-list");
-  const status = document.getElementById("forum-status");
-  const q = forumSearch.value.trim();
-  list.innerHTML = "";
+function splitTags(q) {
+  return q.split(/[\s,]+/).map(t => t.replace(/^#/, "")).filter(Boolean);
+}
 
-  startInfiniteList({
+function forumPaths(q) {
+  return {
+    title: "/api/forum/search?query=" + encodeURIComponent(q),
+    author: "/api/forum/list?sort=active&poster=" + encodeURIComponent(q),
+    tags: "/api/forum/list?sort=active&includeTags=" + encodeURIComponent(JSON.stringify(splitTags(q)))
+  };
+}
+
+// "All" runs the three searches together and merges the results
+async function fetchForumAll(q, page) {
+  const results = await Promise.allSettled(Object.values(forumPaths(q)).map(p => apiGetPage(p, page)));
+  const ok = results.filter(r => r.status === "fulfilled").map(r => r.value);
+  if (!ok.length) throw results[0].reason;
+  const seen = new Set(), list = [];
+  ok.forEach(r => r.list.forEach(post => {
+    const key = String(post.id ?? post._id);
+    if (seen.has(key)) return;
+    seen.add(key);
+    list.push(post);
+  }));
+  list.sort((a, b) => (b.activeAt || 0) - (a.activeAt || 0));
+  return { list, hasMore: ok.some(r => r.hasMore) };
+}
+
+function loadForum() {
+  const q = forumSearch.value.trim();
+  const list = document.getElementById("forum-list");
+  list.innerHTML = "";
+  const opts = {
     id: "forum-list",
-    path: q
-      ? "/api/forum/search?query=" + encodeURIComponent(q)
-      : "/api/forum/list?sort=active",
     list,
     root: document.getElementById("page-chat"),
-    status,
+    status: document.getElementById("forum-status"),
     label: "the forum",
     emptyText: q ? "No results for \u201c" + q + "\u201d." : "No forum posts yet.",
     renderItem: makeForumCard
-  });
+  };
+  if (!q) {
+    opts.path = "/api/forum/list?sort=active";
+  } else if (forumMode === "all") {
+    opts.path = "forum-all:" + q;
+    opts.fetchPage = page => fetchForumAll(q, page);
+  } else {
+    opts.path = forumPaths(q)[forumMode];
+  }
+  startInfiniteList(opts);
 }
+
+document.querySelectorAll("#forum-modes button").forEach(b => b.addEventListener("click", () => {
+  forumMode = b.dataset.mode;
+  forumSearch.placeholder = forumPlaceholders[forumMode];
+  document.querySelectorAll("#forum-modes button").forEach(x => x.classList.toggle("active", x === b));
+  if (forumSearch.value.trim()) loadForum();
+}));
+forumSearch.addEventListener("input", () => { clearTimeout(forumTimer); forumTimer = setTimeout(loadForum, 400); });
+forumSearch.addEventListener("keydown", e => {
+  if (e.key === "Enter") { clearTimeout(forumTimer); forumSearch.blur(); loadForum(); }
+});
 
 forumSearch.addEventListener("input", () => {
   clearTimeout(forumTimer);
@@ -823,6 +882,8 @@ function renderPost(post, extraComments) {
     <div class="pv-meta">Views ${esc(post.views ?? 0)}${post.postedAt ? " | " + esc(timeAgo(post.postedAt)) : ""}</div>
     ${tags ? `<div class="pv-tags">${esc(tags)}</div>` : ""}
     <div class="pv-body">${renderText(post.content)}</div>
+    <div class="pv-owner" id="pv-owner"></div>
+    <h3>Comments (${comments.length})</h3>
     <h3>Comments (${comments.length})</h3>
     <div id="pv-comments"></div>
     <div class="pv-form">
@@ -831,6 +892,16 @@ function renderPost(post, extraComments) {
       <div class="pv-msg" id="pv-msg"></div>
     </div>`;
   document.getElementById("pv-poster").appendChild(posterRow(post));
+  const me = authData && authData.auth ? authData.user : null;
+  const admin = me && (me.role === "Admin" || me.role === "Uni Lover");
+  if (me && (post.posterId === me.id || admin)) {
+  const del = document.createElement("button");
+  del.type = "button";
+  del.className = "auth-btn alt danger";
+  del.textContent = "Delete post";
+  del.addEventListener("click", () => deletePost(post.id || openPostId, del));
+  document.getElementById("pv-owner").appendChild(del);
+  }
   const box = document.getElementById("pv-comments");
   if (!comments.length) box.innerHTML = '<div class="status">No comments yet.</div>';
   comments.forEach((c, i) => box.appendChild(makeComment(c, i)));
@@ -928,6 +999,21 @@ async function sendComment() {
     }
     msg.textContent = "Couldn\u2019t post your comment. Try again.";
     btn.disabled = false;
+  }
+}
+  async function deletePost(id, btn) {
+  if (!confirm("Delete this post? This is permanent.")) return;
+  btn.disabled = true;
+  try {
+    await jsonRequest("DELETE", "/api/forum/delete/" + encodeURIComponent(id), {});
+    apiCache.clear();
+    apiPageCache.clear();
+    if (history.state?.post) history.back(); else closePost();
+    reloadPage(3);
+  } catch (err) {
+    console.error(err);
+    btn.disabled = false;
+    alert(err.message);
   }
 }
 
