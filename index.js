@@ -169,6 +169,9 @@ function isMobileRequest(req) {
 function sendMobilePage(req, res, desktopPage) {
   return res.sendFile(cldir + (isMobileRequest(req) ? "/mobile.html" : desktopPage));
 }
+function send404(req, res) {
+  return res.status(404).sendFile(cldir + (wantsMobile(req) ? "/mobile404.html" : "/404.html"));
+}
 
 
 app.get("/dashboard", (req, res) => res.sendFile(cldir + "/dashboard.html")); // Dashboard page
@@ -349,7 +352,7 @@ function wantsMobile(req) {
 app.get("/project/:id", checkAuth, makeFormToken, async (req, res) => {
   //Project page with dynamic project ID
   var proj = await Projects.findOne({ _id: req.params.id });
-  if (!proj) return res.status(404).sendFile(cldir + "/404.html");
+  if (!proj) return send404(req, res);
   var tok = res.locals.userToken;
   var user = tok ? await Users.findOne({ _id: tok.id }) : null;
   var poster = proj.anon ? (!isadmin(tok?.role) ? "": proj.poster) + " (Anonymous)": proj.poster;
@@ -407,7 +410,7 @@ app.get("/forum/post", userAuth, makeFormToken, (req, res) => res.sendFile(cldir
 const Posts = require("./Database/model/Posts"); // Post page with dynamic post ID
 app.get("/forum/discussion/:id", checkAuth, makeFormToken, async (req, res) => {
   var post = await Posts.findOne({ _id: req.params.id });
-  if (!post) return res.status(404).sendFile(cldir + "/404.html");
+  if (!post) return send404(req, res);
   var tok = res.locals.userToken;
   var user = await Users.findOne({ _id: tok.id });
   var poster = post.anon ? (!isadmin(tok?.role) ? "": post.poster) + " (Anonymous)": post.poster;
@@ -451,8 +454,7 @@ app.get("/user/:name", async (req, res) => {
     showanon = !!user;
   }
   if (!user) {
-    res.status(404).sendFile(cldir + "/404.html");
-    return;
+    return send404(req, res);
   }
   const dname = showanon ? (user.anonname || ("anon-" + String(user._id).slice(-4))) : user.username;
   const davatar = showanon ? "/images/anon_pfp.png" : user.avatar;
@@ -538,7 +540,7 @@ const server = app.listen(PORT, "0.0.0.0", () => {
 });
 
 // 404 response page
-app.use((req, res) => res.status(404).sendFile(cldir + "/404.html"));
+app.use((req, res) => send404(req, res));
 
 // Set server timeout to 30 seconds
 server.setTimeout(30000);
