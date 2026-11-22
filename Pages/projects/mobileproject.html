@@ -256,7 +256,7 @@ function renderPage() {
   document.getElementById("top-title").textContent = p.title || "Project";
   app.innerHTML = `
     <div class="stage" id="stage">
-      <iframe id="game" allowfullscreen allow="autoplay; fullscreen; gamepad; accelerometer; gyroscope"></iframe>
+      <iframe id="game" allowfullscreen allow="autoplay *; fullscreen; gamepad; accelerometer; gyroscope"></iframe>
       <button class="exit-full" id="exit-full">Exit</button>
       ${p.platform === "cdo" ? PAD_HTML : ""}
     </div>
