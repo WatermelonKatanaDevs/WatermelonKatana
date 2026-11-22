@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Page not found | WatermelonKatana</title>
+<meta name="robots" content="noindex">
+<link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fugaz+One&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #222; --card: #2a2a2a; --text: #fff; --accent: #00e676; --line: rgba(255, 255, 255, 0.08); --muted: rgba(255, 255, 255, 0.6);
+  --spill-color1: #ff8fab; --spill-color2: #ffb3c7; --spill-color3: #00e676; --spill-color4: #2e9e5b;
+}
+html[data-theme="light"] { --bg: #f2f2f2; --card: #fff; --text: #111; --accent: #00a152; --line: rgba(0, 0, 0, 0.08); --muted: rgba(0, 0, 0, 0.55); }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body {
+  min-height: 100vh; min-height: 100dvh; background: var(--bg); color: var(--text); font-family: sans-serif; overflow-wrap: anywhere;
+  display: flex; flex-direction: column;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+a { color: inherit; text-decoration: none; }
+
+.top { display: flex; align-items: center; justify-content: center; height: 56px; background: var(--card); border-bottom: 1px solid var(--line); }
+.logo-text {
+  font-family: 'Fugaz One', sans-serif; font-size: 1.45rem; line-height: 1.2; padding: 0 0.15em; display: inline-block;
+  background: linear-gradient(90deg, var(--spill-color1), var(--spill-color2), var(--spill-color3), var(--spill-color4));
+  background-size: 200% 200%; -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+  animation: liquidSpill 4s ease-in-out infinite;
+}
+@keyframes liquidSpill { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+
+main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px 16px; }
+.box { width: 100%; max-width: 400px; text-align: center; }
+.code {
+  font-family: 'Fugaz One', sans-serif; font-size: clamp(6rem, 32vw, 9.5rem); line-height: 1; display: inline-block; padding: 0 0.1em;
+  background: linear-gradient(90deg, var(--spill-color1), var(--spill-color2), var(--spill-color3), var(--spill-color4));
+  background-size: 200% 200%; -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+  animation: liquidSpill 4s ease-in-out infinite;
+}
+h1 { font-size: 1.5rem; color: var(--accent); margin: 8px 0 10px; }
+p { font-size: .95rem; line-height: 1.5; color: var(--muted); margin-bottom: 14px; }
+.path {
+  display: inline-block; max-width: 100%; padding: 4px 12px; border-radius: 12px; background: var(--card); border: 1px solid var(--line);
+  font-size: .75rem; color: var(--text); margin-bottom: 22px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: top;
+}
+.actions { display: flex; flex-direction: column; gap: 8px; }
+.btn {
+  display: block; width: 100%; padding: 12px; border-radius: 14px; border: 0; background: var(--accent); color: #111;
+  font-family: inherit; font-size: 1rem; font-weight: bold; text-align: center; cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.dcbtn {
+  display: block; width: 100%; padding: 12px; border-radius: 14px; border: 0; background: #5865F2; color: #111;
+  font-family: inherit; font-size: 1rem; font-weight: bold; text-align: center; cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.btn.alt { background: var(--card); color: var(--text); border: 1px solid var(--line); }
+.btn:active { transform: scale(0.98); }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) { .logo-text, .code { animation: none; } .btn:active { transform: none; } }
+</style>
+</head>
+<body>
+<header class="top"><a href="/" class="logo-text">WatermelonKatana</a></header>
+<main>
+  <div class="box">
+    <div class="code" aria-hidden="true">500</div>
+    <h1>Server Error</h1>
+    <p>Our bad, please try again later or report in the discord if this error persists</p>
+    <div class="actions">
+      <a class="btn" href="/">Go Home</a>
+      <a class="dcbtn" href="https://discord.com/invite/S8XTzKEz5f">Discord</a>
+    </div>
+  </div>
+</main>
+<script>
+try {
+  if (localStorage.getItem("color-scheme") === "light") document.documentElement.dataset.theme = "light";
+} catch (err) {}
+</script>
+</body>
+</html>
