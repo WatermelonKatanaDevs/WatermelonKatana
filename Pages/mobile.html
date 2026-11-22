@@ -295,6 +295,17 @@ a:hover, a:active { color: var(--palette-link-hover, #39ff14); }
 .pv-poster { margin: 8px 0 4px; }
 .pc-head { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .pc-head .mini-avatar { width: 22px; height: 22px; }
+
+.pv-cwrap { position: relative; margin-bottom: 8px; border-radius: 10px; overflow: hidden; }
+.pv-cwrap .pv-comment { margin-bottom: 0; position: relative; transition: transform .2s ease; }
+.reply-hint { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); opacity: 0; color: #00e676; pointer-events: none; }
+.reply-hint svg { width: 22px; height: 22px; }
+html[data-theme="light"] .reply-hint { color: #00a152; }
+.pc-actions { display: flex; justify-content: flex-end; margin-top: 4px; }
+.pc-del { background: none; border: 0; color: #fff; opacity: .6; padding: 4px; display: flex; }
+.pc-del svg { width: 18px; height: 18px; }
+.pc-del:disabled { opacity: .3; }
+html[data-theme="light"] .pc-del { color: #111; }
 </style>
 </head>
 <body>
@@ -781,7 +792,9 @@ async function openPost(id) {
   }
 }
 
+let openPostData = null;
 function renderPost(post, extraComments) {
+  openPostData = post;
   const comments = Array.isArray(post.comments) ? post.comments : (Array.isArray(extraComments) ? extraComments : []);
   const tags = tagLine(post.tags);
   pvScroll.innerHTML = `
@@ -800,13 +813,21 @@ function renderPost(post, extraComments) {
   document.getElementById("pv-poster").appendChild(posterRow(post));
   const box = document.getElementById("pv-comments");
   if (!comments.length) box.innerHTML = '<div class="status">No comments yet.</div>';
-  comments.forEach(c => box.appendChild(makeComment(c)));
+  comments.forEach((c, i) => box.appendChild(makeComment(c, i)));
   document.getElementById("pv-send").addEventListener("click", sendComment);
+  if (window.lucide) lucide.createIcons();
 }
 
-function makeComment(c) {
+function makeComment(c, index) {
+  const wrap = document.createElement("div");
+  wrap.className = "pv-cwrap";
+  const hint = document.createElement("div");
+  hint.className = "reply-hint";
+  hint.innerHTML = '<i data-lucide="reply"></i>';
+
   const d = document.createElement("div");
   d.className = "pv-comment";
+  d.dataset.user = c.poster || c.username || c.author || "unknown";
   const head = document.createElement("div");
   head.className = "pc-head";
   head.appendChild(posterRow(c));
@@ -820,7 +841,38 @@ function makeComment(c) {
   body.className = "pc-body";
   body.innerHTML = renderText(c.content);
   d.append(head, body);
-  return d;
+const u = authData && authData.auth ? authData.user : null;
+const isAdmin = u && (u.role === "Admin" || u.role === "Uni Lover");
+const canDelete = u && (c.posterId === u.id || (openPostData && openPostData.posterId === u.id) || isAdmin);
+if (canDelete) {
+  const actions = document.createElement("div");
+  actions.className = "pc-actions";
+  const del = document.createElement("button");
+  del.type = "button";
+  del.className = "pc-del";
+  del.setAttribute("aria-label", "Delete comment");
+  del.innerHTML = '<i data-lucide="trash-2"></i>';
+  del.addEventListener("click", () => deleteComment(index, del));
+  actions.appendChild(del);
+  d.appendChild(actions);
+}
+  wrap.append(hint, d);
+  return wrap;
+}
+
+async function commentLanded(id, before) {
+  for (let i = 0; i < 4; i++) {
+    await new Promise(r => setTimeout(r, 1500));
+    try {
+      const res = await fetch("/api/forum/data/" + encodeURIComponent(id), { cache: "no-store" });
+      if (!res.ok) continue;
+      const data = await res.json();
+      const post = data.post || data;
+      const list = Array.isArray(post.comments) ? post.comments : (Array.isArray(data.comments) ? data.comments : []);
+      if (list.length > before) return true;
+    } catch (err) {}
+  }
+  return false;
 }
 
 async function sendComment() {
@@ -828,22 +880,100 @@ async function sendComment() {
   const btn = document.getElementById("pv-send");
   const msg = document.getElementById("pv-msg");
   const content = input.value.trim();
-  if (!content) return;
+  if (!content || btn.disabled) return;
+  const id = openPostId;
+  const before = document.querySelectorAll("#pv-comments .pv-comment").length;
   btn.disabled = true;
   msg.textContent = "Posting…";
   try {
-    const res = await fetch("/api/forum/comment/" + encodeURIComponent(openPostId), {
+    const res = await fetch("/api/forum/comment/" + encodeURIComponent(id), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ content })
     });
-    if (!res.ok) throw new Error(res.status === 401 || res.status === 403 ? "login" : "HTTP " + res.status);
-    openPost(openPostId);
+    if (res.status === 401 || res.status === 403) throw new Error("login");
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    openPost(id);
   } catch (err) {
-    msg.textContent = err.message === "login" ? "You need to be logged in to comment." : "Couldn\u2019t post your comment. Try again.";
+    if (err.message === "login") {
+      msg.textContent = "You need to be logged in to comment.";
+      btn.disabled = false;
+      return;
+    }
+    // The server may have saved it anyway, so verify before reporting failure
+    msg.textContent = "Taking longer than usual…";
+    if (await commentLanded(id, before)) {
+      if (openPostId === id) openPost(id);
+      return;
+    }
+    msg.textContent = "Couldn\u2019t post your comment. Try again.";
     btn.disabled = false;
   }
 }
+
+async function deleteComment(index, btn) {
+  if (!confirm("Delete this comment?")) return;
+  btn.disabled = true;
+  try {
+    await jsonRequest("DELETE", "/api/forum/comment/" + encodeURIComponent(openPostId) + "/delete", { index });
+    openPost(openPostId);
+  } catch (err) {
+    console.error(err);
+    btn.disabled = false;
+    alert(err.message);
+  }
+}
+
+function replyTo(name) {
+  const input = document.getElementById("pv-input");
+  if (!input) return;
+  const tag = "@" + name + " ";
+  if (!input.value.startsWith(tag)) input.value = tag + input.value;
+  input.scrollIntoView({ block: "center", behavior: "smooth" });
+  input.focus();
+  input.setSelectionRange(input.value.length, input.value.length);
+}
+
+const SWIPE_TRIGGER = 64, SWIPE_MAX = 90;
+let sw = null;
+
+pvScroll.addEventListener("touchstart", e => {
+  const el = e.target.closest(".pv-comment");
+  if (!el || e.touches.length !== 1 || e.target.closest("a, button")) { sw = null; return; }
+  const t = e.touches[0];
+  sw = { el, x: t.clientX, y: t.clientY, dx: 0, lock: null };
+  el.style.transition = "none";
+}, { passive: true });
+
+pvScroll.addEventListener("touchmove", e => {
+  if (!sw) return;
+  const t = e.touches[0];
+  const dx = t.clientX - sw.x, dy = t.clientY - sw.y;
+  if (!sw.lock && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
+    sw.lock = dx < 0 && Math.abs(dx) > Math.abs(dy) * 1.5 ? "x" : "y";
+  }
+  if (sw.lock !== "x") return;
+  sw.dx = Math.max(dx, -SWIPE_MAX);
+  sw.el.style.transform = "translateX(" + sw.dx + "px)";
+  const hint = sw.el.parentNode.querySelector(".reply-hint");
+  if (hint) hint.style.opacity = Math.min(1, -sw.dx / SWIPE_TRIGGER);
+}, { passive: true });
+
+function endSwipe(cancelled) {
+  if (!sw) return;
+  const { el, dx, lock } = sw;
+  sw = null;
+  el.style.transition = "";
+  el.style.transform = "";
+  const hint = el.parentNode.querySelector(".reply-hint");
+  if (hint) hint.style.opacity = 0;
+  if (!cancelled && lock === "x" && dx <= -SWIPE_TRIGGER) {
+    if (navigator.vibrate) navigator.vibrate(10);
+    replyTo(el.dataset.user);
+  }
+}
+pvScroll.addEventListener("touchend", () => endSwipe(false));
+pvScroll.addEventListener("touchcancel", () => endSwipe(true));
 
 function closePost() {
   openPostId = null;
