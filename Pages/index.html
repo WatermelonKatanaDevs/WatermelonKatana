@@ -1,16 +1,81 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Watermelonkatana | Please Wait...</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fugaz+One&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg: #222; --card: #2a2a2a; --text: #fff; --accent: #00e676; --line: rgba(255, 255, 255, 0.08); --muted: rgba(255, 255, 255, 0.6); --bad: #ff6b6b;
+            --spill-color1: #ff8fab; --spill-color2: #ffb3c7; --spill-color3: #00e676; --spill-color4: #2e9e5b;
+        }
+        html[data-theme="light"] { --bg: #f2f2f2; --card: #fff; --text: #111; --accent: #00a152; --line: rgba(0, 0, 0, 0.08); --muted: rgba(0, 0, 0, 0.55); --bad: #d9363e; }
+        html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+        body {
+            min-height: 100vh; min-height: 100dvh; background: var(--bg); color: var(--text); font-family: sans-serif; overflow-wrap: anywhere;
+            display: flex; flex-direction: column;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+        .top { display: flex; align-items: center; justify-content: center; height: 56px; background: var(--card); border-bottom: 1px solid var(--line); }
+        .logo-text {
+            font-family: 'Fugaz One', sans-serif; font-size: 1.45rem; line-height: 1.2; padding: 0 0.15em; display: inline-block;
+            background: linear-gradient(90deg, var(--spill-color1), var(--spill-color2), var(--spill-color3), var(--spill-color4));
+            background-size: 200% 200%; -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent; color: transparent;
+            animation: liquidSpill 4s ease-in-out infinite;
+        }
+        @keyframes liquidSpill { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px 16px; }
+        .box { width: 100%; max-width: 400px; text-align: center; }
+        h1 { font-size: 1.5rem; color: var(--accent); margin: 8px 0 10px; }
+        h2 { font-size: .95rem; font-weight: normal; line-height: 1.5; color: var(--muted); margin-bottom: 18px; }
+
+        ul { list-style: none; display: flex; flex-direction: column; gap: 8px; text-align: left; }
+        ul p {
+            display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; border-radius: 14px;
+            background: var(--card); border: 1px solid var(--line); font-size: .9rem; font-weight: 600;
+        }
+        .ico { width: 22px; height: 22px; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; color: var(--muted); }
+        .ico svg { width: 22px; height: 22px; }
+        .ico .lucide-loader-circle { animation: spin 1s linear infinite; }
+        .ico .lucide-circle-check { color: var(--accent); }
+        .ico .lucide-circle-x { color: var(--bad); }
+
+        .btn {
+            display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-top: 14px; padding: 12px; border-radius: 14px;
+            background: var(--accent); color: #111; font-size: 1rem; font-weight: bold; text-decoration: none; -webkit-tap-highlight-color: transparent;
+        }
+        .btn svg { width: 20px; height: 20px; }
+        .btn:active { transform: scale(0.98); }
+        .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+        .dscbtn {
+             display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-top: 14px; padding: 12px; border-radius: 14px;
+             background: #5865F2; color: #ffffff; font-size: 1rem; font-weight: bold; text-decoration: none; -webkit-tap-highlight-color: transparent;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .logo-text, .ico .lucide-loader-circle { animation: none; }
+            .btn:active { transform: none; }
+        }
+    </style>
 </head>
-
 <body>
-
-    <h1 id="status">Please Wait</h1>
-    <h2>Watermelonkatana is currently checking availible instances.</h2>
-    <ul id="cout"></ul>
+    <header class="top"><span class="logo-text">WatermelonKatana</span></header>
+    <main>
+        <div class="box">
+            <h1 id="status">Please Wait</h1>
+            <h2 id="hint">Watermelonkatana is currently checking availible instances.</h2>
+            <ul id="cout"></ul>
+        </div>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
     <script>
+        try { if (localStorage.getItem("color-scheme") === "light") document.documentElement.dataset.theme = "light"; } catch (err) {}
         const host = "https://rippler.onrender.com/request?data=";
         const domains = ["watermelonkatana", "watermelonkatana2"];
         const terminalState = document.getElementById("status");
@@ -20,19 +85,23 @@
         for (let domain of domains) {
             if (hasDomain) { break }
             let elm = document.createElement("p");
-            elm.textContent = `Pinging domain ${domain} \u231B`;
+            elm.innerHTML = `<span>Pinging domain ${domain}</span><span class="ico"></span>`;
+            updatePingStatus(elm, "loader-circle");
             terminalOut.appendChild(elm);
             fetch(buildRequest(domain)).then(response => response.status > 199 && response.status < 300 ? response.json() : null).then(data => {
                 if (data !== null && data.data !== null && !hasDomain) {
                     hasDomain = true;
-                    elm.textContent = updatePingStatus(elm, "\u2705");
+                    updatePingStatus(elm, "circle-check");
                     terminalState.textContent = "You will be redirected shortly...";
                     setTimeout(() => { location.href = buildURL(domain) }, 3e3);
                     return
                 } else { failureHandler(elm) }
             }).catch(failureHandler.bind(this, elm))
         }
-        function updatePingStatus(elm, state) { return elm.textContent.slice(0, -1) + state }
+        function updatePingStatus(elm, icon) {
+            elm.querySelector(".ico").innerHTML = `<i data-lucide="${icon}"></i>`;
+            lucide.createIcons();
+        }
         function buildURL(domain) { return `https://${domain}.onrender.com` }
         function buildRequest(domain) {
             return host + encodeURI(JSON.stringify({
@@ -42,10 +111,23 @@
             }))
         }
         function failureHandler(elm) {
-            elm.textContent = updatePingStatus(elm, "\u274C");
-            if (++failCount === domains.length) { terminalState.textContent = "Failure all instances down"}
+            updatePingStatus(elm, "circle-x");
+            if (++failCount === domains.length) {
+                terminalState.textContent = "Faliure";
+                showDiscord();
+                document.getElementById("hint").textContent = "Looks like all of our instances are down at the moment, this doesnt usually happen and if the issue persists, please report it in the discord.";
+            }
+        }
+        function showDiscord() {
+            const link = document.createElement("a");
+            link.className = "dscbtn";
+            link.href = "https://discord.com/invite/S8XTzKEz5f";
+            link.target = "_blank";
+            link.rel = "noopener";
+            link.innerHTML = 'Join our Discord';
+            terminalOut.insertAdjacentElement("afterend", link);
+            lucide.createIcons();
         }
     </script>
 </body>
-
 </html>
