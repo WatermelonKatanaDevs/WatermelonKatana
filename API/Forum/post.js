@@ -43,7 +43,7 @@ module.exports = class {
 
   notifyUserMentions(message, user, content, link) {
     return Promise.all([...new Set(message.match(/(?<=@)[^\s]+/g))].map(async function (name) {
-      var mention = await Users.findOne({ username: name });
+      var mention = await Users.findOne({$or: [{username: name }, {anonname: name}]});
       if (!mention) { return }
       user = anonify(user, isadmin(mention.role));
       mention.notify(user.username + " mentioned you!", content, link, user._id, user.username);
@@ -537,7 +537,7 @@ module.exports = class {
       var link = this.name === "posts" ? "/forum/discussion/" + post._id : "/project/" + post._id;
       await this.notifyUserFollowers(user.username + " commented", user, post.title, link);
       await this.notifyUserMentions(content, user, post.title, link);
-      const owner = await Users.findOne({ _id: post.posterId });
+      const owner = await Users.findOne({$or: [{_id: post.posterId }, {anonname: post.poster}]});
       if (!owner) return res.status(404).json({
         message: "Fetch not successful",
         error: "Owner not found",
