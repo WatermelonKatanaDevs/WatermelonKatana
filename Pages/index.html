@@ -20,7 +20,7 @@
             let elm = document.createElement("p");
             elm.textContent = `Pinging domain ${domain} \u231B`;
             terminalOut.appendChild(elm);
-            fetch(buildURL(domain)).then(response => response.status > 199 && response.status < 300 ? response.json() : null).then(data => {
+            fetch(buildRequest(domain)).then(response => response.status > 199 && response.status < 300 ? response.json() : null).then(data => {
                 if (data !== null && data.data !== null && !hasDomain) {
                     hasDomain = true;
                     elm.textContent = updatePingStatus(elm, "\u2705");
