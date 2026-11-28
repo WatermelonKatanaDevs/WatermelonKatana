@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Watermelonkatana | Please Wait...</title>
+</head>
+
+<body>
+
+    <h1 id="status">Please Wait</h1>
+    <h2>Watermelonkatana is currently checking availible instances.</h2>
+    <ul id="cout"></ul>
+    <script>
+        const host = "https://rippler.onrender.com/request?data=";
+        const domains = ["watermelonkatana", "watermelonkatana2"];
+        const terminalOut = document.getElementById("cout");
+        let hasDomain = false;
+        for (let domain of domains) {
+            if (hasDomain) { break }
+            let elm = document.createElement("p");
+            elm.textContent = `Pinging domain ${domain} \u231B`;
+            terminalOut.appendChild(elm);
+            fetch(buildURL(domain)).then(response => response.status > 199 && response.status < 300 ? response.json() : null).then(data => {
+                if (data !== null && data.data !== null && !hasDomain) {
+                    hasDomain = true;
+                    elm.textContent = updatePingStatus(elm, "\u2705");
+                    document.getElementById("status").textContent = "You will be redirected shortly...";
+                    setTimeout(() => { location.href = buildURL(domain) }, 3e3);
+                    return
+                } else { elm.textContent = updatePingStatus(elm, "\u274C") }
+            }).catch(err => { elm.textContent = updatePingStatus(elm, "\u274C") })
+        }
+        function updatePingStatus(elm, state) { return elm.textContent.slice(0, -1) + state }
+        function buildURL(domain) { return `https://${domain}.onrender.com`}
+        function buildRequest(domain) {
+            return host + encodeURI(JSON.stringify({
+                "Method": "GET",
+                "Url": `${buildURL(domain)}/api/auth/check`,
+                "responseType": "application/json"
+            }))
+        }
+    </script>
+</body>
+
+</html>
