@@ -992,7 +992,7 @@ async function sendComment() {
       return;
     }
     // The server may have saved it anyway, so verify before reporting failure
-    msg.textContent = "Taking longer than usual…";
+    msg.textContent = "Almost there...";
     if (await commentLanded(id, before)) {
       if (openPostId === id) openPost(id);
       return;
