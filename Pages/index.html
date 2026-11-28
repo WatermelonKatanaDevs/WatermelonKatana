@@ -13,8 +13,10 @@
     <script>
         const host = "https://rippler.onrender.com/request?data=";
         const domains = ["watermelonkatana", "watermelonkatana2"];
+        const terminalState = document.getElementById("status");
         const terminalOut = document.getElementById("cout");
         let hasDomain = false;
+        let failCount = 0;
         for (let domain of domains) {
             if (hasDomain) { break }
             let elm = document.createElement("p");
@@ -24,20 +26,24 @@
                 if (data !== null && data.data !== null && !hasDomain) {
                     hasDomain = true;
                     elm.textContent = updatePingStatus(elm, "\u2705");
-                    document.getElementById("status").textContent = "You will be redirected shortly...";
+                    terminalState.textContent = "You will be redirected shortly...";
                     setTimeout(() => { location.href = buildURL(domain) }, 3e3);
                     return
-                } else { elm.textContent = updatePingStatus(elm, "\u274C") }
-            }).catch(err => { elm.textContent = updatePingStatus(elm, "\u274C") })
+                } else { failureHandler(elm) }
+            }).catch(failureHandler.bind(this, elm))
         }
         function updatePingStatus(elm, state) { return elm.textContent.slice(0, -1) + state }
-        function buildURL(domain) { return `https://${domain}.onrender.com`}
+        function buildURL(domain) { return `https://${domain}.onrender.com` }
         function buildRequest(domain) {
             return host + encodeURI(JSON.stringify({
                 "Method": "GET",
                 "Url": `${buildURL(domain)}/api/auth/check`,
                 "responseType": "application/json"
             }))
+        }
+        function failureHandler(elm) {
+            elm.textContent = updatePingStatus(elm, "\u274C");
+            if (++failCount === domains.length) { terminalState.textContent = "Failure all instances down"}
         }
     </script>
 </body>
